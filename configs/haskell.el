@@ -5,10 +5,12 @@
 ;;; Author: Jassob
 ;;; ============================================================================
 (use-package haskell-mode
+  :ensure t
   :config
 
   ;; Load company on auto-load
   (use-package company
+    :ensure t
     :config
     (add-to-list 'company-backends 'company-ghc)
     (add-hook 'haskell-mode-hook 'company-mode)
