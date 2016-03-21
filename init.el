@@ -75,3 +75,4 @@
 (load (concat user-emacs-directory "configs/haskell.el"))
 (load (concat user-emacs-directory "configs/helm.el"))
 (load (concat user-emacs-directory "configs/fancy-battery-mode.el"))
+(load (concat user-emacs-directory "configs/pandoc-mode.el"))
