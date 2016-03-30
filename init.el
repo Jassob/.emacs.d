@@ -34,7 +34,11 @@
 (setq inhibit-startup-message t)
 
 ;; Load Solarized color theme
-(load-theme 'twilight-anti-bright t)
+(use-package color-theme-approximate
+  :ensure t
+  :config
+  (color-theme-approximate-on)
+  (load-theme 'twilight-anti-bright t))
 
 ;; Use auto indent mode
 (electric-indent-mode t)
@@ -77,4 +81,6 @@
 (load (concat user-emacs-directory "configs/fancy-battery-mode.el"))
 (load (concat user-emacs-directory "configs/pandoc-mode.el"))
 (load (concat user-emacs-directory "configs/python-mode.el"))
+;; For hacking Stumpwm with Emacs
+(load (concat user-emacs-directory "configs/slime.el"))
 
