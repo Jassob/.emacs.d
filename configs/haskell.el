@@ -7,6 +7,7 @@
 (use-package haskell-mode
   :ensure t
   :config
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
   ;; Load company on auto-load
   (use-package company
@@ -17,6 +18,4 @@
     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
 
   ;; Load haskell interactive mode on auto-load
-  (use-package haskell-interactive-mode
-    :config
-    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)))
+  (use-package haskell-interactive-mode))
