@@ -80,6 +80,7 @@
 (load (concat user-emacs-directory "configs/helm.el"))
 (load (concat user-emacs-directory "configs/fancy-battery-mode.el"))
 (load (concat user-emacs-directory "configs/pandoc-mode.el"))
+(load (concat user-emacs-directory "configs/znc.el"))
 (load (concat user-emacs-directory "configs/python-mode.el"))
 ;; For hacking Stumpwm with Emacs
 (load (concat user-emacs-directory "configs/slime.el"))
