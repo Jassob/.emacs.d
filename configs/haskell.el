@@ -59,7 +59,7 @@
   :bind
   (("C-c C-u" . haskell-insert-undefined)
    ("C-c C-a" . haskell-insert-doc)
-   :map interactive-haskell-mode-map
+   :map haskell-mode-map
    ("C-`" . haskell-interactive-bring)
    ("C-c C-t" . haskell-process-do-type)
    ("C-c c" . haskell-process-cabal)
