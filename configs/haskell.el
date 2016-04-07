@@ -57,13 +57,13 @@
 (use-package haskell-mode
   :ensure t
   :bind
-  (("C-c C-u" . haskell-insert-undefined)
-   ("C-c C-a" . haskell-insert-doc)
-   :map haskell-mode-map
-   ("C-`" . haskell-interactive-bring)
-   ("C-c C-t" . haskell-process-do-type)
-   ("C-c c" . haskell-process-cabal)
-   ("C-c C-c" . haskell-process-cabal-build))
+  (:map haskell-mode-map
+	("C-`" . haskell-interactive-bring)
+	("C-c C-t" . haskell-process-do-type)
+	("C-c c" . haskell-process-cabal)
+	("C-c C-c" . haskell-process-cabal-build)
+	("C-c C-u" . haskell-insert-undefined)
+	("C-c C-a" . haskell-insert-doc))
 
   :config
   (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
