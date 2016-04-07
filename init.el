@@ -21,13 +21,20 @@
 ;; Don't blink the cursor
 (blink-cursor-mode 0)
 
-;; Disable toolbar & scrollbars (for GUI emacs)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+;; If XEmacs, turn off toolbar and scrollbar
+(cond ((display-graphic-p)
+       (tool-bar-mode -1)
+       (scroll-bar-mode -1))))
+
+;; Disable menubar
 (menu-bar-mode -1)
 
 ;; Disable visual or graphic error bell
 (setq ring-bell-function 'ignore)
+
+;; Don't prompt as much
+(fset 'yes-or-no 'y-or-n)
+(remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)
 
 ;; Don't use messages that you don't read
 (setq initial-scratch-message "")
@@ -62,12 +69,6 @@
       
       ;; use versioned backups
       version-control t)
-
-;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-;(global-set-key (kbd "C-c h") 'helm-command-prefix)
-;(global-unset-key (kbd "C-x c"))
 
 ;;; ============================================================================
 ;;; Load separate config files
