@@ -24,7 +24,13 @@
 ;; If XEmacs, turn off toolbar and scrollbar
 (cond ((display-graphic-p)
        (tool-bar-mode -1)
-       (scroll-bar-mode -1))))
+       (scroll-bar-mode -1))
+      (t
+       ;; Approximate colors in terminals
+       (color-theme-approximate-on)))
+
+;; Load theme
+(load-theme 'twilight-anti-bright t)
 
 ;; Disable menubar
 (menu-bar-mode -1)
