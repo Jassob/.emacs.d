@@ -21,13 +21,14 @@
 ;; Don't blink the cursor
 (blink-cursor-mode 0)
 
-;; If XEmacs, turn off toolbar and scrollbar
-(cond ((display-graphic-p)
-       (tool-bar-mode -1)
-       (scroll-bar-mode -1))
-      (t
-       ;; Approximate colors in terminals
-       (color-theme-approximate-on)))
+(defun contextual-menubar (&optional frame)
+  "Never show menubar, toolbar or scrollbar."
+  (interactive)
+  (set-frame-parameter frame 'menu-bar-lines 0)
+  (set-frame-parameter frame 'tool-bar-lines 0)
+  (set-frame-parameter frame 'vertical-scroll-bars nil))
+
+(add-hook 'after-make-frame-functions 'contextual-menubar)
 
 ;; Load theme
 (load-theme 'twilight-anti-bright t)
@@ -45,13 +46,6 @@
 ;; Don't use messages that you don't read
 (setq initial-scratch-message "")
 (setq inhibit-startup-message t)
-
-;; Load Solarized color theme
-(use-package color-theme-approximate
-  :ensure t
-  :config
-  (color-theme-approximate-on)
-  (load-theme 'twilight-anti-bright t))
 
 ;; Use auto indent mode
 (electric-indent-mode t)
