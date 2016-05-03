@@ -68,7 +68,10 @@
   :config
   (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-  (add-hook 'haskell-mode-hook 'haskell-indentation-mode)
+  (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+  (add-hook 'haskell-mode-hook 'git-gutter+-mode)
+  (remove-hook 'haskell-mode-hook 'haskell-indentation-mode)
+  (remove-hook 'haskell-mode-hook 'haskell-indent-mode)
 
   ;; Load company on auto-load
   (use-package company
@@ -79,6 +82,11 @@
 
   ;; Load haskell interactive mode on auto-load
   (use-package haskell-interactive-mode)
-  (use-package hindent
+
+  (use-package shm
     :ensure t
-    :bind (:map haskell-mode-map ("C-c i" . hindent/reformat-dec))))
+    :config
+    (require 'shm-case-split)
+    (set-face-background 'shm-current-face "#1f2730")
+    (set-face-background 'shm-quarantine-face "#2a3441")
+    (define-key shm-map (kbd "C-c C-s") 'shm/case-split)))
