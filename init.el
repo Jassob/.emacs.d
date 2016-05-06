@@ -84,6 +84,7 @@
 (load (concat user-emacs-directory "configs/znc.el"))
 (load (concat user-emacs-directory "configs/python-mode.el"))
 (load (concat user-emacs-directory "configs/java-mode.el"))
+(load (concat user-emacs-directory "configs/latex.el"))
 ;; For hacking Stumpwm with Emacs
 (load (concat user-emacs-directory "configs/slime.el"))
 
