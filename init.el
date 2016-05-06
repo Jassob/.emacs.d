@@ -69,18 +69,33 @@
 ;;; ============================================================================
 ;;; Load separate config files
 ;;; ============================================================================
-(load (concat user-emacs-directory "configs/org-mode.el"))
-(load (concat user-emacs-directory "configs/magit-mode.el"))
-(load (concat user-emacs-directory "configs/hs-minor-mode.el"))
-(load (concat user-emacs-directory "configs/multiple-cursors.el"))
-(load (concat user-emacs-directory "configs/haskell.el"))
-(load (concat user-emacs-directory "configs/helm.el"))
-(load (concat user-emacs-directory "configs/fancy-battery-mode.el"))
-(load (concat user-emacs-directory "configs/pandoc-mode.el"))
-(load (concat user-emacs-directory "configs/znc.el"))
-(load (concat user-emacs-directory "configs/python-mode.el"))
-(load (concat user-emacs-directory "configs/java-mode.el"))
-(load (concat user-emacs-directory "configs/latex.el"))
+
+(defun load-config (file)
+  "Loads a Emacs config file from .emacs.d/configs/$file"
+  (load (concat user-emacs-directory "configs/" file)))
+
+(defun load-configs (&rest files)
+  "Loads multiple config files using load-config"
+  (if (consp files)
+    (load-config (car files))
+    (load-configs (cdr files))))
+
+(load-configs "hs-minor-mode.el"
+              "god-mode.el"
+              "multiple-cursors.el"
+              "helm.el"
+              "fancy-battery-mode.el"
+              "org-mode.el"
+              "magit-mode.el"
+              "haskell.el"
+              "pandoc-mode.el"
+              "python-mode.el"
+              "java-mode.el"
+              "latex.el"
+              "znc.el")
+
 ;; For hacking Stumpwm with Emacs
-(load (concat user-emacs-directory "configs/slime.el"))
+(load-config "slime.el")
+;; For playing music with Emacs
+(load-config "emms.el")
 
