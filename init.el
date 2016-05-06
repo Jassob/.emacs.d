@@ -12,15 +12,6 @@
 ;;; ============================================================================
 ;;; General stuff
 ;;; ============================================================================
-;; Display clock in modeline
-(display-time)
-
-;; Display current column in modeline
-(column-number-mode)
-
-;; Don't blink the cursor
-(blink-cursor-mode 0)
-
 (defun contextual-menubar (&optional frame)
   "Never show menubar, toolbar or scrollbar."
   (interactive)
@@ -33,9 +24,14 @@
 ;; Load theme
 (load-theme 'twilight-anti-bright t)
 
+;; Display clock in modeline
+(display-time)
+;; Display current column in modeline
+(column-number-mode)
+;; Don't blink the cursor
+(blink-cursor-mode 0)
 ;; Disable menubar
 (menu-bar-mode -1)
-
 ;; Disable visual or graphic error bell
 (setq ring-bell-function 'ignore)
 
