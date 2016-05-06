@@ -27,7 +27,6 @@
   :bind ("C-h C-f" . helm-apropos)
   :bind ("C-h a" . helm-apropos)
   :bind ("C-c i" . helm-imenu-in-all-buffers)
-  :bind ("C-s" . helm-occur)
   :bind ("M-g a" . helm-do-grep-ag)
   :bind ("M-g g" . helm-grep-do-git-grep)
   :bind ("M-g i" . helm-gid)
