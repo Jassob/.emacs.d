@@ -21,8 +21,14 @@
 
 (add-hook 'after-make-frame-functions 'contextual-menubar)
 
+(when (display-graphic-p)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1))
+
 ;; Load theme
 (load-theme 'twilight-anti-bright t)
+;;(load-theme 'sanityinc-tomorrow-day t)
 
 ;; Display clock in modeline
 (display-time)
@@ -42,6 +48,9 @@
 ;; Don't use messages that you don't read
 (setq initial-scratch-message "")
 (setq inhibit-startup-message t)
+
+;; Always delete trailing whitespace
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ;; Use auto indent mode
 (electric-indent-mode t)
