@@ -65,13 +65,13 @@
 (setq backup-by-copying t ; don't clobber symlinks
 
       ;; don't litter my fs tree
-      backup-directory-alist '(("." . "~/.saves")) 
-      
+      backup-directory-alist '(("." . "~/.saves"))
+
       ;; Keep at most 4 copies of every file (2 new and then 2 old copies)
       kept-new-versions 2
       kept-old-versions 2
       delete-old-versions t
-      
+
       ;; use versioned backups
       version-control t)
 
