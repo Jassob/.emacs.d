@@ -89,20 +89,19 @@
     (load-config (car files))
     (load-configs (cdr files))))
 
-(load-configs "hs-minor-mode.el"
-              "god-mode.el"
-              "multiple-cursors.el"
-              "helm.el"
-              "fancy-battery-mode.el"
-              "org-mode.el"
-              "magit-mode.el"
-              "haskell.el"
-              "pandoc-mode.el"
-              "python-mode.el"
-              "java-mode.el"
-              "latex.el"
-              "znc.el")
-
+(load-config "hs-minor-mode.el")
+(load-config "god-mode.el")
+(load-config "multiple-cursors.el")
+(load-config "helm.el")
+(load-config "fancy-battery-mode.el")
+(load-config "org-mode.el")
+(load-config "magit-mode.el")
+(load-config "haskell.el")
+(load-config "pandoc-mode.el")
+(load-config "python-mode.el")
+(load-config "java-mode.el")
+(load-config "latex.el")
+(load-config "znc.el")
 ;; For hacking Stumpwm with Emacs
 (load-config "slime.el")
 ;; For playing music with Emacs
