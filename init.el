@@ -27,8 +27,8 @@
   (toggle-scroll-bar -1))
 
 ;; Load theme
-(load-theme 'twilight-anti-bright t)
-;;(load-theme 'sanityinc-tomorrow-day t)
+;;(load-theme 'sanityinc-tomorrow-night t)
+(load-theme 'sanityinc-tomorrow-day t)
 
 ;; Display clock in modeline
 (display-time)
@@ -40,6 +40,10 @@
 (menu-bar-mode -1)
 ;; Disable visual or graphic error bell
 (setq ring-bell-function 'ignore)
+
+(require 'exwm)
+(require 'exwm-config)
+(exwm-config-default)
 
 ;; Don't prompt as much
 (fset 'yes-or-no 'y-or-n)
@@ -83,12 +87,6 @@
   "Loads a Emacs config file from .emacs.d/configs/$file"
   (load (concat user-emacs-directory "configs/" file)))
 
-(defun load-configs (&rest files)
-  "Loads multiple config files using load-config"
-  (if (consp files)
-    (load-config (car files))
-    (load-configs (cdr files))))
-
 (load-config "hs-minor-mode.el")
 (load-config "god-mode.el")
 (load-config "multiple-cursors.el")
@@ -102,8 +100,6 @@
 (load-config "java-mode.el")
 (load-config "latex.el")
 (load-config "znc.el")
-;; For hacking Stumpwm with Emacs
-(load-config "slime.el")
 ;; For playing music with Emacs
 (load-config "emms.el")
 
