@@ -26,9 +26,11 @@
   (tool-bar-mode -1)
   (toggle-scroll-bar -1))
 
-;; Load theme
-;;(load-theme 'sanityinc-tomorrow-night t)
-(load-theme 'sanityinc-tomorrow-day t)
+;; Load theme depending on the time of day
+(load (concat user-emacs-directory "sundown.el"))
+(if (is-it-darkp "today" "57.708870" "11.974560")
+    (load-theme 'sanityinc-tomorrow-night t)
+  (load-theme 'sanityinc-tomorrow-day t))
 
 ;; Display clock in modeline
 (display-time)
