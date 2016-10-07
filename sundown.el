@@ -3,11 +3,14 @@
 
 (setq sundown-timeurl "http://api.sunrise-sunset.org/json")
 
-(defun get-sunstats-json (day lat lng)
+(setq gothenburg-loc '("57.708870" . "11.974560"))
+
+(defun get-sunstats-json (day loc)
   "Requests sundown-timeurl for the sunstats for a specified day
-   and returns it as json"
-  (let ((args (mapconcat 'identity `(,(concat "location=" lat)
-                                     ,(concat "lng=" lng)
+   and returns it as json. loc is a cons cell consisting of a
+   latitude as car and longitude as cdr."
+  (let ((args (mapconcat 'identity `(,(concat "lat=" (car loc))
+                                     ,(concat "lng=" (cdr loc))
                                      ,(concat "date=" day)
                                      "formatted=0")
                                      "&")))
@@ -16,13 +19,15 @@
       (delete-region (point-min) (point))
       (json-read-from-string (buffer-string)))))
 
-(defun get-sunstats-prop (day lat lng prop)
-  "Retrieves the prop \"prop\" from the json result from get-sunstats-json"
-  (cdr (assoc prop (assoc 'results (get-sunstats-json day lat lng)))))
+(defun get-sunstats-prop (day loc prop)
+  "Retrieves the prop \"prop\" from the json result from get-sunstats-json.
+   loc is a cons cell consisting of (latitude . longitude)"
+  (cdr (assoc prop (assoc 'results (get-sunstats-json day loc)))))
 
-(defun is-it-darkp (day lat lng)
-  "Checks whether it is dark outside, i.e if the sun has set."
-  (let ((sundown (get-sunstats-prop day lat lng 'sunset))
+(defun is-it-darkp (day loc)
+  "Checks whether it is dark outside, i.e if the sun has set.
+   loc is a cons cell consisting of (latitude . longitude)"
+  (let ((sundown (get-sunstats-prop day loc 'sunset))
         (current-time (current-time)))
     ;; This does not take DST into consideration
     (time-less-p (date-to-time sundown) current-time)))
