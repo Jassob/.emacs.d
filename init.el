@@ -27,14 +27,23 @@
   (toggle-scroll-bar -1))
 
 (load (concat user-emacs-directory "sundown.el"))
+
+(setq light-theme-activated nil)
+
 (defun dark-or-light-theme (lighttheme darktheme)
   "Checks whether the sun has set and loads the darktheme in that case,
    otherwise it loads the lighttheme instead."
   (interactive)
   ;; Load theme depending on the time of day
   (if (is-it-darkp "today" gothenburg-loc)
-      (load-theme darktheme t)
-    (load-theme lighttheme t)))
+      (when light-theme-activated
+        (disable-theme lighttheme)
+        (load-theme darktheme t)
+        (setq light-theme-activated nil))
+    (unless light-theme-activated
+      (disable-theme darktheme)
+      (load-theme lighttheme t)
+      (setq light-theme-activated t))))
 
 ;; Checks every hour whether it is time to switch the theme or not.
 (run-with-timer 0
@@ -42,8 +51,6 @@
                 'dark-or-light-theme
                 'sanityinc-tomorrow-day
                 'sanityinc-tomorrow-night)
-
-
 
 ;; Display clock in modeline
 (display-time)
