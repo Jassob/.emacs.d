@@ -27,7 +27,6 @@
 (defun is-it-darkp (day loc)
   "Checks whether it is dark outside, i.e if the sun has set.
    loc is a cons cell consisting of (latitude . longitude)"
-  (let ((sundown (get-sunstats-prop day loc 'sunset))
-        (current-time (current-time)))
+  (let ((sundown (get-sunstats-prop day loc 'sunset)))
     ;; This does not take DST into consideration
-    (time-less-p (date-to-time sundown) current-time)))
+    (time-less-p (date-to-time sundown) (current-time))))
