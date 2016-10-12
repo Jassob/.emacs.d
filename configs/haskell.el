@@ -68,7 +68,7 @@
   :config
   (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-  (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+  (add-hook 'haskell-mode-hook 'intero-mode)
   (add-hook 'haskell-mode-hook 'git-gutter+-mode)
   (remove-hook 'haskell-mode-hook 'haskell-indentation-mode)
   (remove-hook 'haskell-mode-hook 'haskell-indent-mode)
@@ -82,11 +82,4 @@
 
   ;; Load haskell interactive mode on auto-load
   (use-package haskell-interactive-mode)
-
-  (use-package shm
-    :ensure t
-    :config
-    (require 'shm-case-split)
-    (set-face-background 'shm-current-face "#1f2730")
-    (set-face-background 'shm-quarantine-face "#2a3441")
-    (define-key shm-map (kbd "C-c C-s") 'shm/case-split)))
+  )
