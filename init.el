@@ -55,8 +55,8 @@
       ;; Unset right option key as meta
       ns-right-alternate-modifier nil
 
-      ;; Light-theme is not activated
-      light-theme-activated nil
+      ;; No theme is activated
+      activated-theme nil
 
       ;; don't litter my fs tree (save backups in /tmp)
       backup-directory-alist `((".*" . ,temporary-file-directory))
@@ -80,18 +80,18 @@
   (interactive)
   ;; Load theme depending on the time of day
   (if (is-it-darkp "today" gothenburg-loc)
-      (when light-theme-activated
+      (unless (eq activated-theme 'light)
         (disable-theme lighttheme)
         (load-theme darktheme t)
-        (setq light-theme-activated nil))
-    (unless light-theme-activated
+        (setq activated-theme 'light))
+    (unless (eq activated-theme 'dark)
       (disable-theme darktheme)
       (load-theme lighttheme t)
-      (setq light-theme-activated t))))
+      (setq activated-theme 'dark))))
 
-;; Checks every hour whether it is time to switch the theme or not.
+;; Checks every half hour whether it is time to switch the theme or not.
 (run-with-timer 0
-                (* 60 60)
+                (* 60 30)
                 'dark-or-light-theme
                 'sanityinc-tomorrow-day
                 'sanityinc-tomorrow-night)
