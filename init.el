@@ -80,27 +80,12 @@
 (global-set-key (kbd "M-x") 'smex)
 
 ;; Theming
-(load (concat user-emacs-directory "sundown.el"))
-(defun dark-or-light-theme (lighttheme darktheme)
-  "Load LIGHTTHEME if the sun is up in Gothenburg or DARKTHEME otherwise."
-  (interactive)
-  ;; Load theme depending on the time of day
-  (if (is-it-darkp "today" gothenburg-loc)
-      (unless (eq activated-theme 'light)
-        (disable-theme lighttheme)
-        (load-theme darktheme t)
-        (setq activated-theme 'light))
-    (unless (eq activated-theme 'dark)
-      (disable-theme darktheme)
-      (load-theme lighttheme t)
-      (setq activated-theme 'dark))))
+(setq calendar-location-name "Gothenburg, SE")
+(setq calendar-latitude 57.71)
+(setq calendar-longitude 11.97)
 
-;; Checks every half hour whether it is time to switch the theme or not.
-(run-with-timer 0
-                (* 60 30)
-                'dark-or-light-theme
-                'sanityinc-tomorrow-day
-                'sanityinc-tomorrow-night)
+(require 'theme-changer)
+(change-theme 'sanityinc-tomorrow-day 'sanityinc-tomorrow-night)
 
 ;; Don't prompt as much
 (fset 'yes-or-no 'y-or-n)
