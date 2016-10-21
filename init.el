@@ -22,7 +22,7 @@
 ;;; Hooks
 ;;; ============================================================================
 (defun contextual-menubar (&optional frame)
-  "Never show menubar, toolbar or scrollbar."
+  "Never show menubar, toolbar or scrollbar in FRAME."
   (interactive)
   (set-frame-parameter frame 'menu-bar-lines 0)
   (set-frame-parameter frame 'tool-bar-lines 0)
@@ -58,6 +58,10 @@
       ;; No theme is activated
       activated-theme nil
 
+      ;; Use IDO
+      ido-enable-flex-matching t
+      ido-everywhere t
+
       ;; don't litter my fs tree (save backups in /tmp)
       backup-directory-alist `((".*" . ,temporary-file-directory))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
@@ -72,11 +76,13 @@
       ;; use versioned backups
       version-control t)
 
+(ido-mode t)
+(global-set-key (kbd "M-x") 'smex)
+
 ;; Theming
 (load (concat user-emacs-directory "sundown.el"))
 (defun dark-or-light-theme (lighttheme darktheme)
-  "Checks whether the sun has set and loads the darktheme in that case,
-   otherwise it loads the lighttheme instead."
+  "Load LIGHTTHEME if the sun is up in Gothenburg or DARKTHEME otherwise."
   (interactive)
   ;; Load theme depending on the time of day
   (if (is-it-darkp "today" gothenburg-loc)
@@ -107,13 +113,12 @@
 ;;; ============================================================================
 
 (defun load-config (file)
-  "Loads a Emacs config file from .emacs.d/configs/$file"
+  "Load a Emacs config file FILE from .emacs.d/configs/."
   (load (concat user-emacs-directory "configs/" file)))
 
 (load-config "hs-minor-mode.el")
 (load-config "god-mode.el")
 (load-config "multiple-cursors.el")
-(load-config "helm.el")
 (load-config "fancy-battery-mode.el")
 (load-config "org-mode.el")
 (load-config "magit-mode.el")
@@ -123,6 +128,7 @@
 (load-config "java-mode.el")
 (load-config "latex.el")
 (load-config "znc.el")
+(load-config "dired.el")
 ;; For playing music with Emacs
 (load-config "emms.el")
 
