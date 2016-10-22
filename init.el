@@ -6,6 +6,25 @@
              '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
+;; Install missing packages requiered for this init.el.
+(defvar package-list
+  '(use-package color-theme-sanityinc-tomorrow))
+
+(dolist (p package-list)
+  (unless (package-installed-p p)
+    (package-install p)))
+
+;; Configure smex
+(use-package smex
+  :ensure t
+  :init
+  :bind ("M-x" . smex)
+  :config
+  (require 'ido)
+  (setq ido-enable-flex-matching t
+        ido-everywhere t)
+  (ido-mode t))
+
 ;;; ============================================================================
 ;;; EXWM
 ;;; ============================================================================
@@ -55,13 +74,6 @@
       ;; Unset right option key as meta
       ns-right-alternate-modifier nil
 
-      ;; No theme is activated
-      activated-theme nil
-
-      ;; Use IDO
-      ido-enable-flex-matching t
-      ido-everywhere t
-
       ;; don't litter my fs tree (save backups in /tmp)
       backup-directory-alist `((".*" . ,temporary-file-directory))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
@@ -75,9 +87,6 @@
 
       ;; use versioned backups
       version-control t)
-
-(ido-mode t)
-(global-set-key (kbd "M-x") 'smex)
 
 ;; Theming
 (setq calendar-location-name "Gothenburg, SE")
