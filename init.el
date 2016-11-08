@@ -28,9 +28,23 @@
 ;;; ============================================================================
 ;;; EXWM
 ;;; ============================================================================
-(require 'exwm)
-(require 'exwm-config)
-(exwm-config-default)
+(when (package-installed-p 'exwm)
+  (require 'exwm)
+  (require 'exwm-config)
+  (require 'exwm-systemtray)
+  (exwm-config-default)
+  (exwm-config-ido)
+  (exwm-systemtray-enable)
+  (setq exwm-systemtray-height 16)
+  (setq exwm-layout-show-all-buffers t)
+
+  ;; Update to window title when a Java, Gimp or Conkeror window.
+  (add-hook 'exwm-update-title-hook
+            (lambda ()
+              (when (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                        (string= "gimp" exwm-instance-name)
+                        (string= "Conkeror" exwm-class-name))
+                (exwm-workspace-rename-buffer exwm-title)))))
 
 ;;; ============================================================================
 ;;; Keybindings
