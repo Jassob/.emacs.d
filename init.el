@@ -8,7 +8,7 @@
 
 ;; Install missing packages requiered for this init.el.
 (defvar package-list
-  '(use-package color-theme-sanityinc-tomorrow))
+  '(use-package color-theme-sanityinc-tomorrow theme-changer))
 
 (dolist (p package-list)
   (unless (package-installed-p p)
