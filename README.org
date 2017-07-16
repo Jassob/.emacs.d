@@ -1,0 +1,1062 @@
+#+TITLE: Jassob's Emacs configuration
+#+DATE: <2016-07-16>
+
+* About this file
+  This file contains my configurations for Emacs.
+
+  Very much inspired by [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua's Emacs Configuration]], with some
+  stolen bits and pieces from both [[http://spacemacs.org][Spacemacs]]/[[https://github.com/TheBB/spaceline][Spaceline]] and [[https://github.com/hlissner/.emacs.d][hlissner's
+  Emacs config]].
+
+  This file generates my config by tangling all source code blocks in
+  the text to a single elisp-file.
+
+  To make use of my config you need to have Emacs with org-mode
+  installed, open this file and run the function ~org-babel-tangle~,
+  which by default is bound to =C-c C-v t=.
+
+* Emacs initialisation
+** System directories
+
+   I don't like keeping a lot of files visible in my =.emacs.d=
+   directory, so let's create a directory hierarchy for all files that
+   I'm not interested in.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defvar local-dir (concat user-emacs-directory ".local/")
+       "Root directory for local Emacs files. Use this as
+     permanent storage for files that are safe to share across
+     systems (if this config is symlinked across several computers).")
+
+     (defvar etc-dir (concat local-dir "@" (system-name) "/etc/")
+       "Host-namespaced directory for non-volatile storage. These are not deleted or
+     tampored with by DOOM functions. Use this for dependencies like servers or
+     config files that are stable (i.e. it should be unlikely that you need to delete
+     them if something goes wrong).")
+
+     (defvar cache-dir (concat local-dir "@" (system-name) "/cache/")
+       "Host-namespaced directory for volatile storage. Deleted
+     when `local/clean-cache' is called. Use this for transient files
+     that are generated on the fly like caches and temporary
+     files. Anything that may need to be cleared if there are
+     problems.")
+
+     (defvar packages-dir (concat local-dir "packages/")
+       "Where package.el packages and cache are stored.")
+
+   #+end_src
+
+   We need to make sure that the directories are created before we try
+   to make Emacs store stuff there.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (dolist (dir (list local-dir etc-dir cache-dir packages-dir))
+       (unless (file-exists-p dir)
+	 (make-directory dir t)))
+   #+end_src
+
+   We might want to clear the local cache, here is a command for doing
+   that.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun local/clean-cache()
+       "Clears local cache (`local-dir') directory. You may need to
+     restart Emacs for some components to feel its effects."
+       (interactive)
+       (delete-directory cache-dir t)
+       (make-directory cache-dir t))
+   #+end_src
+
+** System files and backups
+
+   Emacs stores backups of the file you are working on in the current
+   directory by default and while backups I prefer keeping them in the
+   directories defined above.
+
+   So, lets store all backups in the local directory!
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq backup-directory-alist `((".*" . ,(concat local-dir "backups"))))
+   #+end_src
+
+   Also, we'd like to store versioned backups and also make sure to
+   backup files that is under version control (in case we forget to
+   commit every interesting change).
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq delete-old-versions -1
+	   version-control t
+	   vc-make-backup-files t
+	   auto-save-file-name-transforms `((".*" ,(concat cache-dir "auto-save-list/") t)))
+   #+end_src
+
+   Similar to backups I dont like my bookmarks to litter in the config
+   directory, so we put them in =cache-dir= with everything else.
+   Also EWW stores it's own bookmarks in a file that by default exists
+   in Emacs dir.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq bookmark-default-file (concat etc-dir "bookmarks")
+	   eww-bookmark-directory etc-dir)
+   #+end_src
+
+   The Emacs Shell (eshell) is very nice to use since it integrates
+   the shell experience well with Emacs, but it too litters my Emacs
+   directory by default, please don't!
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq eshell-directory-name (concat etc-dir "eshell"))
+   #+end_src
+
+   I don't use Gnus yet, but the ambition is there. It stores a cache
+   that by default not lives in the Emacs directory, but in my home
+   directory(!) which is even worse.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq gnus-cache-directory (concat cache-dir "news")
+           gnus-directory       (concat local-dir "news")
+           gnus-kill-files-directory (concat local-dir "news"))
+   #+end_src
+
+   Url package files are also stored in the Emacs directory, move them
+   to the local-dir and its' sub directories.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq url-cache-directory (concat cache-dir "url")
+	   url-configuration-directory (concat etc-dir "url"))
+   #+end_src
+
+   I also don't like to keep my diary file nor the journal folder in
+   the Emacs directory.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq diary-file (concat local-dir "diary")
+	   org-journal-dir (concat local-dir "journal/"))
+   #+end_src
+
+** Macros
+
+   This macro is stolen from [[github.com/hlissner/.emacs.d][hlissner's .emacs.d repo]].
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defmacro add-hook! (&rest args)
+       "A convenience macro for `add-hook'. Takes, in order:
+
+	    1. Optional properties :local and/or :append, which will make the hook
+	       buffer-local or append to the list of hooks (respectively),
+	    2. The hooks: either an unquoted major mode, an unquoted list of major-modes,
+	       a quoted hook variable or a quoted list of hook variables. If unquoted, the
+	       hooks will be resolved by appending -hook to each symbol.
+	    3. A function, list of functions, or body forms to be wrapped in a lambda.
+
+	  Examples:
+	      (add-hook! 'some-mode-hook 'enable-something)
+	      (add-hook! some-mode '(enable-something and-another))
+	      (add-hook! '(one-mode-hook second-mode-hook) 'enable-something)
+	      (add-hook! (one-mode second-mode) 'enable-something)
+	      (add-hook! :append (one-mode second-mode) 'enable-something)
+	      (add-hook! :local (one-mode second-mode) 'enable-something)
+	      (add-hook! (one-mode second-mode) (setq v 5) (setq a 2))
+	      (add-hook! :append :local (one-mode second-mode) (setq v 5) (setq a 2))
+
+	  Body forms can access the hook's arguments through the let-bound variable
+	  `args'."
+       (declare (indent defun) (debug t))
+       (let ((hook-fn (if (boundp 'hook-fn) hook-fn))
+	     hook append-p local-p)
+	 (while (keywordp (car args))
+	   (pcase (pop args)
+	     (:append (setq append-p t))
+	     (:local  (setq local-p t))))
+	 (let ((hooks (local--resolve-hooks (pop args)))
+	       (funcs
+		(let ((val (car args)))
+		  (if (memq (car-safe val) '(quote function))
+		      (if (cdr-safe (cadr val))
+			  (cadr val)
+			(list (cadr val)))
+		    (list args))))
+	       forms)
+	   (dolist (fn funcs)
+	     (setq fn (if (symbolp fn)
+			  `(function ,fn)
+			`(lambda (&rest args) ,@args)))
+	     (dolist (hook hooks)
+	       (push (cond ((eq hook-fn 'remove-hook)
+			    `(remove-hook ',hook ,fn ,local-p))
+			   (t
+			    `(add-hook ',hook ,fn ,append-p ,local-p)))
+		     forms)))
+	   `(progn ,@(nreverse forms)))))
+
+     (defun local--resolve-hooks (hooks)
+       (let ((quoted-p (eq (car-safe hooks) 'quote))
+	     ret-hooks)
+	 (when quoted-p
+	   (setq hooks (cadr hooks)))
+	 (dolist (hook (if (listp hooks) hooks (list hooks)) (nreverse ret-hooks))
+	   (push (cond ((eq (car-safe hook) 'quote)
+			(cadr hook))
+		       (quoted-p hook)
+		       (t
+			(intern (format "%s-hook" (symbol-name hook)))))
+		 ret-hooks))))
+   #+end_src
+
+** Packages
+
+    First we need to activate the package system and add the melpa
+    repository, if it is not already added.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (require 'package)
+      (setq package-user-dir (expand-file-name "elpa" packages-dir)
+	    package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
+			       ("melpa" . "https://melpa.org/packages/")))
+      (package-initialize)
+
+      ;; We've already enabled the package system.
+      (setq package-enable-at-startup nil)
+    #+end_src
+
+    Make sure to reload the list of packages by calling =M-x
+    package-refresh-contents= when adding melpa for the first time.
+
+** use-package
+
+   I use =use-package= for keeping track of my packages, customising them
+   and load them lazily.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (unless (package-installed-p 'use-package)
+       (package-install 'use-package))
+     (setq use-package-verbose t)
+   #+end_src
+
+** Automatic byte code compilation of Elisp
+
+   Executing byte-compiled elisp code is faster than source code and
+   we like speed!
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'use-package)
+     (use-package auto-compile
+       :config (auto-compile-on-load-mode))
+     (setq load-prefer-newer t)
+   #+end_src
+
+** Secrets and custom settings
+
+   I store more sensitive data in =~/.emacs.d/.local/.secrets= and customized
+   settings in =~/.emacs.d/custom-settings.el= so I easily can store my
+   main configuration in a public version control system.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (load "~/.emacs.d/.local/.secrets" t)
+
+     (setq custom-file (concat etc-dir "custom-settings.el"))
+     (load custom-file t)
+   #+end_src
+
+* Personal customization
+
+  Give my setup a personal touch.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq user-full-name "Jacob Jonsson"
+       user-mail-address "jacob.t.jonsson@gmail.com")
+   #+end_src
+
+   I don't like to type more than necessary, so why do I need to type
+   1-2 extra letters when the first letter is enough?
+
+   #+begin_src emacs-lisp :tangle init.el
+     (fset 'yes-or-no-p 'y-or-n-p)
+   #+end_src
+
+   I've seen the splash screen enough times now, please don't show it
+   to me anymore.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq inhibit-splash-screen t)
+   #+end_src
+
+   Even though the standard Emacs interactive
+   execute-extended-command works in most cases I personally prefer
+   =smex= and use more Ido features.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package smex :ensure t :demand t
+       :config
+       (setq ido-everywhere t
+	     ido-enable-flex-matching t
+	     ido-create-new-buffer t
+	     ido-save-directory-list-file (concat cache-dir "ido.last")
+	     smex-save-file (concat cache-dir "smex-items"))
+       (ido-mode t)
+       :bind ("M-x" . smex))
+   #+end_src
+
+   I'd like to keep a list of my recently visited files and =recentf=
+   helps me do that.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package recentf
+       :config
+       (setq recentf-save-file (concat cache-dir "recentf"))
+
+       (defun recentf-ido-find-file ()
+	 "Find a recent file using Ido."
+	 (interactive)
+	 (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
+	   (when file
+	     (find-file file))))
+
+       :bind ("C-x C-r" . recentf-ido-find-file))
+   #+end_src
+
+   To help me remember my commands I use =guide-key=, which displays a
+   popup showing all the keybindings belonging to a prefix key.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package guide-key
+       :ensure t
+       :config
+       (setq guide-key/guide-key-sequence t
+	     guide-key/popup-window-position 'bottom
+	     guide-key/highlight-command-regexp ".*")
+       (guide-key-mode t))
+   #+end_src
+
+* General configuration
+** Undo tree mode
+
+   I find Emacs default undo behaviour rather intuitive (of course a
+   redo is just an undo of your last undo!), but I like being able to
+   visualise the timeline of my file. Enters =undo-tree-mode=!
+
+    #+begin_src emacs-lisp :tangle init.el
+      (use-package undo-tree
+	:ensure t
+	:diminish undo-tree-mode
+	:config
+	(global-undo-tree-mode)
+	(setq undo-tree-visualizer-timestamps t)
+	(setq undo-tree-visualizer-diff t))
+    #+end_src
+
+** UTF8
+
+   We would like Emacs to prefer UTF8 when reading ambiguous bit
+   strings.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (prefer-coding-system 'utf-8)
+     (when (display-graphic-p)
+       (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
+   #+end_src
+
+* Editor
+** Cursors
+
+   When one has gotten used to multiple cursors it is hard to live
+   without. Luckily there exists an aptly named package that solves
+   this use case.
+
+   #+begin_src emacs-lisp :tangle init.el
+       (use-package multiple-cursors
+	 :ensure t
+	 :init
+	 ;; C-S-c C-S-c to edit block
+	 (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+	 ;; C-> for the next word
+	 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+	 ;; C-< for the previous
+	 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+	 ;; C-c C-> for all words
+	 (global-set-key (kbd "C-c C->") 'mc/mark-all-like-this))
+   #+end_src
+
+** Visual appearance
+
+   It is great that you can start out learning Emacs like a normal
+   person, using the mouse and navigating through the menu and tool
+   bar. However, on a smaller screen I find it a waste of screen
+   space (especially since I don't use the mouse myself).
+
+   #+begin_src emacs-lisp :tangle init.el
+     (tool-bar-mode -1)
+     (menu-bar-mode -1)
+     (scroll-bar-mode -1)
+   #+end_src
+
+   I used to use =theme-changer= to change theme depending on whether
+   the sun was up or not, but I don't do that anymore. Location
+   information can however still be interesting.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defvar calendar-location-name "Gothenburg, SE")
+     (defvar calendar-latitude 57.71)
+     (defvar calendar-longitude 11.97)
+
+     (unless (package-installed-p 'color-theme-sanityinc-tomorrow)
+       (package-install 'color-theme-sanityinc-tomorrow))
+
+     (load-theme 'sanityinc-tomorrow-night t)
+   #+end_src
+
+   I've found the spaceline-all-the-icons mode-line theme. It is a
+   reasonably customizable mode-line theme for spaceline (spacemacs'
+   mode-line).
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package spaceline :demand t :ensure t
+       :config
+       (use-package spaceline-all-the-icons :after spaceline :demand t :ensure t
+	 :config
+	 (spaceline-all-the-icons--setup-git-ahead)
+	 (setq spaceline-all-the-icons-flycheck-alternate t
+	       spaceline-all-the-icons-separator-type 'none)
+	 (spaceline-all-the-icons-theme)))
+   #+end_src
+
+** Move to beginning of line
+
+   [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line][Source]]
+
+   The default behaviour of calling =C-a= is to jump directly to the
+   beginning of the line, although we probably would like to go to
+   the beginning of the text on the line (and skip all the
+   indentation whitespace).
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun my/smarter-move-beginning-of-line (arg)
+       "Move point back to indentation of beginning of line.
+
+        Move point to the first non-whitespace character on this line.
+        If point is already there, move to the beginning of the line.
+        Effectively toggle between the first non-whitespace character and
+        the beginning of the line.
+
+        If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+        point reaches the beginning or end of the buffer, stop there."
+        (interactive "^p")
+        (setq arg (or arg 1))
+
+        ;; Move lines first
+        (when (/= arg 1)
+          (let ((line-move-visual nil))
+            (forward-line (1- arg))))
+
+        (let ((orig-point (point)))
+          (back-to-indentation)
+          (when (= orig-point (point))
+            (move-beginning-of-line 1))))
+
+     ;; remap C-a to smarter-move-beginning-of-line
+     (global-set-key [remap move-beginning-of-line]
+                     'my/smarter-move-beginning-of-line)
+   #+end_src
+
+** TODO Version control
+** Project management
+   I use projectile to ease the task of keeping track of files in
+   multiple projects and it also ties in well with my mode-line
+   config.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package projectile :ensure t :demand t
+       :config
+       (setq projectile-cache-file (concat cache-dir "projectile.cache")
+	     projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el")))
+   #+end_src
+
+* Writing
+** TODO Latex
+** TODO Pandoc
+* Org
+
+  [[http://orgmode.org][Org mode]] is the mode I use to organize my studies, my projects and
+  my life in general.
+
+  Set some initialization options regarding time tracking.
+
+  #+begin_src emacs-lisp :tangle init.el
+  (use-package org :ensure t
+      :init
+      (setq org-expiry-inactive-timestamps t
+            org-clock-idle-time nil
+            org-log-done 'time
+            org-clock-continuously nil
+            org-clock-persist t
+            org-clock-in-switch-to-state "STARTED"
+            org-clock-in-resume nil
+            org-show-notification-handler 'message
+            org-clock-report-include-clocking-task t)
+      :config
+      (setq org-clock-persist-file (concat cache-dir "org-clock-save.el"))
+      (org-clock-persistence-insinuate))
+  #+end_src
+
+  Put all org logs into a drawer.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq org-log-into-drawer "LOGBOOK"
+          org-clock-into-drawer t)
+  #+end_src
+
+** My files
+   :PROPERTIES:
+   :CUSTOM_ID: org-files
+   :END:
+
+   This is the structure of org files that I want to have and try to
+   maintain.
+
+   #<<org-files>>
+
+   | organizer.org | Main org file, used for org-capture and tasks etc |
+   | personal.org  | Habits, personal tasks, etc                       |
+   | people.org    | People-related tasks                              |
+   | journal.org   | Journal entries                                   |
+   | studies.org   | Chalmers-related tasks                            |
+   | archive.org   | Archived subtrees                                 |
+   | reading.org   | Org file for book notes                           |
+   | calendar.org  | An org file with ambition to sync via org-gcal    |
+
+** Modules
+
+   There are a lot of modules that extend the core functionality of
+   Org mode. This is the modules I personally use and find useful.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (with-eval-after-load 'org
+       (setq org-modules '(org-bbdb
+			   org-bibtex
+			   org-ctags
+			   org-docview
+			   org-eww
+			   org-gnus
+			   org-habit
+			   org-info
+			   org-irc
+			   org-protocol
+			   org-rmail
+			   org-w3m))
+
+       (org-load-modules-maybe t)
+
+       ;; Export formats
+       (setq org-export-backends '(org latex icalendar html ascii)))
+   #+end_src
+
+** Keyboard shortcuts
+
+   Some global Org keybindings to set up easy capturing and
+   retrieving links and so on.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-key "C-c r"     'org-capture)
+     (bind-key "C-c a"     'org-agenda)
+     (bind-key "C-c l"     'org-store-link)
+     (bind-key "C-c L"     'org-insert-link-global)
+     (bind-key "C-c O"     'org-open-at-point-global)
+     (bind-key "<f9> <f9>" 'org-agenda-list)
+     (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+   #+end_src
+
+   Stacking killed content with =append-next-kill= is more useful
+   than being able to copy a region in a table.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-key "C-M-w"    'append-next-kill                             org-mode-map)
+     (bind-key "C-TAB"    'org-cycle                                    org-mode-map)
+     (bind-key "C-c v"    'org-show-todo-tree                           org-mode-map)
+     (bind-key "C-c C-r"  'org-refile                                   org-mode-map)
+     (bind-key "C-c R"    'org-reveal                                   org-mode-map)
+     (bind-key "C-c o"    'my/org-follow-entry-link                     org-mode-map)
+     (bind-key "C-c d"    'my/org-move-line-to-destination              org-mode-map)
+     (bind-key "C-c f"    'my/org-file-blog-index-entries               org-mode-map)
+     (bind-key "C-c t s"  'my/split-sentence-and-capitalize             org-mode-map)
+     (bind-key "C-c t -"  'my/split-sentence-delete-word-and-capitalize org-mode-map)
+     (bind-key "C-c t d"  'my/delete-word-and-capitalize                org-mode-map)
+   #+end_src
+
+   Sometimes it could be good to be able to create links between
+   tasks, if they for instance depend on each other. These functions
+   enable me link tasks and to quickly jump between linked tasks.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun my/org-follow-entry-link ()
+       "Follow the defined link for this entry."
+       (interactive)
+       (if (org-entry-get (point) "LINK")
+           (org-open-link-from-string (org-entry-get (point) "LINK"))
+         (org-open-at-point)))
+
+     (defun my/org-link-projects (location)
+       "Add link properties between the current subtree and the one specified by LOCATION."
+       (interactive
+        (list (let ((org-refile-use-cache nil))
+          (org-refile-get-location "Location"))))
+       (let ((link1 (org-store-link nil)) link2)
+         (save-window-excursion
+           (org-refile 4 nil location)
+           (setq link2 (org-store-link nil))
+           (org-set-property "LINK" link1))
+         (org-set-property "LINK" link2)))
+   #+end_src
+
+   To be able to clock in easily is more interesting than the diary.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)
+   #+end_src
+
+   Killing and yanking subtrees.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-key "C-c k" 'org-cut-subtree org-mode-map)
+     (setq org-yank-adjusted-subtrees t)
+   #+end_src
+
+*** Speed commands
+
+    Speed commands are simple one-letter commands that are run on
+    agenda entries. Used for instance to easily clock in or out on a
+    the task at point.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (defun my/org-use-speed-commands-for-headings-and-lists ()
+      "Activate speed commands on list items too."
+      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+
+      (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+
+      (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+      (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+      (add-to-list 'org-speed-commands-user '("!" my/org-clock-in-and-track))
+      (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+      (add-to-list 'org-speed-commands-user '("d" my/org-move-line-to-destination))
+      (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+      (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+      (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+      (bind-key "!" 'my/org-clock-in-and-track org-agenda-mode-map)
+    #+end_src
+
+** Tasks and notes
+
+   I store my org files in "~/.emacs.d/personal/" which is a symlink
+   to a directory in my Dropbox folder, so I can update it on
+   multiple devices (possibly also org-mobile?).
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq org-directory (concat user-emacs-directory "personal"))
+     (setq org-default-notes-file (concat org-directory "/organizer.org"))
+   #+end_src
+
+*** Todo states
+
+    To keep track of my notes and tasks I add some states that my
+    notes and tasks could be in. For instance in my reading file,
+    items could be READ, READING or WANT-TO-READ. The letters inside
+    the parantheses defines keyboard shortcuts that can be used for
+    selecting the state of the item. The special characters ~@~ and
+    ~!~ defines how logging should be performed. Changing the state
+    of an item to a state with a ~@~ prompts you for a note and ~!~
+    tells org that it should automatically log timestamp of the state
+    change.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-todo-keywords
+        '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@)"
+                    "IN-PROGRESS(p@!)" "WAITING(w@!)"
+                    "|" "DONE(d@!)" "CANCELLED(c@!)")
+          (sequence "WANT-TO-READ()" "READING(@!)" "|" "READ(@!)")))
+    #+end_src
+
+*** Tag tasks
+
+    Many GTD-apps organize the tasks into projects and contexts, this
+    is of course doable inside =Org mode= as well.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-tag-alist '(("@work" . ?w)
+                            ("@study" . ?s)
+                            ("@coding" . ?c)
+                            ("@reading" . ?r)
+                            ("@home" . ?h)))
+    #+end_src
+
+    I'll probably add some more when I have used this for a while.
+
+*** Efforts
+
+    Tasks in =Org mode= can be assigned an effort, so I can now how
+    much I'll likely have to invest in a task. This is to help me
+    prioritize what tasks that should be done.
+
+    I think that this should make the efforts filterable, so that I
+    can find short tasks to complete.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (add-to-list 'org-global-properties
+        '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
+    #+end_src
+
+*** Estimating tasks
+
+    From "Add an effort estimate on the fly when clocking in" on the [[http://orgmode.org/worg/org-hacks.html][Org Hacks]] page:
+
+    #+begin_src emacs-lisp :tangle init.el
+      (add-hook 'org-clock-in-prepare-hook
+                'my/org-mode-ask-effort)
+
+      (defun my/org-mode-ask-effort ()
+        "Ask for an effort estimate when clocking in."
+        (unless (org-entry-get (point) "Effort")
+          (let ((effort
+                  (completing-read
+                    "Effort: "
+                    (org-entry-get-multivalued-property (point) "Effort"))))
+            (unless (equal effort "")
+              (org-set-property "Effort" effort)))))
+    #+end_src
+
+*** Habits
+
+    org-habits is a module for =Org mode= that can be used for tasks
+    that should be repeated on a regular basis. As such it is great
+    to track consistency and create new habits.
+
+    We want to show all habits, not just the ones for today.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-habit-show-habits-only-for-today nil)
+    #+end_src emacs-lisp
+
+*** Task dependencies
+
+    If tasks depend on each other, make sure that their dependencies
+    are enforced by =Org mode= and that this is clear when I show tasks.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-enforce-todo-dependencies t
+            org-track-ordered-properties-with-tag t
+            org-agenda-dim-blocked-tasks t)
+    #+end_src
+
+** Templates
+*** Structure templates
+
+    You can easily insert blocks in =Org mode= by typing ~<~ followed
+    by a letter in ~org-structure-template-alist~ and then pressing the TAB key.
+
+    So lets customize this alist a bit.
+
+    #+begin_src emacs-lisp :tangle init.el
+     (setq org-structure-template-alist
+           '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+             ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+             ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+             ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+             ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+             ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+             ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+             ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+             ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+             ("H" "#+html: " "<literal style=\"html\">?</literal>")
+             ("a" "#+begin_ascii\n?\n#+end_ascii")
+             ("A" "#+ascii: ")
+             ("i" "#+index: ?" "#+index: ?")
+             ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+    #+end_src
+
+*** Org Capture templates
+
+   I want to start using =org-capture= to quickly add tasks and
+   notes and organize them in my life.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun my/org-contacts-template-email (&optional return-value)
+      "Try to return the contact email for a template.
+       If not found return RETURN-VALUE or something that would ask the user."
+      (or (cadr (if (gnus-alive-p)
+                    (gnus-with-article-headers
+                      (mail-extract-address-components
+                       (or (mail-fetch-field "Reply-To") (mail-fetch-field "From") "")))))
+          return-value
+          (concat "%^{" org-contacts-email-property "}p")))
+
+
+    (defvar my/org-basic-task-template "* TODO %^{Task}
+      :PROPERTIES:
+      :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
+      :END:
+      Captured %<%Y-%m-%d %H:%M>
+      %?
+
+      %i
+      " "Basic task data")
+    (setq org-capture-templates
+          `(("t" "Tasks" entry
+             (file+headline "~/personal/organizer.org" "Inbox")
+             ,my/org-basic-task-template)
+            ("T" "Quick task" entry
+             (file+headline "~/personal/organizer.org" "Inbox")
+             "* TODO %^{Task}\nSCHEDULED: %t\n"
+             :immediate-finish t)
+            ("i" "Interrupting task" entry
+             (file+headline "~/personal/organizer.org" "Inbox")
+             "* STARTED %^{Task}"
+             :clock-in :clock-resume)
+            ("E" "Energy" table-line
+             (file+headline "~/personal/organizer.org" "Track energy")
+             "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
+             :immediate-finish t
+             )
+            ("p" "People task" entry
+             (file+headline "~/personal/people.org" "Tasks")
+             ,my/org-basic-task-template)
+            ("j" "Journal entry" plain
+             (file+datetree "~/personal/journal.org")
+             "%K - %a\n%i\n%?\n"
+             :unnarrowed t)
+            ("J" "Journal entry with date" plain
+             (file+datetree+prompt "~/personal/journal.org")
+             "%K - %a\n%i\n%?\n"
+             :unnarrowed t)
+            ("s" "Journal entry with date, scheduled" entry
+             (file+datetree+prompt "~/personal/journal.org")
+             "* \n%K - %a\n%t\t%i\n%?\n"
+             :unnarrowed t)
+            ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+             "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
+            ("dp" "Done - People" entry
+             (file+headline "~/personal/people.org" "Tasks")
+             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+            ("dt" "Done - Task" entry
+             (file+headline "~/personal/organizer.org" "Inbox")
+             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+            ("q" "Quick note" item
+             (file+headline "~/personal/organizer.org" "Quick notes"))
+            ("B" "Book" entry
+             (file+datetree "~/personal/books.org" "Inbox")
+             "* %^{Title}  %^g
+             %i
+             ,*Author(s):* %^{Author} \\\\
+             ,*ISBN:* %^{ISBN}
+
+             %?
+
+             ,*Review on:* %^t \\
+             %a
+             %U"
+           :clock-in :clock-resume)
+           ("C" "Contact" entry (file "~/personal/contacts.org")
+            "* %(org-contacts-template-name)
+            :PROPERTIES:
+            :EMAIL: %(my/org-contacts-template-email)
+            :END:")
+           ("n" "Daily note" table-line (file+olp "~/personal/organizer.org" "Inbox")
+            "| %u | %^{Note} |"
+            :immediate-finish t)
+           ("r" "Notes" entry
+            (file+datetree "~/personal/organizer.org")
+            "* %?\n\n%i\n%U\n"
+            )))
+     (bind-key "C-M-r" 'org-capture)
+   #+end_src
+
+** Org agenda
+*** Basic configuration
+
+    I like to show ordinary txt files as =Org mode= files.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
+    #+end_src
+
+    This is the org files in which I keep agenda items and todos.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-agenda-files
+        (delq nil
+              (mapcar (lambda (x) (and (file-exists-p x) x))
+                '("~/.emacs.d/personal/organizer.org"
+                  "~/.emacs.d/personal/personal.org"
+                  "~/.emacs.d/personal/people.org"
+                  "~/.emacs.d/personal/studies.org"))))
+    #+end_src
+
+    We want the agenda to show us a time grid and the log entries. We
+    also want the agenda to hide finished items, even if they are
+    scheduled.
+
+    #+begin_src emacs-lisp :tangle init.el
+      (setq org-agenda-tags-column -100
+            org-agenda-sticky nil
+            org-agenda-inhibit-startup t
+            org-agenda-use-tag-inheritance t
+            org-agenda-show-log t
+            org-agenda-skip-scheduled-if-done t
+            org-agenda-skip-deadline-if-done t
+            org-agenda-skip-deadline-prewarning-if-scheduled nil
+            org-agenda-time-grid
+            '((daily today require-timed)
+             "----------------"
+             (800 1000 1200 1400 1600 1800 2000))
+             org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
+    #+end_src
+*** TODO Fix so that entries completed @ 01 is counted as yesterday.
+* Coding
+** TODO Common settings for programming languages
+*** TODO Flycheck
+*** TODO Company
+*** TODO Hide-Show
+
+** TODO Java
+** DONE Haskell
+   CLOSED: [2017-07-15 lör 23:23]
+
+   Structuring haskell files as documented modules is good practice,
+   although I don't remember doing it by myself so let us add functions
+   that do this automatically in new files.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun haskell-auto-insert-module-template ()
+       "Insert a module template for the newly created buffer."
+       (interactive)
+       (when (and (= (point-min)
+                     (point-max))
+                  (buffer-file-name))
+          (insert "-- | "
+                  "\n"
+                  "module ")
+         (let ((name (haskell-guess-module-name)))
+           (if (string= name "")
+               (progn (insert "Main")
+                      (shm-evaporate (- (point) 5)
+                                     (point)))
+             (insert name)))
+         (insert " where"
+                 "\n"
+                 "\n")
+         (goto-char (point-min))
+         (forward-char 4)
+         (god-mode)))
+   #+end_src
+
+   Undefined is a long and complicated word to type correctly and I
+   write it a lot when coding Haskell so here is a shortcut for it.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun haskell-insert-undefined ()
+       "Insert undefined."
+       (interactive)
+       (insert "undefined"))
+
+   #+end_src
+
+   Next stop is to actually install and configure the modes and packages.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package haskell-mode :ensure t
+       :mode "\\.hs$"
+       :mode ("\\.ghci$ . ghci-script-mode")
+       :mode ("\\.cabal$ . haskell-cabal-mode")
+       :interpreter (("runghc" . haskell-mode)
+                     ("runhaskell" . haskell-mode))
+       :bind
+       (:map haskell-mode-map
+             ("C-`"     . haskell-interactive-bring)
+             ("C-c C-t" . haskell-process-do-type)
+             ("C-c c"   . haskell-process-cabal)
+             ("C-c C-c" . haskell-process-cabal-build)
+             ("C-c C-u" . haskell-insert-undefined)
+             ("C-c C-a" . haskell-insert-doc)
+             ("M-."     . haskell-mode-find-def)
+             ("C-M-."   . haskell-mode-find-uses))
+       :config
+       (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+       (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template))
+
+     (use-package haskell-interactive-mode :diminish t)
+
+     (use-package company-ghc :after haskell-mode :ensure t
+       :config
+       (add-to-list 'company-backends 'company-ghc)
+       (setq company-ghc-show-info 'oneline)
+       (if (executable-find "ghc-mod")
+           (add-hook 'haskell-mode-hook #'ghc-comp-init)
+         (warn "haskell-mode: couldn't find ghc-mod")))
+
+     (use-package dante
+       :after haskell-mode
+       :diminish t
+       :ensure t
+       :config
+       (if (executable-find "cabal")
+           (add-hook! 'haskell-mode-hook
+             #'(flycheck-mode dante-mode interactive-haskell-mode))
+         (warn "haskell-mode: couldn't find cabal"))
+       (add-hook 'dante-mode-hook
+                 '(lambda () (flycheck-add-next-checker 'haskell-dante
+                                                        '(warning . haskell-hlint)))))
+   #+end_src
+
+** TODO Python
+
+   When programming in Python I want the same tooling as I have when
+   programming Haskell. To help me in that quest I use =anaconda=
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package python-mode
+       :commands python-mode
+       :init
+       (setq python-environment-directory cache-dir
+	     python-indent-guess-indent-offset-verbose nil
+	     python-shell-interpreter "python")
+
+       (add-hook 'python-mode-hook #'flycheck-mode)
+
+       :config
+       (when (executable-find "ipython")
+	 (setq python-shell-interpreter "ipython"
+	       python-shell-interpreter-args "-i --simple-prompt --no-color-info"
+	       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+	       python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
+	       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+	       python-shell-completion-setup-code
+	       "from IPython.core.completerlib import module_completion"
+	       python-shell-completion-string-code
+	       "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+
+       (require 'smartparens)
+       (sp-with-modes 'python-mode
+		      (sp-local-pair "'" nil :unless '(sp-point-before-word-p sp-point-after-word-p sp-point-before-same-p))))
+
+     (use-package anaconda-mode
+       :after python-mode
+       :ensure t
+       :init
+       (add-hook 'python-mode-hook #'anaconda-mode)
+       (add-hook 'anaconda-home-hook #'anaconda-eldoc-mode))
+
+     (use-package company-anaconda
+       :after anaconda-mode
+       :bind (:map python-mode-map
+		   ("M-." . anaconda-mode-find-definitions)
+		   ("C-M-." . anaconda-mode-find-references)
+		   ("C-c p d" . anaconda-mode-find-definitions)
+		   ("C-c p r" . anaconda-mode-find-references)
+		   ("C-c p a" . anaconda-mode-find-assignments)
+		   ("C-c p f" . anaconda-mode-find-file)
+		   ("C-c p h" . anaconda-mode-show-doc)))
+
+     (use-package pip-requirements
+       :mode ("/requirements.txt$" . pip-requirements-mode))
+   #+end_src
+
+* Communication
