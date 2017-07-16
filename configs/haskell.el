@@ -7,43 +7,6 @@
 ;;;    Source: https://github.com/adamse/emacs.d/blob/master/config/haskell.el
 ;;; ============================================================================
 
-;;; Defuns
-
-(defun haskell-insert-doc ()
-  "Insert the documentation syntax."
-  (interactive)
-  (unless (= (line-beginning-position)
-             (line-end-position))
-    (shm/backward-paragraph))
-  (unless (= (line-beginning-position)
-             (line-end-position))
-    (save-excursion (insert "\n")))
-  (insert "-- | "))
-
-(defun haskell-auto-insert-module-template ()
-  "Insert a module template for the newly created buffer."
-  (interactive)
-  (when (and (= (point-min)
-                (point-max))
-             (buffer-file-name))
-    (insert
-     "-- | "
-     "\n"
-     "module "
-     )
-    (let ((name (haskell-guess-module-name)))
-      (if (string= name "")
-          (progn (insert "Main")
-                 (shm-evaporate (- (point) 5)
-                                (point)))
-        (insert name)))
-    (insert " where"
-            "\n"
-            "\n")
-    (goto-char (point-min))
-    (forward-char 4)
-    (god-mode)))
-
 (defun haskell-insert-undefined ()
   "Insert undefined."
   (interactive)
@@ -52,10 +15,13 @@
       (shm-insert-string "undefined")
     (insert "undefined")))
 
-;;; Configuration
-
 (use-package haskell-mode
   :ensure t
+  :mode "\\.hs$"
+  :mode ("\\.ghci$" . ghci-script-mode)
+  :mode ("\\.cabal$" . haskell-cabal-mode)
+  :interpreter (("runghc" . haskell-mode)
+                ("runhaskell" . haskell-mode))
   :bind
   (:map haskell-mode-map
 	("C-`" . haskell-interactive-bring)
@@ -66,20 +32,28 @@
 	("C-c C-a" . haskell-insert-doc))
 
   :config
-  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-  (add-hook 'haskell-mode-hook 'intero-mode)
-  (add-hook 'haskell-mode-hook 'git-gutter+-mode)
-  (remove-hook 'haskell-mode-hook 'haskell-indentation-mode)
-  (remove-hook 'haskell-mode-hook 'haskell-indent-mode)
+  (add-hook 'haskell-mode-hook 'git-gutter+-mode))
 
-  ;; Load company on auto-load
-  (use-package company
-    :ensure t
-    :config
-    (add-to-list 'company-backends 'company-ghc)
-    (add-hook 'haskell-mode-hook 'company-mode))
+(use-package company-ghc
+  :after haskell-mode
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-ghc)
+  (setq company-ghc-show-info 'oneline)
+  (if (executable-find "ghc-mod")
+      (add-hook 'haskell-mode-hook #'ghc-comp-init)
+    (warn "haskell-mode: couldn't find ghc-mod")))
 
-  ;; Load haskell interactive mode on auto-load
-  (use-package haskell-interactive-mode)
-  )
+(use-package dante
+  :after haskell-mode
+  :ensure t
+  :config
+  (if (executable-find "cabal")
+      (add-hook! 'haskell-mode-hook
+        #'(flycheck-mode dante-mode interactive-haskell-mode))
+    (warn "haskell-mode: couldn't find cabal"))
+
+  (add-hook 'dante-mode-hook
+            '(lambda () (flycheck-add-next-checker 'haskell-dante
+                                                   '(warning . haskell-hlint)))))

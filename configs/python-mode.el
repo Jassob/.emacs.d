@@ -11,8 +11,7 @@
   (use-package smart-tabs-mode
     :ensure t
     :init
-    (smart-tabs-insinuate 'c 'c++ 'javascript 'python 'ruby 'nxml)
-    (setq indent-tabs-mode t))
+    (smart-tabs-insinuate 'c 'c++ 'javascript 'ruby 'nxml)
   (use-package flymake
     :init
     (add-hook 'python-mode-hook 'flymake-mode)
@@ -20,6 +19,4 @@
   :config
   (setq py-dedicated-process-p t)
   (setq py-hide-show-minor-mode-p t)
-  (setq py-highlight-error-source-p t)
-  (setq py-load-pymacs-p t))
-
+  (setq py-highlight-error-source-p t)))
