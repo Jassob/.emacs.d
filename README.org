@@ -1026,7 +1026,7 @@
    Next stop is to actually install and configure the modes and packages.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package haskell-mode :ensure t
+     (use-package haskell-mode :defer t
        :mode "\\.hs$"
        :mode ("\\.ghci$ . ghci-script-mode")
        :mode ("\\.cabal$ . haskell-cabal-mode")
@@ -1048,7 +1048,7 @@
 
      (use-package haskell-interactive-mode :diminish t)
 
-     (use-package company-ghc :after haskell-mode :ensure t
+     (use-package company-ghc :after haskell-mode :defer t
        :config
        (add-to-list 'company-backends 'company-ghc)
        (setq company-ghc-show-info 'oneline)
@@ -1056,10 +1056,7 @@
            (add-hook 'haskell-mode-hook #'ghc-comp-init)
          (warn "haskell-mode: couldn't find ghc-mod")))
 
-     (use-package dante
-       :after haskell-mode
-       :diminish t
-       :ensure t
+     (use-package dante :after haskell-mode :diminish t :defer t
        :config
        (if (executable-find "cabal")
            (add-hook! 'haskell-mode-hook
