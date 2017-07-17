@@ -85,9 +85,23 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq delete-old-versions -1
-	   version-control t
-	   vc-make-backup-files t
-	   auto-save-file-name-transforms `((".*" ,(concat cache-dir "auto-save-list/") t)))
+           version-control t
+           vc-make-backup-files t)
+   #+end_src
+
+   Emacs auto-saving feature can be a life saver, let's put those
+   files where we want them instead of having them in the emacs root
+   directory.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
+       ;; Create directory
+       (unless (file-exists-p auto-save-dir)
+         (make-directory auto-save-dir t))
+
+       ;; Store auto-saves in the newly created directory
+       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
+
    #+end_src
 
    Similar to backups I dont like my bookmarks to litter in the config
