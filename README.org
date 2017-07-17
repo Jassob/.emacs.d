@@ -159,7 +159,7 @@
      (require 'server)
      (let ((server-dir (concat temporary-file-directory "emacs/" "server")))
        (unless (file-exists-p server-dir)
-         (make-directory server-dir))
+         (make-directory server-dir t))
 
        (when server-auth-dir
          (setq server-auth-dir server-dir))
