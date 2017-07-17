@@ -44,13 +44,17 @@
      (defvar packages-dir (concat local-dir "packages/")
        "Where package.el packages and cache are stored.")
 
+     (defvar include-dir (concat user-emacs-directory "include/")
+       "Where we store stuff that's not part of emacs packages or
+       other dependencies.")
+
    #+end_src
 
    We need to make sure that the directories are created before we try
    to make Emacs store stuff there.
 
    #+begin_src emacs-lisp :tangle init.el
-     (dolist (dir (list local-dir etc-dir cache-dir packages-dir))
+     (dolist (dir (list local-dir etc-dir cache-dir packages-dir include-dir))
        (unless (file-exists-p dir)
 	 (make-directory dir t)))
    #+end_src
@@ -1117,6 +1121,30 @@
 
      (use-package pip-requirements
        :mode ("/requirements.txt$" . pip-requirements-mode))
+   #+end_src
+
+** C# 
+
+   During my internship at Ascom I coded a lot of C# and .NET which of
+   course made me use Visual Studio which is, considering that it is
+   an IDE, not that frustrating. I missed my keybindings and all
+   custom stuff that I can use on Emacs so I went out looking for
+   packages that enabled the same kind of tooling that I found helpful
+   in VS. I found [[http://www.omnisharp.net/][OmniSharp]] to be the package I was looking for and
+   together with [[https://github.com/josteink/csharp-mode][csharp-mode]] they provide everything I need to code C#
+   in Emacs, even though I still need to use VS to run tests and build.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package csharp-mode :defer t
+       :mode "\\.cs'"
+       :config
+       (add-hook 'csharp-mode-hook 'omnisharp-mode))
+
+     (use-package omnisharp :defer t
+       :config
+       (setq-default omnisharp-server-executable-path (concat include-dir "omnisharp/OmniSharp.exe"))
+       :bind (("M-." . omnisharp-find-implementations)
+              ("C-M-." . omnisharp-find-usages)))
    #+end_src
 
 * Communication
