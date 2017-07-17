@@ -460,6 +460,51 @@
    #+end_src
 
 ** TODO Version control
+   
+   I mostly use [[https://git-scm.com/][Git]] to handle my version control and while it
+   certainly got somewhat of a steep learning curve and a few rough
+   edges here and there I mostly find it intuitive.
+
+   To help me manage my Git repositories I use the fantastic package
+   =magit=, which is a Git frontend to Emacs and one of the few Git
+   frontends I really like.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package magit :ensure t)
+   #+end_src
+
+   =Git-gutter+= is a package that shows a line's status (added,
+   modifid or deleted) in a file that is version controlled by Git.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package git-gutter+ :ensure t
+       :config
+       ;; Add hooks
+       (add-hook 'ruby-mode-hook 'git-gutter+-mode)
+       (add-hook 'haskell-mode-hook 'git-gutter+-mode)  
+       (add-hook 'latex-mode-hook 'git-gutter+-mode)
+       (add-hook 'python-mode-hook 'git-gutter+-mode)
+       (add-hook 'c-mode-hook 'git-gutter+-mode)
+       (add-hook 'lisp-mode-hook 'git-gutter+-mode)
+       (add-hook 'elisp-mode-hook 'git-gutter+-mode)
+       (add-hook 'javascript-mode-hook 'git-gutter+-mode)
+
+       ;; Add keybindings
+       ;; Jump between hunks
+       (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)
+       (define-key git-gutter+-mode-map (kbd "C-x p") 'git-gutter+-previous-hunk)
+       ;; Act on hunks
+       (define-key git-gutter+-mode-map (kbd "C-x v =") 'git-gutter+-show-hunk)
+       (define-key git-gutter+-mode-map (kbd "C-x r") 'git-gutter+-revert-hunks)
+       ;; Stage hunk at point.
+       ;; If region is active, stage all hunk lines within the region.
+       (define-key git-gutter+-mode-map (kbd "C-x t") 'git-gutter+-stage-hunks)
+       (define-key git-gutter+-mode-map (kbd "C-x c") 'git-gutter+-commit)
+       (define-key git-gutter+-mode-map (kbd "C-x C") 'git-gutter+-stage-and-commit)
+       (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
+       (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer))
+   #+end_src
+
 ** Project management
    I use projectile to ease the task of keeping track of files in
    multiple projects and it also ties in well with my mode-line
