@@ -152,6 +152,23 @@
 	   org-journal-dir (concat local-dir "journal/"))
    #+end_src
 
+   Store the server file in cache-dir as well. Note that we either set
+   ~server-auth-dir~ or ~server-socket-dir~ depending on which is non-nil.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'server)
+     (let ((server-dir (concat cache-dir "server")))
+       (unless (file-exists-p server-dir)
+         (make-directory server-dir))
+
+       (when server-auth-dir
+         (setq server-auth-dir (concat cache-dir "server")))
+
+       (when server-socket-dir
+         (setq server-socket-dir (concat cache-dir "server"))))
+
+   #+end_src
+
 ** Macros
 
    This macro is stolen from [[github.com/hlissner/.emacs.d][hlissner's .emacs.d repo]].
