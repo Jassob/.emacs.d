@@ -157,15 +157,15 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (require 'server)
-     (let ((server-dir (concat cache-dir "server")))
+     (let ((server-dir (concat temporary-file-directory "emacs/" "server")))
        (unless (file-exists-p server-dir)
          (make-directory server-dir))
 
        (when server-auth-dir
-         (setq server-auth-dir (concat cache-dir "server")))
+         (setq server-auth-dir server-dir))
 
        (when server-socket-dir
-         (setq server-socket-dir (concat cache-dir "server"))))
+         (setq server-socket-dir server-dir)))
 
    #+end_src
 
@@ -993,6 +993,38 @@
 *** TODO Fix so that entries completed @ 01 is counted as yesterday.
 * Coding
 ** TODO Common settings for programming languages
+
+   There are some common things I want to use for all every
+   programming language I code in. For instance I would like error
+   checking and auto-completion when it exists and line indicators
+   that shows if a line is modified, added or removed.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (define-minor-mode common-code-mode
+       "A minor mode for enabling common minor modes and other
+       features for programming modes."
+       :lighter " Code"
+       :keymap (make-sparse-keymap)
+
+       (if (>= emacs-major-version 26)
+	   (setq display-line-numbers t)
+	 (add-hook 'common-code-mode-hook 'linum-mode)))
+
+     (add-hook! 'common-code-mode-hook '(flycheck-mode company-mode git-gutter+-mode hs-minor-mode))
+   #+end_src
+
+   I want trailing white space to be removed automatically before saving.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (add-hook 'common-code-mode-hook
+	       (lambda () (add-hook 'before-save-hook #'delete-trailing-whitespace)))
+   #+end_src
+
+   I want Emacs Lisp to use my fancy new minor mode.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (add-hook 'emacs-lisp-mode-hook 'common-code-mode)
+   #+end_src
 *** TODO Flycheck
 *** TODO Company
 *** TODO Hide-Show
