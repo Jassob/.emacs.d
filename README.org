@@ -1067,10 +1067,8 @@
 	       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
 	       python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
 	       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-	       python-shell-completion-setup-code
-	       "from IPython.core.completerlib import module_completion"
-	       python-shell-completion-string-code
-	       "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+	       python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+	       python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
 
        (require 'smartparens)
        (sp-with-modes 'python-mode
@@ -1081,12 +1079,12 @@
 
      (use-package anaconda-mode :ensure t :defer t
        :init
-       (add-hook 'anaconda-home-hook #'anaconda-eldoc-mode))
+       (add-hook 'anaconda-home-hook 'anaconda-eldoc-mode))
 
      (use-package company-anaconda
        :bind (:map python-mode-map
-		   ("M-." . anaconda-mode-find-definitions)
-		   ("C-M-." . anaconda-mode-find-references)
+		   ("M-."     . anaconda-mode-find-definitions)
+		   ("C-M-."   . anaconda-mode-find-references)
 		   ("C-c p d" . anaconda-mode-find-definitions)
 		   ("C-c p r" . anaconda-mode-find-references)
 		   ("C-c p a" . anaconda-mode-find-assignments)
