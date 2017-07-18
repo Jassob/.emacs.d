@@ -152,23 +152,6 @@
 	   org-journal-dir (concat local-dir "journal/"))
    #+end_src
 
-   Store the server file in cache-dir as well. Note that we either set
-   ~server-auth-dir~ or ~server-socket-dir~ depending on which is non-nil.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (require 'server)
-     (let ((server-dir (concat temporary-file-directory "emacs/" "server")))
-       (unless (file-exists-p server-dir)
-         (make-directory server-dir t))
-
-       (when server-auth-dir
-         (setq server-auth-dir server-dir))
-
-       (when server-socket-dir
-         (setq server-socket-dir server-dir)))
-
-   #+end_src
-
 ** Packages
 
     First we need to activate the package system and add the melpa
