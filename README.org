@@ -895,7 +895,7 @@
     #+end_src
 *** TODO Fix so that entries completed @ 01 is counted as yesterday.
 * Coding
-** TODO Common settings for programming languages
+** Common settings for programming languages
 
    There are some common things I want to use for all every
    programming language I code in. For instance I would like error
@@ -1097,7 +1097,7 @@
        :mode ("/requirements.txt$" . pip-requirements-mode))
    #+end_src
 
-** C# 
+** C#
 
    During my internship at Ascom I coded a lot of C# and .NET which of
    course made me use Visual Studio which is, considering that it is
@@ -1106,7 +1106,8 @@
    packages that enabled the same kind of tooling that I found helpful
    in VS. I found [[http://www.omnisharp.net/][OmniSharp]] to be the package I was looking for and
    together with [[https://github.com/josteink/csharp-mode][csharp-mode]] they provide everything I need to code C#
-   in Emacs, even though I still need to use VS to run tests and build.
+   in Emacs, even though I still need to use VS to run tests and
+   build.
 
    #+begin_src emacs-lisp :tangle init.el
      (use-package csharp-mode :defer t
