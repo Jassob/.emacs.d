@@ -447,7 +447,8 @@
      (use-package projectile :ensure t :demand t
        :config
        (setq projectile-cache-file (concat cache-dir "projectile.cache")
-	     projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el")))
+	     projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el"))
+       (projectile-mode))
    #+end_src
 
 * Writing
