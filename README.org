@@ -1093,6 +1093,21 @@
        :mode ("/requirements.txt$" . pip-requirements-mode))
    #+end_src
 
+** Web-mode
+
+   I use web-mode for when I have to do web programming and I actually
+   consider it programming, so I'll want to load my ~common-code-mode~.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package web-mode :ensure t :mode "\\.dtl$"
+       :init
+       (add-hook 'web-mode-hook 'common-code-mode)
+       :config
+       (if web-mode-engines-alist
+	   (add-to-list 'web-mode-engines-alist '("django" . "\\.dtl$\\'"))
+	 (setq web-mode-engines-alist '(("django" . "\\.dtl$\\'")))))
+   #+end_src
+
 ** C#
 
    During my internship at Ascom I coded a lot of C# and .NET which of
