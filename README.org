@@ -1070,12 +1070,10 @@
 	       python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
 	       python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
 
-       (require 'smartparens)
        (sp-with-modes 'python-mode
-		      (sp-local-pair "'" nil
-		       :unless
-		       '(sp-point-before-word-p sp-point-after-word-p
-						sp-point-before-same-p))))
+	 (sp-local-pair "'" nil :unless
+			'(sp-point-before-word-p sp-point-after-word-p
+						 sp-point-before-same-p))))
 
      (use-package anaconda-mode :ensure t :defer t
        :init
