@@ -315,17 +315,13 @@
    this use case.
 
    #+begin_src emacs-lisp :tangle init.el
-       (use-package multiple-cursors
-	 :ensure t
-	 :init
-	 ;; C-S-c C-S-c to edit block
-	 (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-	 ;; C-> for the next word
-	 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-	 ;; C-< for the previous
-	 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-	 ;; C-c C-> for all words
-	 (global-set-key (kbd "C-c C->") 'mc/mark-all-like-this))
+     (use-package multiple-cursors :ensure t
+       :bind (("C-S-c C-S-c" . mc/edit-lines)
+	      ("C->" . mc/mark-next-like-this)     ;; C-> for the next word
+	      ("C-<" . mc/mark-previous-like-this) ;; C-< for the previous
+	      ("C-c C->" . mc/mark-all-like-this)) ;; C-c C-> for all words
+       :config
+       (setq-default 'mc/list-file (concat cache-dir ".mc-lists.el")))
    #+end_src
 
 ** Visual appearance
@@ -420,39 +416,26 @@
    frontends I really like.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package magit :ensure t)
+     (use-package magit :ensure t :defer t)
    #+end_src
 
    =Git-gutter+= is a package that shows a line's status (added,
    modifid or deleted) in a file that is version controlled by Git.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package git-gutter+ :ensure t
-       :config
-       ;; Add hooks
-       (add-hook 'ruby-mode-hook 'git-gutter+-mode)
-       (add-hook 'haskell-mode-hook 'git-gutter+-mode)  
-       (add-hook 'latex-mode-hook 'git-gutter+-mode)
-       (add-hook 'python-mode-hook 'git-gutter+-mode)
-       (add-hook 'c-mode-hook 'git-gutter+-mode)
-       (add-hook 'lisp-mode-hook 'git-gutter+-mode)
-       (add-hook 'elisp-mode-hook 'git-gutter+-mode)
-       (add-hook 'javascript-mode-hook 'git-gutter+-mode)
-
-       ;; Add keybindings
-       ;; Jump between hunks
-       (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)
-       (define-key git-gutter+-mode-map (kbd "C-x p") 'git-gutter+-previous-hunk)
-       ;; Act on hunks
-       (define-key git-gutter+-mode-map (kbd "C-x v =") 'git-gutter+-show-hunk)
-       (define-key git-gutter+-mode-map (kbd "C-x r") 'git-gutter+-revert-hunks)
-       ;; Stage hunk at point.
-       ;; If region is active, stage all hunk lines within the region.
-       (define-key git-gutter+-mode-map (kbd "C-x t") 'git-gutter+-stage-hunks)
-       (define-key git-gutter+-mode-map (kbd "C-x c") 'git-gutter+-commit)
-       (define-key git-gutter+-mode-map (kbd "C-x C") 'git-gutter+-stage-and-commit)
-       (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
-       (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer))
+     (use-package git-gutter+ :ensure t :defer t
+       :bind (:map git-gutter+-mode-map
+		   ;; Navigate on hunks
+		   ("C-x n"   . git-gutter+-next-hunk)
+		   ("C-x p"   . git-gutter+-previous-hunk)
+		   ;; Act on hunks
+		   ("C-x v =" . git-gutter+-show-hunk)
+		   ("C-x r"   . git-gutter+-revert-hunks)
+		   ("C-x t"   . git-gutter+-stage-hunks)
+		   ("C-x c"   . git-gutter+-commit)
+		   ("C-x C"   . git-gutter+-stage-and-commit)
+		   ("C-x C-y" . git-gutter+-stage-and-commit-whole-buffer)
+		   ("C-x U"   . git-gutter+-unstage-whole-buffer)))
    #+end_src
 
 ** Project management
@@ -1018,45 +1001,44 @@
    Next stop is to actually install and configure the modes and packages.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package haskell-mode :defer t
+     (use-package haskell-mode
        :mode "\\.hs$"
        :mode ("\\.ghci$ . ghci-script-mode")
        :mode ("\\.cabal$ . haskell-cabal-mode")
        :interpreter (("runghc" . haskell-mode)
-                     ("runhaskell" . haskell-mode))
+		     ("runhaskell" . haskell-mode))
        :bind
        (:map haskell-mode-map
-             ("C-`"     . haskell-interactive-bring)
-             ("C-c C-t" . haskell-process-do-type)
-             ("C-c c"   . haskell-process-cabal)
-             ("C-c C-c" . haskell-process-cabal-build)
-             ("C-c C-u" . haskell-insert-undefined)
-             ("C-c C-a" . haskell-insert-doc)
-             ("M-."     . haskell-mode-find-def)
-             ("C-M-."   . haskell-mode-find-uses))
+	     ("C-`"     . haskell-interactive-bring)
+	     ("C-c C-t" . haskell-process-do-type)
+	     ("C-c c"   . haskell-process-cabal)
+	     ("C-c C-c" . haskell-process-cabal-build)
+	     ("C-c C-u" . haskell-insert-undefined)
+	     ("C-c C-a" . haskell-insert-doc)
+	     ("M-."     . haskell-mode-find-def)
+	     ("C-M-."   . haskell-mode-find-uses))
        :config
+       (add-hook 'haskell-mode-hook 'common-code-mode)
        (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
        (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template))
 
-     (use-package haskell-interactive-mode :diminish t)
-
-     (use-package company-ghc :after haskell-mode :defer t
+     (use-package company-ghc :defer t
        :config
        (add-to-list 'company-backends 'company-ghc)
        (setq company-ghc-show-info 'oneline)
        (if (executable-find "ghc-mod")
-           (add-hook 'haskell-mode-hook #'ghc-comp-init)
-         (warn "haskell-mode: couldn't find ghc-mod")))
+	   (add-hook 'haskell-mode-hook #'ghc-comp-init)
+	 (warn "haskell-mode: couldn't find ghc-mod")))
 
-     (use-package dante :after haskell-mode :diminish t :defer t
+     (use-package dante :diminish t :defer t
        :config
-       (if (executable-find "cabal")
-           (add-hook! 'haskell-mode-hook
-             #'(flycheck-mode dante-mode interactive-haskell-mode))
-         (warn "haskell-mode: couldn't find cabal"))
+       (when (executable-find "cabal")
+	 (add-hook 'haskell-mode-hook 'dante-mode)
+	 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+	 (warn "haskell-mode: couldn't find cabal"))
        (add-hook 'dante-mode-hook
-                 '(lambda () (flycheck-add-next-checker 'haskell-dante
-                                                        '(warning . haskell-hlint)))))
+		 (lambda () (flycheck-add-next-checker 'haskell-dante
+							'(warning . haskell-hlint)))))
    #+end_src
 
 ** TODO Python
@@ -1065,14 +1047,13 @@
    programming Haskell. To help me in that quest I use =anaconda=
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package python-mode
-       :commands python-mode
+     (use-package python-mode :commands python-mode
        :init
        (setq python-environment-directory cache-dir
 	     python-indent-guess-indent-offset-verbose nil
 	     python-shell-interpreter "python")
-
-       (add-hook 'python-mode-hook #'flycheck-mode)
+       (add-hook 'python-mode-hook 'common-code-mode)
+       (add-hook 'python-mode-hook 'anaconda-mode)
 
        :config
        (when (executable-find "ipython")
@@ -1088,17 +1069,16 @@
 
        (require 'smartparens)
        (sp-with-modes 'python-mode
-		      (sp-local-pair "'" nil :unless '(sp-point-before-word-p sp-point-after-word-p sp-point-before-same-p))))
+		      (sp-local-pair "'" nil
+		       :unless
+		       '(sp-point-before-word-p sp-point-after-word-p
+						sp-point-before-same-p))))
 
-     (use-package anaconda-mode
-       :after python-mode
-       :ensure t
+     (use-package anaconda-mode :ensure t :defer t
        :init
-       (add-hook 'python-mode-hook #'anaconda-mode)
        (add-hook 'anaconda-home-hook #'anaconda-eldoc-mode))
 
      (use-package company-anaconda
-       :after anaconda-mode
        :bind (:map python-mode-map
 		   ("M-." . anaconda-mode-find-definitions)
 		   ("C-M-." . anaconda-mode-find-references)
