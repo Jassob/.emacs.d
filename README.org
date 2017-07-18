@@ -101,10 +101,11 @@
      (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
        ;; Create directory
        (unless (file-exists-p auto-save-dir)
-         (make-directory auto-save-dir t))
+	 (make-directory auto-save-dir t))
 
        ;; Store auto-saves in the newly created directory
-       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
+       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))
+	     auto-save-list-file-prefix auto-save-dir))
 
    #+end_src
 
