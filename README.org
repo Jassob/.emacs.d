@@ -1129,9 +1129,21 @@
 
      (use-package omnisharp :defer t
        :config
-       (setq-default omnisharp-server-executable-path (concat include-dir "omnisharp/OmniSharp.exe"))
-       :bind (("M-." . omnisharp-find-implementations)
-              ("C-M-." . omnisharp-find-usages)))
+       (setq-default omnisharp-server-executable-path nil)
+       :bind (("M-."   . omnisharp-find-implementations)
+	      ("C-M-." . omnisharp-find-usages)))
    #+end_src
 
+* Reading
+
+  Emacs works beautifully as a PDF reader with the ~pdf-tools~
+  package! However by default it advances automatically to the next
+  page when scrolling past the current page, which I find annoying
+  when scolling with a touchpad. So I disable ~pdf-view-continous~.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package pdf-tools :ensure t :commands (pdf-tools-install)
+      :init (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)
+      :config (setq pdf-view-continuous nil))
+  #+end_src
 * Communication
