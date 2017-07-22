@@ -1146,8 +1146,11 @@
 
      (use-package omnisharp :defer t
        :config
-       (setq-default omnisharp-server-executable-path nil)
-       :bind (("M-."   . omnisharp-find-implementations)
+       (when (eq system-type 'windows-nt)
+	 (setq-default omnisharp-server-executable-path
+		       (concat include-dir "omnisharp/OmniSharp.exe")))
+       :bind (:map csharp-mode-map
+	      ("M-."   . omnisharp-find-implementations)
 	      ("C-M-." . omnisharp-find-usages)))
    #+end_src
 
