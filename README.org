@@ -455,6 +455,31 @@
 		   ("C-x U"   . git-gutter+-unstage-whole-buffer)))
    #+end_src
 
+   To help me interact with my Github repositories I use =magithub=.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package magithub :after magit
+       :config (magithub-feature-autoinject t)
+       (magithub--import-auth-file))
+
+     (defun magithub--import-auth-file ()
+       "Import magithub credentials from =magit-auth-file= in =etc-dir=.
+     The file must only contain a alist with the following keys:
+     (
+       (ghub-base-url . VAL)
+       (ghub-username . VAL)
+       (ghub-token    . VAL)
+     )"
+       (let ((magit-auth-file (concat etc-dir "magithub-auth-file")))
+	 (if (file-exists-p magit-auth-file)
+	     (let-alist (read-from-file magit-auth-file)
+	       (progn
+		 (setq ghub-base-url .ghub-base-url)
+		 (setq ghub-username .ghub-username)
+		 (setq ghub-token    .ghub-token)))
+	   (warn (concat "magithub: Could not find file: " magit-auth-file)))))
+   #+end_src
+
 ** Project management
    I use projectile to ease the task of keeping track of files in
    multiple projects and it also ties in well with my mode-line
