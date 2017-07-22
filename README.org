@@ -71,6 +71,23 @@
        (make-directory cache-dir t))
    #+end_src
 
+   We might want to read and store values to/from a file, these
+   routines lets us store Emacs lisp values and then retrieve them.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun print-to-file (filename data)
+       "Create FILENAME and store DATA inside it."
+       (with-temp-file filename
+	 (prin1 data (current-buffer))))
+
+     (defun read-from-file (filename)
+       "Read Emacs Lisp variables from FILENAME."
+       (with-temp-buffer
+	 (insert-file-contents filename)
+	 (cl-assert (eq (point) (point-min)))
+	 (read (current-buffer))))
+   #+end_src
+
 ** System files and backups
 
    Emacs stores backups of the file you are working on in the current
@@ -1147,3 +1164,27 @@
       :config (setq pdf-view-continuous nil))
   #+end_src
 * Communication
+
+  I use weechat for communicating over IRC because of it's relay
+  features. Weechat relays enable me to use a good enough Android app,
+  or http://glowing-bear.org to access my chat session.
+
+  In the future I might get around to fix my znc (a IRC bouncer) setup
+  and will thus not need to use a separate chat protocol besides IRC,
+  but until then I stick with weechat.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package weechat :commands (weechat-connect)
+      :config
+      (setq weechat-password-callback #'weechat-get-password))
+
+    (defun weechat-get-password (host port)
+      "Get the stored password from a credentials file.
+    The credentials file should store an alist in the form ((HOST
+    . PORT) . PASSWORD)."
+      (let ((auth-file (concat etc-dir "weechat-auth-file.el")))
+	(if (file-exists-p auth-file)
+	    (let ((passwd-alist (read-from-file auth-file)))
+	      (cdr (assoc (cons host port) passwd-alist)))
+	  (warn "Weechat auth file does not exist, can not auto-connect."))))
+  #+end_src
