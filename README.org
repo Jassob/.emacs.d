@@ -480,6 +480,23 @@
 	   (warn (concat "magithub: Could not find file: " magit-auth-file)))))
    #+end_src
 
+   I store the authentication files in the =etc-dir= and to ease the
+   setup of this customization I have a function that fills this files
+   with the needed data.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun magithub--set-auth-info ()
+       "Prompts the user for credentials for magithub and store them in etc-dir/magithub-auth-file."
+       (let ((auth-alist (make-local-variable 'auth-alist)))
+	 (setq auth-alist '())
+	 (dolist (key '((ghub-base-url . "Github base URL: ")
+			(ghub-username . "Github username: ")
+			(ghub-token . "Github token: ")))
+	   (add-to-list 'auth-alist (cons (car key) (read-from-minibuffer (cdr key)))))
+	 (print-to-file (concat etc-dir "magithub-auth-file") auth-alist)
+	 (message "Stored magithub credentials in `%s'" (concat etc-dir "magithub-auth-file"))))
+   #+end_src
+
 ** Project management
    I use projectile to ease the task of keeping track of files in
    multiple projects and it also ties in well with my mode-line
