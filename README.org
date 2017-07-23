@@ -527,7 +527,7 @@
        "Prompts the user for credentials for magithub and store them
      in etc-dir/magithub-auth-file."
        (local--update-alist-file magithub--auth-file
-				 (magithub--prompt-for-auth))
+				 (magithub--prompt-for-auth)))
    #+end_src
 
 ** Project management
