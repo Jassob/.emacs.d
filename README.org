@@ -481,9 +481,10 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (use-package magithub :after magit
+       :init (defvar magithub--auth-file (concat etc-dir "magithub-auth-file"))
        :config
        (magithub-feature-autoinject t)
-       (local--init-file-if-missing (concat etc-dir "magit-auth-file")
+       (local--init-file-if-missing magithub--auth-file
 				    #'magithub--prompt-for-auth)
        (magithub--import-auth-file)
        (setq magithub-dir (concat cache-dir "magithub")))
@@ -491,19 +492,18 @@
      (defun magithub--import-auth-file ()
        "Import magithub credentials from =magit-auth-file= in =etc-dir=.
      The file must only contain a alist with the following keys:
-     (
-       (ghub-base-url . VAL)
-       (ghub-username . VAL)
-       (ghub-token    . VAL)
-     )"
-       (let ((magit-auth-file (concat etc-dir "magithub-auth-file")))
-	 (if (file-exists-p magit-auth-file)
-	     (let-alist (read-from-file magit-auth-file)
-	       (progn
-		 (setq ghub-base-url .ghub-base-url)
-		 (setq ghub-username .ghub-username)
-		 (setq ghub-token    .ghub-token)))
-	   (warn (concat "magithub: Could not find file: " magit-auth-file)))))
+     \(
+      (ghub-base-url . VAL)
+      (ghub-username . VAL)
+      (ghub-token    . VAL)
+     \)"
+       (if (file-exists-p magithub--auth-file)
+	   (let-alist (read-from-file magithub--auth-file)
+	     (progn
+	       (setq ghub-base-url .ghub-base-url)
+	       (setq ghub-username .ghub-username)
+	       (setq ghub-token    .ghub-token)))
+	 (warn (concat "magithub: Could not find file: " magithub--auth-file))))
    #+end_src
 
    I store the authentication files in the =etc-dir= and to ease the
@@ -526,7 +526,7 @@
      (defun magithub--set-auth-info ()
        "Prompts the user for credentials for magithub and store them
      in etc-dir/magithub-auth-file."
-       (local--update-alist-file (concat etc-dir "magithub-auth-file")
+       (local--update-alist-file magithub--auth-file
 				 (magithub--prompt-for-auth))
    #+end_src
 
@@ -1239,8 +1239,9 @@
 
   #+begin_src emacs-lisp :tangle init.el
     (use-package weechat :commands (weechat-connect)
+      :init (defvar weechat--auth-file (concat etc-dir "weechat-auth-file"))
       :config
-      (local--init-file-if-missing (concat etc-dir "weechat-auth-file.el")
+      (local--init-file-if-missing weechat--auth-file
 				   #'weechat--prompt-for-auth)
       (setq weechat-password-callback #'weechat--get-password))
 
@@ -1248,11 +1249,10 @@
       "Get the stored password from a credentials file.
     The credentials file should store an alist in the form ((HOST
     . PORT) . PASSWORD)."
-      (let ((auth-file (concat etc-dir "weechat-auth-file.el")))
-	(if (file-exists-p auth-file)
-	    (let ((passwd-alist (read-from-file auth-file)))
-	      (cdr (assoc (cons host port) passwd-alist)))
-	  (warn "Weechat auth file does not exist, can not auto-connect."))))
+      (if (file-exists-p weechat--auth-file)
+	  (let ((passwd-alist (read-from-file weechat--auth-file)))
+	    (cdr (assoc (cons host port) passwd-alist)))
+	(warn "Weechat auth file does not exist, can not auto-connect.")))
   #+end_src
 
   To simplify the customization of =weechat= credentials I've created
@@ -1270,6 +1270,6 @@
     (defun weechat--update-auth-info ()
       "Updates the weechat authentication file with information from
     the user."
-      (local--update-alist-file (concat etc-dir "weechat-auth-file.el")
+      (local--update-alist-file weechat--auth-file
 				(weechat--prompt-for-auth)))
   #+end_src
