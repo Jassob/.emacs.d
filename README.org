@@ -107,7 +107,7 @@
        "Check if FILE exists and if not it creates it and initializes
       it with the unary function INIT-FN."
        (unless (file-exists-p file)
-	 (init-fn)))
+	 (print-to-file file (list (funcall init-fn)))))
    #+end_src
 
 ** System files and backups
@@ -1243,7 +1243,8 @@
       :config
       (local--init-file-if-missing weechat--auth-file
 				   #'weechat--prompt-for-auth)
-      (setq weechat-password-callback #'weechat--get-password))
+      (setq weechat-password-callback #'weechat--get-password)
+      (add-hook weechat-connect-hook 'weechat-monitor-all-buffers))
 
     (defun weechat--get-password (host port)
       "Get the stored password from a credentials file.
@@ -1270,6 +1271,7 @@
     (defun weechat--update-auth-info ()
       "Updates the weechat authentication file with information from
     the user."
+      (interactive)
       (local--update-alist-file weechat--auth-file
 				(weechat--prompt-for-auth)))
   #+end_src
