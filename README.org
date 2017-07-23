@@ -1026,6 +1026,7 @@
      (add-hook 'common-code-mode-hook 'rainbow-delimiters-mode)
      (add-hook 'common-code-mode-hook 'auto-revert-mode)
      (add-hook 'common-code-mode-hook 'smartparens-mode)
+     (add-hook 'common-code-mode-hook 'subword-mode)
    #+end_src
 
    I want trailing white space to be removed automatically before saving.
