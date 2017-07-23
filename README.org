@@ -1240,9 +1240,11 @@
   #+begin_src emacs-lisp :tangle init.el
     (use-package weechat :commands (weechat-connect)
       :config
-      (setq weechat-password-callback #'weechat-get-password))
+      (local--init-file-if-missing (concat etc-dir "weechat-auth-file.el")
+				   #'weechat--prompt-for-auth)
+      (setq weechat-password-callback #'weechat--get-password))
 
-    (defun weechat-get-password (host port)
+    (defun weechat--get-password (host port)
       "Get the stored password from a credentials file.
     The credentials file should store an alist in the form ((HOST
     . PORT) . PASSWORD)."
@@ -1251,4 +1253,23 @@
 	    (let ((passwd-alist (read-from-file auth-file)))
 	      (cdr (assoc (cons host port) passwd-alist)))
 	  (warn "Weechat auth file does not exist, can not auto-connect."))))
+  #+end_src
+
+  To simplify the customization of =weechat= credentials I've created
+  this function to create the =weechat-auth-file= in the correct
+  format.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun weechat--prompt-for-auth ()
+      "Store the weechat credentials in =etc-dir/weechat-auth-file.el=."
+      (let ((host (read-from-minibuffer "Host: ")))
+	(let ((port (string-to-int (read-from-minibuffer "Port: "))))
+	  (let ((password (read-passwd "Password: ")))
+	    (cons (cons host port) password)))))
+
+    (defun weechat--update-auth-info ()
+      "Updates the weechat authentication file with information from
+    the user."
+      (local--update-alist-file (concat etc-dir "weechat-auth-file.el")
+				(weechat--prompt-for-auth)))
   #+end_src
