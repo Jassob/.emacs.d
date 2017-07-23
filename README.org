@@ -192,6 +192,16 @@
 	   org-journal-dir (concat local-dir "journal/"))
    #+end_src
 
+   TRAMP is a wonderful way to edit files that does not exist on this
+   machine or that is not writable by your user. It can write to files
+   over SSH, rlogin or Telnet and can also be used to edit write local
+   protected files using sudo.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq tramp-persistency-file-name (concat cache-dir "tramp")
+	   tramp-default-method        "ssh")
+   #+end_src
+
 ** Packages
 
     First we need to activate the package system and add the melpa
