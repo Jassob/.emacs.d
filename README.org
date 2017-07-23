@@ -113,8 +113,8 @@
 ** System files and backups
 
    Emacs stores backups of the file you are working on in the current
-   directory by default and while backups I prefer keeping them in the
-   directories defined above.
+   directory by default and while backups are great I prefer keeping
+   them in the directories defined above.
 
    So, lets store all backups in the local directory!
 
@@ -1231,12 +1231,21 @@
   Emacs works beautifully as a PDF reader with the ~pdf-tools~
   package! However by default it advances automatically to the next
   page when scrolling past the current page, which I find annoying
-  when scolling with a touchpad. So I disable ~pdf-view-continous~.
+  when scolling with a touchpad. So I disable ~pdf-view-continous~ and
+  use =SPC= to scroll and advance the pages instead.
 
   #+begin_src emacs-lisp :tangle init.el
     (use-package pdf-tools :ensure t :commands (pdf-tools-install)
       :init (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)
       :config (setq pdf-view-continuous nil))
+  #+end_src
+
+* Multimedia
+
+  EMMS (Emacs MultiMedia System) is a mode for playing music.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package emms :config (setq emms-directory (concat cache-dir "emms")))
   #+end_src
 * Communication
 
