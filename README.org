@@ -88,6 +88,28 @@
 	 (read (current-buffer))))
    #+end_src
 
+   Sometimes updating config files and creating them if they don't
+   exist is a common operation, such as activating a mode for the
+   first time.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun local--update-alist-file (file val)
+       "Update FILE with value VAL.
+     If FILE exists VAL will be appended to it's variable,
+     otherwise VAL will be stored in a new file FILE."
+       (if (file-exists-p file)
+	   (let ((alist (read-from-file file)))
+	     (add-to-list 'alist val)
+	     (print-to-file file alist))
+	 (print-to-file file val)))
+
+     (defun local--init-file-if-missing (file init-fn)
+       "Check if FILE exists and if not it creates it and initializes
+      it with the unary function INIT-FN."
+       (unless (file-exists-p file)
+	 (init-fn)))
+   #+end_src
+
 ** System files and backups
 
    Emacs stores backups of the file you are working on in the current
@@ -459,8 +481,12 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (use-package magithub :after magit
-       :config (magithub-feature-autoinject t)
-       (magithub--import-auth-file))
+       :config
+       (magithub-feature-autoinject t)
+       (local--init-file-if-missing (concat etc-dir "magit-auth-file")
+				    #'magithub--prompt-for-auth)
+       (magithub--import-auth-file)
+       (setq magithub-dir (concat cache-dir "magithub")))
 
      (defun magithub--import-auth-file ()
        "Import magithub credentials from =magit-auth-file= in =etc-dir=.
@@ -485,16 +511,23 @@
    with the needed data.
 
    #+begin_src emacs-lisp :tangle init.el
-     (defun magithub--set-auth-info ()
-       "Prompts the user for credentials for magithub and store them in etc-dir/magithub-auth-file."
-       (let ((auth-alist (make-local-variable 'auth-alist)))
-	 (setq auth-alist '())
+     (defun magithub--prompt-for-auth ()
+       "Prompts the user for magithub credentials."
+       (let ((res (make-local-variable 'auth-alist)))
+	 (setq-local auth-alist ())
 	 (dolist (key '((ghub-base-url . "Github base URL: ")
 			(ghub-username . "Github username: ")
 			(ghub-token . "Github token: ")))
-	   (add-to-list 'auth-alist (cons (car key) (read-from-minibuffer (cdr key)))))
-	 (print-to-file (concat etc-dir "magithub-auth-file") auth-alist)
-	 (message "Stored magithub credentials in `%s'" (concat etc-dir "magithub-auth-file"))))
+	   (add-to-list 'auth-alist (cons (car key)
+					  (read-from-minibuffer (cdr key)))))
+	 ;; Return the result
+	 auth-alist))
+
+     (defun magithub--set-auth-info ()
+       "Prompts the user for credentials for magithub and store them
+     in etc-dir/magithub-auth-file."
+       (local--update-alist-file (concat etc-dir "magithub-auth-file")
+				 (magithub--prompt-for-auth))
    #+end_src
 
 ** Project management
