@@ -1013,7 +1013,7 @@
        :keymap (make-sparse-keymap)
 
        (if (>= emacs-major-version 26)
-	   (setq display-line-numbers t)
+	   (setq display-line-numbers 'relative)
 	 (progn
 	   (add-hook 'common-code-mode-hook 'linum-mode)
 	   (add-hook 'common-code-mode-hook
