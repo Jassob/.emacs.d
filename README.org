@@ -1250,6 +1250,7 @@
     (use-package emms :defer t
       :config (setq emms-directory (concat cache-dir "emms")))
   #+end_src
+
 * Communication
 
   I use weechat for communicating over IRC because of it's relay
