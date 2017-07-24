@@ -1046,22 +1046,23 @@
    Install the needed packages in case they don't exists.
 
    #+begin_src emacs-lisp :tangle init.el
-     ;; Syntax and error checker
-     (use-package flycheck :ensure t :defer t)
+	  ;; Syntax and error checker
+	  (use-package flycheck :ensure t :commands (flycheck-mode))
 
-     ;; Auto completion
-     (use-package company :ensure t :defer t)
+	  ;; Auto completion
+	  (use-package company :ensure t :commands (company-mode))
 
-     ;; Rainbow delimiters
-     (use-package rainbow-delimiters :ensure t :defer t)
+	  ;; Rainbow delimiters
+	  (use-package rainbow-delimiters :ensure t
+	    :commands (rainbow-delimiters-mode))
 
-     ;; Relative line numbering
-     (use-package linum-relative :ensure t :commands (linum-relative-on))
+	  ;; Relative line numbering
+	  (use-package linum-relative :ensure t :commands (linum-relative-on))
 
-     ;; Parens handling
-     (use-package smartparens :ensure t :commands smartparens-mode
-       :init
-       (require 'smartparens-config))
+	  ;; Parens handling
+	  (use-package smartparens :ensure t :commands (smartparens-mode)
+	    :init
+	    (require 'smartparens-config))
    #+end_src
 
 ** TODO Java
