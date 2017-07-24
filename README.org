@@ -1235,9 +1235,10 @@
   use =SPC= to scroll and advance the pages instead.
 
   #+begin_src emacs-lisp :tangle init.el
-    (use-package pdf-tools :ensure t :commands (pdf-tools-install)
-      :init (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)
-      :config (setq pdf-view-continuous nil))
+    (use-package pdf-tools :commands (pdf-tools-install)
+      :config
+      (setq pdf-view-continuous nil)
+      (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry))
   #+end_src
 
 * Multimedia
@@ -1245,7 +1246,8 @@
   EMMS (Emacs MultiMedia System) is a mode for playing music.
 
   #+begin_src emacs-lisp :tangle init.el
-    (use-package emms :config (setq emms-directory (concat cache-dir "emms")))
+    (use-package emms :defer t
+      :config (setq emms-directory (concat cache-dir "emms")))
   #+end_src
 * Communication
 
