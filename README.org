@@ -373,6 +373,41 @@
        (setq-default 'mc/list-file (concat cache-dir ".mc-lists.el")))
    #+end_src
 
+** Buffer and window navigation
+
+   Switching between windows can be a bit of a pain, just cycling
+   through them with =C-x o= is not really good enough. I therefore
+   use ~windmove~ and ~buffer-move~ to navigate amongst my buffers and
+   I have them bound to, in my opinion at least, sensible keybindings.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-keys ("<S-s-left>"  . windmove-left)
+		("<S-s-up>"    . windmove-up)
+		("<S-s-down>"  . windmove-down)
+		("<S-s-right>" . windmove-right))
+   #+end_src
+
+   With ~buffer-move~ I can move around buffers and swap them around
+   on the screen with ease.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package buffer-move :ensure t
+       :bind (("C-c <left>"  . buf-move-left)
+	      ("C-c <right>" . buf-move-right)
+	      ("C-c <down>"  . buf-move-down)
+	      ("C-c <up>"    . buf-move-up)))
+   #+end_src
+
+   Sometimes it is nice to be able to shrink and enlarge windows
+   easily and that is why I've bounded them to simple keys:
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-keys ("S-C-<left>"  . shrink-window-horizontally)
+		("S-C-<right>" . enlarge-window-horizontally)
+		("S-C-<down>"  . shrink-window)
+		("S-C-<up>"    . enlarge-window))
+   #+end_src
+
 ** Visual appearance
 
    It is great that you can start out learning Emacs like a normal
