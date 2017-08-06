@@ -1303,7 +1303,7 @@
       (local--init-file-if-missing weechat--auth-file
 				   #'weechat--prompt-for-auth)
       (setq weechat-password-callback #'weechat--get-password)
-      (add-hook weechat-connect-hook 'weechat-monitor-all-buffers))
+      (add-hook 'weechat-connect-hook 'weechat-monitor-all-buffers))
 
     (defun weechat--get-password (host port)
       "Get the stored password from a credentials file.
