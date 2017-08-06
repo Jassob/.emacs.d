@@ -198,8 +198,10 @@
    protected files using sudo.
 
    #+begin_src emacs-lisp :tangle init.el
-     (setq tramp-persistency-file-name (concat cache-dir "tramp")
+     (setq tramp-backup-directory-alist backup-directory-alist
+	   tramp-persistency-file-name (concat cache-dir "tramp")
 	   tramp-default-method        "ssh")
+
    #+end_src
 
 ** Packages
