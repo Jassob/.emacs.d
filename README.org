@@ -1249,6 +1249,9 @@
 	     python-indent-guess-indent-offset-verbose nil
 	     python-shell-interpreter "python")
        (add-hook 'python-mode-hook 'common-code-mode)
+       :bind
+       (:map python-mode-map
+	     ("C-<backspace>" . backward-kill-word))
 
        :config
        (when (executable-find "ipython")
