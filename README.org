@@ -351,6 +351,13 @@
        "Run org-babel-tangle on the org file, updating the init file."
        (interactive)
        (org-babel-tangle-file (concat user-emacs-directory "README.org")))
+
+     (defun local--eval-init-file ()
+       "Evaluate the init file again to refresh Emacs."
+       (interactive)
+       (progn
+	 (local--untangle-file)
+	 (load-file (concat user-emacs-directory "init.el"))))
    #+end_src
 
    I have defined a keymap for commands that I'd like to execute as if
@@ -375,7 +382,8 @@
 		:prefix-docstring "Config related commands"
 		("f" . local--find-init-file)
 		("s" . local--find-org-file)
-		("t" . local--untangle-file))
+		("t" . local--untangle-file)
+		("e" . local--eval-init-file))
    #+end_src
 
 * General configuration
