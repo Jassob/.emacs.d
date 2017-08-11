@@ -794,7 +794,7 @@
     #+begin_src emacs-lisp :tangle init.el
       (setq org-todo-keywords
         '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@)"
-                    "IN-PROGRESS(p@!)" "WAITING(w@!)"
+                    "STARTED" "IN-PROGRESS(p@!)" "WAITING(w@!)"
                     "|" "DONE(d@!)" "CANCELLED(c@!)")
           (sequence "WANT-TO-READ()" "READING(@!)" "|" "READ(@!)")))
     #+end_src
