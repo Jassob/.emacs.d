@@ -356,7 +356,7 @@
    I have defined a keymap for commands that I'd like to execute as if
    they were defined in global keymap.
 
-   #+begin_src emacs-lisp :tangle yes
+   #+begin_src emacs-lisp :tangle init.el
      (bind-keys :prefix-map my-local-map
 		:prefix "M--"
 		:prefix-docstring "Commands I like to access quicker than through M-x"
