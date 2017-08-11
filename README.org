@@ -1235,13 +1235,14 @@
 
      (use-package dante :diminish t :defer t
        :config
-       (when (executable-find "cabal")
-	 (add-hook 'haskell-mode-hook 'dante-mode)
-	 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+       (if (executable-find "cabal")
+	   (progn
+	     (add-hook 'haskell-mode-hook 'dante-mode)
+	     (add-hook 'haskell-mode-hook 'interactive-haskell-mode))
 	 (warn "haskell-mode: couldn't find cabal"))
        (add-hook 'dante-mode-hook
 		 (lambda () (flycheck-add-next-checker 'haskell-dante
-							'(warning . haskell-hlint)))))
+						       '(warning . haskell-hlint)))))
    #+end_src
 
 ** TODO Python
