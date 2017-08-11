@@ -330,6 +330,54 @@
        (guide-key-mode t))
    #+end_src
 
+** Commands for local keymap
+
+   This is a command for finding the init file, for the times I need
+   to quickly edit my config for some reason. A command for editing
+   and untangling the org file.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun local--find-init-file ()
+       "Find the init file."
+       (interactive)
+       (find-file (concat user-emacs-directory "init.el")))
+
+     (defun local--find-org-file ()
+       "Find the org file."
+       (interactive)
+       (find-file (concat user-emacs-directory "README.org")))
+
+     (defun local--untangle-file ()
+       "Run org-babel-tangle on the org file, updating the init file."
+       (interactive)
+       (org-babel-tangle-file (concat user-emacs-directory "README.org")))
+   #+end_src
+
+   I have defined a keymap for commands that I'd like to execute as if
+   they were defined in global keymap.
+
+   #+begin_src emacs-lisp :tangle yes
+     (bind-keys :prefix-map my-local-map
+		:prefix "M--"
+		:prefix-docstring "Commands I like to access quicker than through M-x"
+		("g" . magit-status))
+
+
+     (bind-keys :prefix-map my-local-project-map
+		:prefix "M-- p"
+		:prefix-docstring "Project related commands"
+		("d" . projectile-dired)
+		("b" . projectile-switch-to-buffer)
+		("p" . projectile-switch-project))
+
+     (bind-keys :prefix-map my-local-config-map
+		:prefix "M-- c"
+		:prefix-docstring "Config related commands"
+		("f" . local--find-init-file)
+		("s" . local--find-org-file)
+		("t" . local--untangle-file))
+   #+end_src
+
 * General configuration
 ** Undo tree mode
 
