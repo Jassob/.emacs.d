@@ -1281,6 +1281,17 @@
 						       '(warning . haskell-hlint)))))
    #+end_src
 
+** Agda
+
+   Agda is a functional programming language / functional logic with
+   support for dependant types. It is used in some courses at
+   Chalmers, where it is also mainly developed.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (load-file (let ((coding-system-for-read 'utf-8))
+		  (shell-command-to-string "agda-mode locate")))
+   #+end_src
+
 ** TODO Python
 
    When programming in Python I want the same tooling as I have when
