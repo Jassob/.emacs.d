@@ -428,7 +428,7 @@
 	      ("C-<" . mc/mark-previous-like-this) ;; C-< for the previous
 	      ("C-c C->" . mc/mark-all-like-this)) ;; C-c C-> for all words
        :config
-       (setq-default 'mc/list-file (concat cache-dir ".mc-lists.el")))
+       (setq mc/list-file (concat cache-dir ".mc-lists.el")))
    #+end_src
 
 ** Buffer and window navigation
@@ -662,11 +662,11 @@
       (setq org-clock-persist-file (concat cache-dir "org-clock-save.el")
 	    org-expiry-inactive-timestamps t
 	    org-clock-idle-time nil
-	    org-log-done 'time
 	    org-clock-continuously nil
 	    org-clock-persist t
-	    org-clock-in-switch-to-state "STARTED"
+	    org-clock-in-switch-to-state "IN-PROGRESS"
 	    org-clock-in-resume nil
+	    org-log-note-clock-out t
 	    org-show-notification-handler 'message
 	    org-clock-report-include-clocking-task t)
 
@@ -731,13 +731,13 @@
    retrieving links and so on.
 
    #+begin_src emacs-lisp :tangle init.el
-     (bind-key "C-c r"     'org-capture)
-     (bind-key "C-c a"     'org-agenda)
-     (bind-key "C-c l"     'org-store-link)
-     (bind-key "C-c L"     'org-insert-link-global)
-     (bind-key "C-c O"     'org-open-at-point-global)
-     (bind-key "<f9> <f9>" 'org-agenda-list)
-     (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+     (bind-keys ("C-c c"     . org-capture)
+		("C-c a"     . org-agenda)
+		("C-c l"     . org-store-link)
+		("C-c L"     . org-insert-link-global)
+		("C-c O"     . org-open-at-point-global)
+		("<f9> <f9>" . org-agenda-list)
+		("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r"))))
    #+end_src
 
    Stacking killed content with =append-next-kill= is more useful
@@ -745,17 +745,19 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
-       (bind-key "C-M-w"    'append-next-kill                             org-mode-map)
-       (bind-key "C-TAB"    'org-cycle                                    org-mode-map)
-       (bind-key "C-c v"    'org-show-todo-tree                           org-mode-map)
-       (bind-key "C-c C-r"  'org-refile                                   org-mode-map)
-       (bind-key "C-c R"    'org-reveal                                   org-mode-map)
-       (bind-key "C-c o"    'local/org-follow-entry-link                     org-mode-map)
-       (bind-key "C-c d"    'local/org-move-line-to-destination              org-mode-map)
-       (bind-key "C-c f"    'local/org-file-blog-index-entries               org-mode-map)
-       (bind-key "C-c t s"  'local/split-sentence-and-capitalize             org-mode-map)
-       (bind-key "C-c t -"  'local/split-sentence-delete-word-and-capitalize org-mode-map)
-       (bind-key "C-c t d"  'local/delete-word-and-capitalize                org-mode-map))
+       (bind-keys
+	:map org-mode-map
+	("C-M-w"    . append-next-kill)
+	("C-TAB"    . org-cycle)
+	("C-c v"    . org-show-todo-tree)
+	("C-c C-r"  . org-refile)
+	("C-c R"    . org-reveal)
+	("C-c o"    . local/org-follow-entry-link)
+	("C-c d"    . local/org-move-line-to-destination)
+	("C-c f"    . local/org-file-blog-index-entries)
+	("C-c t s"  . local/split-sentence-and-capitalize)
+	("C-c t -"  . local/split-sentence-delete-word-and-capitalize)
+	("C-c t d"  . local/delete-word-and-capitalize)))
    #+end_src
 
    Sometimes it could be good to be able to create links between
@@ -831,8 +833,10 @@
    multiple devices (possibly also org-mobile?).
 
    #+begin_src emacs-lisp :tangle init.el
-     (setq org-directory (concat user-emacs-directory "personal"))
-     (setq org-default-notes-file (concat org-directory "/organizer.org"))
+     (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
+				 (file-name-as-directory "personal"))
+	   org-default-notes-file (concat org-directory "organizer.org")
+	   org-refile-targets '((org-agenda-files :maxlevel . 6)))
    #+end_src
 
 *** Todo states
@@ -849,10 +853,10 @@
 
     #+begin_src emacs-lisp :tangle init.el
       (setq org-todo-keywords
-        '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@)"
-                    "STARTED" "IN-PROGRESS(p@!)" "WAITING(w@!)"
-                    "|" "DONE(d@!)" "CANCELLED(c@!)")
-          (sequence "WANT-TO-READ()" "READING(@!)" "|" "READ(@!)")))
+        '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
+                    "IN-PROGRESS(p@/!)" "WAITING(w@/@)"
+                    "|" "DONE(d@)" "CANCELLED(c@)")
+          (sequence "WANT-TO-READ(@)" "READING(!)" "|" "READ(@)")))
     #+end_src
 
 *** Tag tasks
@@ -872,7 +876,7 @@
 
 *** Efforts
 
-    Tasks in =Org mode= can be assigned an effort, so I can now how
+    Tasks in =Org mode= can be assigned an effort, so I can know how
     much I'll likely have to invest in a task. This is to help me
     prioritize what tasks that should be done.
 
@@ -887,7 +891,8 @@
 
 *** Estimating tasks
 
-    From "Add an effort estimate on the fly when clocking in" on the [[http://orgmode.org/worg/org-hacks.html][Org Hacks]] page:
+    From "Add an effort estimate on the fly when clocking in" on the
+    [[http://orgmode.org/worg/org-hacks.html][Org Hacks]] page:
 
     #+begin_src emacs-lisp :tangle init.el
       (add-hook 'org-clock-in-prepare-hook
@@ -927,49 +932,38 @@
             org-agenda-dim-blocked-tasks t)
     #+end_src
 
-** Templates
-*** Structure templates
+** Structure templates
 
-    You can easily insert blocks in =Org mode= by typing ~<~ followed
-    by a letter in ~org-structure-template-alist~ and then pressing the TAB key.
-
-    So lets customize this alist a bit.
-
-    #+begin_src emacs-lisp :tangle init.el
-     (setq org-structure-template-alist
-           '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
-             ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
-             ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
-             ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
-             ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
-             ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
-             ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
-             ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
-             ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
-             ("H" "#+html: " "<literal style=\"html\">?</literal>")
-             ("a" "#+begin_ascii\n?\n#+end_ascii")
-             ("A" "#+ascii: ")
-             ("i" "#+index: ?" "#+index: ?")
-             ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
-    #+end_src
-
-*** Org Capture templates
-
-   I want to start using =org-capture= to quickly add tasks and
-   notes and organize them in my life.
+   You can easily insert blocks in =Org mode= by typing ~<~ followed
+   by a letter in ~org-structure-template-alist~ and then pressing the TAB key.
+   So lets customize this alist a bit.
 
    #+begin_src emacs-lisp :tangle init.el
-     (defun local/org-contacts-template-email (&optional return-value)
-      "Try to return the contact email for a template.
-       If not found return RETURN-VALUE or something that would ask the user."
-      (or (cadr (if (gnus-alive-p)
-                    (gnus-with-article-headers
-                      (mail-extract-address-components
-                       (or (mail-fetch-field "Reply-To") (mail-fetch-field "From") "")))))
-          return-value
-          (concat "%^{" org-contacts-email-property "}p")))
+    (setq org-structure-template-alist
+          '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+            ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+            ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+            ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+            ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+            ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+            ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+            ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+            ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+            ("H" "#+html: " "<literal style=\"html\">?</literal>")
+            ("a" "#+begin_ascii\n?\n#+end_ascii")
+            ("A" "#+ascii: ")
+            ("i" "#+index: ?" "#+index: ?")
+            ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+   #+end_src
 
+** Org Capture templates
 
+  I want to start using =org-capture= to quickly add tasks and notes
+  and organize them in my life. First we define some handy templates
+  for more advanced capture types, like reading stuff and so
+  on.
+
+  #+begin_src emacs-lisp :tangle init.el
     (defvar local/org-basic-task-template "* TODO %^{Task}
       :PROPERTIES:
       :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
@@ -977,77 +971,120 @@
       Captured %<%Y-%m-%d %H:%M>
       %?
 
+      %i"
+      "Basic task data.")
+
+    (defvar local/org-book-template "* WANT-TO-READ %^{Title}  %^g
+
+      %i%?
+
+      *Author(s)*: %^{Author}
+      *Review on:* %^t
+      %a %U"
+      "Book template.")
+
+    (defvar local/org-article-template "* WANT-TO-READ %^{Title}  %^g
+
+      *Author(s)*: %^{Author}
+
+      *Abstract*: %i%?
+
+      [[%l][Link to paper]"
+      "Article template.")
+
+    (defvar local/org-blog-post-template "* WANT-TO-READ %^{Title}  %^g
+
       %i
-      " "Basic task data")
+
+      *Author(s)*: %^{Author}
+
+      [[%l][Link to blog post]]"
+      "Blog post template.")
+  #+end_src
+
+  Quick legend of the template escape codes:
+  - ~%^{PROMPT}~ - Org will prompt me with "PROMPT: " and the input
+    will replace the occurrance of ~%^{Task}~ in the template,
+  - ~%?~ - Org will put the cursor here so I can edit the capture
+    before refiling it,
+  - ~%i~ - Org will insert the marked region from before the capture
+    here,
+  - ~%a~ - Org will insert an annotation here (,
+  - ~%U~ - Org will insert an inactive timestamp here,
+  - ~%l~ - Org will insert a literal link here,
+
+
+
+  #+begin_src emacs-lisp :tangle init.el
     (setq org-capture-templates
-          `(("t" "Tasks" entry
-             (file+headline "~/personal/organizer.org" "Inbox")
-             ,local/org-basic-task-template)
-            ("T" "Quick task" entry
-             (file+headline "~/personal/organizer.org" "Inbox")
-             "* TODO %^{Task}\nSCHEDULED: %t\n"
-             :immediate-finish t)
-            ("i" "Interrupting task" entry
-             (file+headline "~/personal/organizer.org" "Inbox")
-             "* STARTED %^{Task}"
-             :clock-in :clock-resume)
-            ("E" "Energy" table-line
-             (file+headline "~/personal/organizer.org" "Track energy")
-             "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
-             :immediate-finish t
-             )
-            ("p" "People task" entry
-             (file+headline "~/personal/people.org" "Tasks")
-             ,local/org-basic-task-template)
-            ("j" "Journal entry" plain
-             (file+datetree "~/personal/journal.org")
-             "%K - %a\n%i\n%?\n"
-             :unnarrowed t)
-            ("J" "Journal entry with date" plain
-             (file+datetree+prompt "~/personal/journal.org")
-             "%K - %a\n%i\n%?\n"
-             :unnarrowed t)
-            ("s" "Journal entry with date, scheduled" entry
-             (file+datetree+prompt "~/personal/journal.org")
-             "* \n%K - %a\n%t\t%i\n%?\n"
-             :unnarrowed t)
-            ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
-             "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
-            ("dp" "Done - People" entry
-             (file+headline "~/personal/people.org" "Tasks")
-             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
-            ("dt" "Done - Task" entry
-             (file+headline "~/personal/organizer.org" "Inbox")
-             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
-            ("q" "Quick note" item
-             (file+headline "~/personal/organizer.org" "Quick notes"))
-            ("B" "Book" entry
-             (file+datetree "~/personal/books.org" "Inbox")
-             "* %^{Title}  %^g
-             %i
-             ,*Author(s):* %^{Author} \\\\
-             ,*ISBN:* %^{ISBN}
+	  `(("t" "Tasks" entry
+	     (file+headline (concat org-directory "organizer.org") "Inbox")
+	     ,local/org-basic-task-template)
 
-             %?
+	    ("T" "Quick task" entry
+	     (file+headline (concat org-directory "organizer.org") "Inbox")
+	     "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
 
-             ,*Review on:* %^t \\
-             %a
-             %U"
-           :clock-in :clock-resume)
-           ("C" "Contact" entry (file "~/personal/contacts.org")
-            "* %(org-contacts-template-name)
-            :PROPERTIES:
-            :EMAIL: %(local/org-contacts-template-email)
-            :END:")
-           ("n" "Daily note" table-line (file+olp "~/personal/organizer.org" "Inbox")
-            "| %u | %^{Note} |"
-            :immediate-finish t)
-           ("r" "Notes" entry
-            (file+datetree "~/personal/organizer.org")
-            "* %?\n\n%i\n%U\n"
-            )))
-     (bind-key "C-M-r" 'org-capture)
-   #+end_src
+	    ("i" "Interrupting task" entry
+	     (file+headline (concat org-directory "organizer.org") "Inbox")
+	     "* STARTED %^{Task}" :clock-in :clock-resume)
+
+	    ("E" "Energy" table-line
+	     (file+headline (concat org-directory "organizer.org") "Track energy")
+	     "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
+	     :immediate-finish t)
+
+	    ("p" "People task" entry
+	     (file+headline (concat org-directory "people.org") "Tasks")
+	     ,local/org-basic-task-template)
+
+	    ("j" "Journal entry" plain
+	     (file+datetree (concat org-directory "journal.org"))
+	     "%K - %a\n%i\n%?\n" :unnarrowed t)
+
+	    ("J" "Journal entry with date" plain
+	     (file+datetree+prompt (concat org-directory "journal.org"))
+	     "%K - %a\n%i\n%?\n" :unnarrowed t)
+
+	    ("s" "Journal entry with date, scheduled" entry
+	     (file+datetree+prompt (concat org-directory "journal.org"))
+	     "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
+
+	    ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+	     "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
+
+	    ("dp" "Done - People" entry
+	     (file+headline (concat org-directory "people.org") "Tasks")
+	     "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+
+	    ("dt" "Done - Task" entry
+	     (file+headline (concat org-directory "organizer.org") "Inbox")
+	     "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+
+	    ("q" "Quick note" item
+	     (file+headline (concat org-directory "organizer.org") "Quick notes"))
+
+	    ("B" "Book" entry
+	     (file+headline (concat org-directory "reading.org") "Books")
+	     ,local/org-book-template :clock-resume)
+
+	    ("A" "Article" entry
+	     (file+headline (concat org-directory "reading.org") "Articles")
+	     ,local/org-article-template :clock-resume)
+
+	    ("bp" "Blog post" entry
+	     (file+headline (concat org-directory "reading.org") "Blog entries")
+	     ,local/org-blog-post-template :clock-resume)
+
+	    ("n" "Daily note" table-line
+	     (file+olp (concat org-directory "organizer.org") "Inbox")
+	     "| %u | %^{Note} |" :immediate-finish t)
+
+	    ("r" "Notes" entry
+	     (file+datetree (concat org-directory "organizer.org"))
+	     "* %?\n\n%i\n%U\n")))
+    (bind-key "C-M-r" 'org-capture)
+  #+end_src
 
 ** Org agenda
 *** Basic configuration
@@ -1077,7 +1114,6 @@
     #+begin_src emacs-lisp :tangle init.el
       (setq org-agenda-tags-column -100
             org-agenda-sticky nil
-            org-agenda-inhibit-startup t
             org-agenda-use-tag-inheritance t
             org-agenda-show-log t
             org-agenda-skip-scheduled-if-done t
@@ -1333,8 +1369,9 @@
   use =SPC= to scroll and advance the pages instead.
 
   #+begin_src emacs-lisp :tangle init.el
-    (use-package pdf-tools :commands (pdf-tools-install)
+    (use-package pdf-tools
       :config
+      (pdf-tools-install)
       (setq pdf-view-continuous nil)
       (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry))
   #+end_src
