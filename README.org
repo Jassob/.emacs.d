@@ -56,7 +56,7 @@
    #+begin_src emacs-lisp :tangle init.el
      (dolist (dir (list local-dir etc-dir cache-dir packages-dir include-dir))
        (unless (file-exists-p dir)
-	 (make-directory dir t)))
+         (make-directory dir t)))
    #+end_src
 
    We might want to clear the local cache, here is a command for doing
@@ -78,14 +78,14 @@
      (defun print-to-file (filename data)
        "Create FILENAME and store DATA inside it."
        (with-temp-file filename
-	 (prin1 data (current-buffer))))
+         (prin1 data (current-buffer))))
 
      (defun read-from-file (filename)
        "Read Emacs Lisp variables from FILENAME."
        (with-temp-buffer
-	 (insert-file-contents filename)
-	 (cl-assert (eq (point) (point-min)))
-	 (read (current-buffer))))
+         (insert-file-contents filename)
+         (cl-assert (eq (point) (point-min)))
+         (read (current-buffer))))
    #+end_src
 
    Sometimes updating config files and creating them if they don't
@@ -98,16 +98,16 @@
      If FILE exists VAL will be appended to it's variable,
      otherwise VAL will be stored in a new file FILE."
        (if (file-exists-p file)
-	   (let ((alist (read-from-file file)))
-	     (add-to-list 'alist val)
-	     (print-to-file file alist))
-	 (print-to-file file val)))
+           (let ((alist (read-from-file file)))
+             (add-to-list 'alist val)
+             (print-to-file file alist))
+         (print-to-file file val)))
 
      (defun local--init-file-if-missing (file init-fn)
        "Check if FILE exists and if not it creates it and initializes
       it with the unary function INIT-FN."
        (unless (file-exists-p file)
-	 (print-to-file file (list (funcall init-fn)))))
+         (print-to-file file (list (funcall init-fn)))))
    #+end_src
 
 ** System files and backups
@@ -140,11 +140,11 @@
      (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
        ;; Create directory
        (unless (file-exists-p auto-save-dir)
-	 (make-directory auto-save-dir t))
+         (make-directory auto-save-dir t))
 
        ;; Store auto-saves in the newly created directory
        (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))
-	     auto-save-list-file-prefix auto-save-dir))
+             auto-save-list-file-prefix auto-save-dir))
 
    #+end_src
 
@@ -155,7 +155,7 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq bookmark-default-file (concat etc-dir "bookmarks")
-	   eww-bookmark-directory etc-dir)
+           eww-bookmark-directory etc-dir)
    #+end_src
 
    The Emacs Shell (eshell) is very nice to use since it integrates
@@ -181,7 +181,7 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq url-cache-directory (concat cache-dir "url")
-	   url-configuration-directory (concat etc-dir "url"))
+           url-configuration-directory (concat etc-dir "url"))
    #+end_src
 
    I also don't like to keep my diary file nor the journal folder in
@@ -189,7 +189,7 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq diary-file (concat local-dir "diary")
-	   org-journal-dir (concat local-dir "journal/"))
+           org-journal-dir (concat local-dir "journal/"))
    #+end_src
 
    TRAMP is a wonderful way to edit files that does not exist on this
@@ -199,8 +199,8 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq tramp-backup-directory-alist backup-directory-alist
-	   tramp-persistency-file-name (concat cache-dir "tramp")
-	   tramp-default-method        "ssh")
+           tramp-persistency-file-name (concat cache-dir "tramp")
+           tramp-default-method        "ssh")
 
    #+end_src
 
@@ -212,8 +212,8 @@
     #+begin_src emacs-lisp :tangle init.el
       (require 'package)
       (setq package-user-dir (expand-file-name "elpa" packages-dir)
-	    package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
-			       ("melpa" . "https://melpa.org/packages/")))
+            package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
+                               ("melpa" . "https://melpa.org/packages/")))
       (package-initialize)
 
       ;; We've already enabled the package system.
@@ -291,10 +291,10 @@
      (use-package smex :ensure t :demand t
        :config
        (setq ido-everywhere t
-	     ido-enable-flex-matching t
-	     ido-create-new-buffer t
-	     ido-save-directory-list-file (concat cache-dir "ido.last")
-	     smex-save-file (concat cache-dir "smex-items"))
+             ido-enable-flex-matching t
+             ido-create-new-buffer t
+             ido-save-directory-list-file (concat cache-dir "ido.last")
+             smex-save-file (concat cache-dir "smex-items"))
        (ido-mode t)
        :bind ("M-x" . smex))
    #+end_src
@@ -308,11 +308,11 @@
        (setq recentf-save-file (concat cache-dir "recentf"))
 
        (defun recentf-ido-find-file ()
-	 "Find a recent file using Ido."
-	 (interactive)
-	 (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
-	   (when file
-	     (find-file file))))
+         "Find a recent file using Ido."
+         (interactive)
+         (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
+           (when file
+             (find-file file))))
 
        :bind ("C-x C-r" . recentf-ido-find-file))
    #+end_src
@@ -325,8 +325,8 @@
        :ensure t
        :config
        (setq guide-key/guide-key-sequence t
-	     guide-key/popup-window-position 'bottom
-	     guide-key/highlight-command-regexp ".*")
+             guide-key/popup-window-position 'bottom
+             guide-key/highlight-command-regexp ".*")
        (guide-key-mode t))
    #+end_src
 
@@ -356,8 +356,8 @@
        "Evaluate the init file again to refresh Emacs."
        (interactive)
        (progn
-	 (local--untangle-file)
-	 (load-file (concat user-emacs-directory "init.el"))))
+         (local--untangle-file)
+         (load-file (concat user-emacs-directory "init.el"))))
    #+end_src
 
    I have defined a keymap for commands that I'd like to execute as if
@@ -365,25 +365,25 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys :prefix-map my-local-map
-		:prefix "M--"
-		:prefix-docstring "Commands I like to access quicker than through M-x"
-		("g" . magit-status))
+                :prefix "M--"
+                :prefix-docstring "Commands I like to access quicker than through M-x"
+                ("g" . magit-status))
 
 
      (bind-keys :prefix-map my-local-project-map
-		:prefix "M-- p"
-		:prefix-docstring "Project related commands"
-		("d" . projectile-dired)
-		("b" . projectile-switch-to-buffer)
-		("p" . projectile-switch-project))
+                :prefix "M-- p"
+                :prefix-docstring "Project related commands"
+                ("d" . projectile-dired)
+                ("b" . projectile-switch-to-buffer)
+                ("p" . projectile-switch-project))
 
      (bind-keys :prefix-map my-local-config-map
-		:prefix "M-- c"
-		:prefix-docstring "Config related commands"
-		("f" . local--find-init-file)
-		("s" . local--find-org-file)
-		("t" . local--untangle-file)
-		("e" . local--eval-init-file))
+                :prefix "M-- c"
+                :prefix-docstring "Config related commands"
+                ("f" . local--find-init-file)
+                ("s" . local--find-org-file)
+                ("t" . local--untangle-file)
+                ("e" . local--eval-init-file))
    #+end_src
 
 * General configuration
@@ -395,12 +395,12 @@
 
     #+begin_src emacs-lisp :tangle init.el
       (use-package undo-tree
-	:ensure t
-	:diminish undo-tree-mode
-	:config
-	(global-undo-tree-mode)
-	(setq undo-tree-visualizer-timestamps t)
-	(setq undo-tree-visualizer-diff t))
+        :ensure t
+        :diminish undo-tree-mode
+        :config
+        (global-undo-tree-mode)
+        (setq undo-tree-visualizer-timestamps t)
+        (setq undo-tree-visualizer-diff t))
     #+end_src
 
 ** UTF8
@@ -424,9 +424,9 @@
    #+begin_src emacs-lisp :tangle init.el
      (use-package multiple-cursors :ensure t
        :bind (("C-S-c C-S-c" . mc/edit-lines)
-	      ("C->" . mc/mark-next-like-this)     ;; C-> for the next word
-	      ("C-<" . mc/mark-previous-like-this) ;; C-< for the previous
-	      ("C-c C->" . mc/mark-all-like-this)) ;; C-c C-> for all words
+              ("C->" . mc/mark-next-like-this)     ;; C-> for the next word
+              ("C-<" . mc/mark-previous-like-this) ;; C-< for the previous
+              ("C-c C->" . mc/mark-all-like-this)) ;; C-c C-> for all words
        :config
        (setq mc/list-file (concat cache-dir ".mc-lists.el")))
    #+end_src
@@ -440,9 +440,9 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("<S-s-left>"  . windmove-left)
-		("<S-s-up>"    . windmove-up)
-		("<S-s-down>"  . windmove-down)
-		("<S-s-right>" . windmove-right))
+                ("<S-s-up>"    . windmove-up)
+                ("<S-s-down>"  . windmove-down)
+                ("<S-s-right>" . windmove-right))
    #+end_src
 
    With ~buffer-move~ I can move around buffers and swap them around
@@ -451,9 +451,9 @@
    #+begin_src emacs-lisp :tangle init.el
      (use-package buffer-move :ensure t
        :bind (("C-c <left>"  . buf-move-left)
-	      ("C-c <right>" . buf-move-right)
-	      ("C-c <down>"  . buf-move-down)
-	      ("C-c <up>"    . buf-move-up)))
+              ("C-c <right>" . buf-move-right)
+              ("C-c <down>"  . buf-move-down)
+              ("C-c <up>"    . buf-move-up)))
    #+end_src
 
    Sometimes it is nice to be able to shrink and enlarge windows
@@ -461,9 +461,9 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("S-C-<left>"  . shrink-window-horizontally)
-		("S-C-<right>" . enlarge-window-horizontally)
-		("S-C-<down>"  . shrink-window)
-		("S-C-<up>"    . enlarge-window))
+                ("S-C-<right>" . enlarge-window-horizontally)
+                ("S-C-<down>"  . shrink-window)
+                ("S-C-<up>"    . enlarge-window))
    #+end_src
 
 ** Visual appearance
@@ -502,11 +502,11 @@
      (use-package spaceline :demand t :ensure t
        :config
        (use-package spaceline-all-the-icons :demand t :ensure t
-	 :config
-	 (spaceline-all-the-icons--setup-git-ahead)
-	 (setq spaceline-all-the-icons-flycheck-alternate t
-	       spaceline-all-the-icons-separator-type 'none)
-	 (spaceline-all-the-icons-theme)))
+         :config
+         (spaceline-all-the-icons--setup-git-ahead)
+         (setq spaceline-all-the-icons-flycheck-alternate t
+               spaceline-all-the-icons-separator-type 'none)
+         (spaceline-all-the-icons-theme)))
    #+end_src
 
 ** Move to beginning of line
@@ -547,7 +547,7 @@
                      'local/smarter-move-beginning-of-line)
    #+end_src
 
-** TODO Version control
+** Version control
 
    I mostly use [[https://git-scm.com/][Git]] to handle my version control and while it
    certainly got somewhat of a steep learning curve and a few rough
@@ -567,17 +567,17 @@
    #+begin_src emacs-lisp :tangle init.el
      (use-package git-gutter+ :ensure t :defer t
        :bind (:map git-gutter+-mode-map
-		   ;; Navigate on hunks
-		   ("C-x n"   . git-gutter+-next-hunk)
-		   ("C-x p"   . git-gutter+-previous-hunk)
-		   ;; Act on hunks
-		   ("C-x v =" . git-gutter+-show-hunk)
-		   ("C-x r"   . git-gutter+-revert-hunks)
-		   ("C-x t"   . git-gutter+-stage-hunks)
-		   ("C-x c"   . git-gutter+-commit)
-		   ("C-x C"   . git-gutter+-stage-and-commit)
-		   ("C-x C-y" . git-gutter+-stage-and-commit-whole-buffer)
-		   ("C-x U"   . git-gutter+-unstage-whole-buffer)))
+                   ;; Navigate on hunks
+                   ("C-x n"   . git-gutter+-next-hunk)
+                   ("C-x p"   . git-gutter+-previous-hunk)
+                   ;; Act on hunks
+                   ("C-x v =" . git-gutter+-show-hunk)
+                   ("C-x r"   . git-gutter+-revert-hunks)
+                   ("C-x t"   . git-gutter+-stage-hunks)
+                   ("C-x c"   . git-gutter+-commit)
+                   ("C-x C"   . git-gutter+-stage-and-commit)
+                   ("C-x C-y" . git-gutter+-stage-and-commit-whole-buffer)
+                   ("C-x U"   . git-gutter+-unstage-whole-buffer)))
    #+end_src
 
    To help me interact with my Github repositories I use =magithub=.
@@ -588,7 +588,7 @@
        :config
        (magithub-feature-autoinject t)
        (local--init-file-if-missing magithub--auth-file
-				    #'magithub--prompt-for-auth)
+                                    #'magithub--prompt-for-auth)
        (magithub--import-auth-file)
        (setq magithub-dir (concat cache-dir "magithub")))
 
@@ -601,12 +601,12 @@
       (ghub-token    . VAL)
      \)"
        (if (file-exists-p magithub--auth-file)
-	   (let-alist (read-from-file magithub--auth-file)
-	     (progn
-	       (setq ghub-base-url .ghub-base-url)
-	       (setq ghub-username .ghub-username)
-	       (setq ghub-token    .ghub-token)))
-	 (warn (concat "magithub: Could not find file: " magithub--auth-file))))
+           (let-alist (read-from-file magithub--auth-file)
+             (progn
+               (setq ghub-base-url .ghub-base-url)
+               (setq ghub-username .ghub-username)
+               (setq ghub-token    .ghub-token)))
+         (warn (concat "magithub: Could not find file: " magithub--auth-file))))
    #+end_src
 
    I store the authentication files in the =etc-dir= and to ease the
@@ -617,20 +617,20 @@
      (defun magithub--prompt-for-auth ()
        "Prompts the user for magithub credentials."
        (let ((res (make-local-variable 'auth-alist)))
-	 (setq-local auth-alist ())
-	 (dolist (key '((ghub-base-url . "Github base URL: ")
-			(ghub-username . "Github username: ")
-			(ghub-token . "Github token: ")))
-	   (add-to-list 'auth-alist (cons (car key)
-					  (read-from-minibuffer (cdr key)))))
-	 ;; Return the result
-	 auth-alist))
+         (setq-local auth-alist ())
+         (dolist (key '((ghub-base-url . "Github base URL: ")
+                        (ghub-username . "Github username: ")
+                        (ghub-token . "Github token: ")))
+           (add-to-list 'auth-alist (cons (car key)
+                                          (read-from-minibuffer (cdr key)))))
+         ;; Return the result
+         auth-alist))
 
      (defun magithub--set-auth-info ()
        "Prompts the user for credentials for magithub and store them
      in etc-dir/magithub-auth-file."
        (local--update-alist-file magithub--auth-file
-				 (magithub--prompt-for-auth)))
+                                 (magithub--prompt-for-auth)))
    #+end_src
 
 ** Project management
@@ -642,7 +642,7 @@
      (use-package projectile :ensure t :demand t
        :config
        (setq projectile-cache-file (concat cache-dir "projectile.cache")
-	     projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el"))
+             projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el"))
        (projectile-mode))
    #+end_src
 
@@ -660,15 +660,15 @@
     (use-package org :ensure t :defer t
       :config
       (setq org-clock-persist-file (concat cache-dir "org-clock-save.el")
-	    org-expiry-inactive-timestamps t
-	    org-clock-idle-time nil
-	    org-clock-continuously nil
-	    org-clock-persist t
-	    org-clock-in-switch-to-state "IN-PROGRESS"
-	    org-clock-in-resume nil
-	    org-log-note-clock-out t
-	    org-show-notification-handler 'message
-	    org-clock-report-include-clocking-task t)
+            org-expiry-inactive-timestamps t
+            org-clock-idle-time nil
+            org-clock-continuously nil
+            org-clock-persist t
+            org-clock-in-switch-to-state "IN-PROGRESS"
+            org-clock-in-resume nil
+            org-log-note-clock-out t
+            org-show-notification-handler 'message
+            org-clock-report-include-clocking-task t)
 
       (org-clock-persistence-insinuate))
   #+end_src
@@ -707,17 +707,17 @@
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
        (setq org-modules '(org-bbdb
-			   org-bibtex
-			   org-ctags
-			   org-docview
-			   org-eww
-			   org-gnus
-			   org-habit
-			   org-info
-			   org-irc
-			   org-protocol
-			   org-rmail
-			   org-w3m))
+                           org-bibtex
+                           org-ctags
+                           org-docview
+                           org-eww
+                           org-gnus
+                           org-habit
+                           org-info
+                           org-irc
+                           org-protocol
+                           org-rmail
+                           org-w3m))
 
        (org-load-modules-maybe t)
 
@@ -732,12 +732,12 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("C-c c"     . org-capture)
-		("C-c a"     . org-agenda)
-		("C-c l"     . org-store-link)
-		("C-c L"     . org-insert-link-global)
-		("C-c O"     . org-open-at-point-global)
-		("<f9> <f9>" . org-agenda-list)
-		("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r"))))
+                ("C-c a"     . org-agenda)
+                ("C-c l"     . org-store-link)
+                ("C-c L"     . org-insert-link-global)
+                ("C-c O"     . org-open-at-point-global)
+                ("<f9> <f9>" . org-agenda-list)
+                ("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r"))))
    #+end_src
 
    Stacking killed content with =append-next-kill= is more useful
@@ -746,18 +746,18 @@
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
        (bind-keys
-	:map org-mode-map
-	("C-M-w"    . append-next-kill)
-	("C-TAB"    . org-cycle)
-	("C-c v"    . org-show-todo-tree)
-	("C-c C-r"  . org-refile)
-	("C-c R"    . org-reveal)
-	("C-c o"    . local/org-follow-entry-link)
-	("C-c d"    . local/org-move-line-to-destination)
-	("C-c f"    . local/org-file-blog-index-entries)
-	("C-c t s"  . local/split-sentence-and-capitalize)
-	("C-c t -"  . local/split-sentence-delete-word-and-capitalize)
-	("C-c t d"  . local/delete-word-and-capitalize)))
+        :map org-mode-map
+        ("C-M-w"    . append-next-kill)
+        ("C-TAB"    . org-cycle)
+        ("C-c v"    . org-show-todo-tree)
+        ("C-c C-r"  . org-refile)
+        ("C-c R"    . org-reveal)
+        ("C-c o"    . local/org-follow-entry-link)
+        ("C-c d"    . local/org-move-line-to-destination)
+        ("C-c f"    . local/org-file-blog-index-entries)
+        ("C-c t s"  . local/split-sentence-and-capitalize)
+        ("C-c t -"  . local/split-sentence-delete-word-and-capitalize)
+        ("C-c t d"  . local/delete-word-and-capitalize)))
    #+end_src
 
    Sometimes it could be good to be able to create links between
@@ -789,7 +789,7 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
-	 (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+         (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
    #+end_src
 
    Killing and yanking subtrees.
@@ -810,20 +810,20 @@
       (defun local/org-use-speed-commands-for-headings-and-lists ()
       "Activate speed commands on list items too."
       (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-	  (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
 
       (with-eval-after-load 'org
-	(setq org-use-speed-commands 'local/org-use-speed-commands-for-headings-and-lists)
+        (setq org-use-speed-commands 'local/org-use-speed-commands-for-headings-and-lists)
 
-	(add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
-	(add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
-	(add-to-list 'org-speed-commands-user '("!" local/org-clock-in-and-track))
-	(add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
-	(add-to-list 'org-speed-commands-user '("d" local/org-move-line-to-destination))
-	(add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
-	(add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-	(add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
-	(bind-key "!" 'local/org-clock-in-and-track org-agenda-mode-map))
+        (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+        (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+        (add-to-list 'org-speed-commands-user '("!" local/org-clock-in-and-track))
+        (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+        (add-to-list 'org-speed-commands-user '("d" local/org-move-line-to-destination))
+        (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+        (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+        (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+        (bind-key "!" 'local/org-clock-in-and-track org-agenda-mode-map))
     #+end_src
 
 ** Tasks and notes
@@ -834,9 +834,9 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
-				 (file-name-as-directory "personal"))
-	   org-default-notes-file (concat org-directory "organizer.org")
-	   org-refile-targets '((org-agenda-files :maxlevel . 6)))
+                                 (file-name-as-directory "personal"))
+           org-default-notes-file (concat org-directory "organizer.org")
+           org-refile-targets '((org-agenda-files :maxlevel . 6)))
    #+end_src
 
 *** Todo states
@@ -885,8 +885,8 @@
 
     #+begin_src emacs-lisp :tangle init.el
       (with-eval-after-load 'org
-	(add-to-list 'org-global-properties
-		     '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00")))
+        (add-to-list 'org-global-properties
+                     '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00")))
     #+end_src
 
 *** Estimating tasks
@@ -1017,72 +1017,72 @@
 
   #+begin_src emacs-lisp :tangle init.el
     (setq org-capture-templates
-	  `(("t" "Tasks" entry
-	     (file+headline (concat org-directory "organizer.org") "Inbox")
-	     ,local/org-basic-task-template)
+          `(("t" "Tasks" entry
+             (file+headline (concat org-directory "organizer.org") "Inbox")
+             ,local/org-basic-task-template)
 
-	    ("T" "Quick task" entry
-	     (file+headline (concat org-directory "organizer.org") "Inbox")
-	     "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
+            ("T" "Quick task" entry
+             (file+headline (concat org-directory "organizer.org") "Inbox")
+             "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
 
-	    ("i" "Interrupting task" entry
-	     (file+headline (concat org-directory "organizer.org") "Inbox")
-	     "* STARTED %^{Task}" :clock-in :clock-resume)
+            ("i" "Interrupting task" entry
+             (file+headline (concat org-directory "organizer.org") "Inbox")
+             "* STARTED %^{Task}" :clock-in :clock-resume)
 
-	    ("E" "Energy" table-line
-	     (file+headline (concat org-directory "organizer.org") "Track energy")
-	     "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
-	     :immediate-finish t)
+            ("E" "Energy" table-line
+             (file+headline (concat org-directory "organizer.org") "Track energy")
+             "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
+             :immediate-finish t)
 
-	    ("p" "People task" entry
-	     (file+headline (concat org-directory "people.org") "Tasks")
-	     ,local/org-basic-task-template)
+            ("p" "People task" entry
+             (file+headline (concat org-directory "people.org") "Tasks")
+             ,local/org-basic-task-template)
 
-	    ("j" "Journal entry" plain
-	     (file+datetree (concat org-directory "journal.org"))
-	     "%K - %a\n%i\n%?\n" :unnarrowed t)
+            ("j" "Journal entry" plain
+             (file+datetree (concat org-directory "journal.org"))
+             "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-	    ("J" "Journal entry with date" plain
-	     (file+datetree+prompt (concat org-directory "journal.org"))
-	     "%K - %a\n%i\n%?\n" :unnarrowed t)
+            ("J" "Journal entry with date" plain
+             (file+datetree+prompt (concat org-directory "journal.org"))
+             "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-	    ("s" "Journal entry with date, scheduled" entry
-	     (file+datetree+prompt (concat org-directory "journal.org"))
-	     "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
+            ("s" "Journal entry with date, scheduled" entry
+             (file+datetree+prompt (concat org-directory "journal.org"))
+             "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
 
-	    ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
-	     "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
+            ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+             "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
 
-	    ("dp" "Done - People" entry
-	     (file+headline (concat org-directory "people.org") "Tasks")
-	     "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+            ("dp" "Done - People" entry
+             (file+headline (concat org-directory "people.org") "Tasks")
+             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
-	    ("dt" "Done - Task" entry
-	     (file+headline (concat org-directory "organizer.org") "Inbox")
-	     "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+            ("dt" "Done - Task" entry
+             (file+headline (concat org-directory "organizer.org") "Inbox")
+             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
-	    ("q" "Quick note" item
-	     (file+headline (concat org-directory "organizer.org") "Quick notes"))
+            ("q" "Quick note" item
+             (file+headline (concat org-directory "organizer.org") "Quick notes"))
 
-	    ("B" "Book" entry
-	     (file+headline (concat org-directory "reading.org") "Books")
-	     ,local/org-book-template :clock-resume)
+            ("B" "Book" entry
+             (file+headline (concat org-directory "reading.org") "Books")
+             ,local/org-book-template :clock-resume)
 
-	    ("A" "Article" entry
-	     (file+headline (concat org-directory "reading.org") "Articles")
-	     ,local/org-article-template :clock-resume)
+            ("A" "Article" entry
+             (file+headline (concat org-directory "reading.org") "Articles")
+             ,local/org-article-template :clock-resume)
 
-	    ("bp" "Blog post" entry
-	     (file+headline (concat org-directory "reading.org") "Blog entries")
-	     ,local/org-blog-post-template :clock-resume)
+            ("bp" "Blog post" entry
+             (file+headline (concat org-directory "reading.org") "Blog entries")
+             ,local/org-blog-post-template :clock-resume)
 
-	    ("n" "Daily note" table-line
-	     (file+olp (concat org-directory "organizer.org") "Inbox")
-	     "| %u | %^{Note} |" :immediate-finish t)
+            ("n" "Daily note" table-line
+             (file+olp (concat org-directory "organizer.org") "Inbox")
+             "| %u | %^{Note} |" :immediate-finish t)
 
-	    ("r" "Notes" entry
-	     (file+datetree (concat org-directory "organizer.org"))
-	     "* %?\n\n%i\n%U\n")))
+            ("r" "Notes" entry
+             (file+datetree (concat org-directory "organizer.org"))
+             "* %?\n\n%i\n%U\n")))
     (bind-key "C-M-r" 'org-capture)
   #+end_src
 
@@ -1118,13 +1118,13 @@
             org-agenda-show-log t
             org-agenda-skip-scheduled-if-done t
             org-agenda-skip-deadline-if-done t
-	    org-agenda-skip-scheduled-if-deadline-is-shown 'not-today
+            org-agenda-skip-scheduled-if-deadline-is-shown 'not-today
             org-agenda-skip-deadline-prewarning-if-scheduled nil
             org-agenda-time-grid
             '((daily today require-timed)
-             "----------------"
-             (800 1000 1200 1400 1600 1800 2000))
-             org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
+              "----------------"
+              (800 1000 1200 1400 1600 1800 2000))
+            org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
     #+end_src
 *** TODO Fix so that entries completed @ 01 is counted as yesterday.
 * Coding
@@ -1143,11 +1143,11 @@
        :keymap (make-sparse-keymap)
 
        (if (>= emacs-major-version 26)
-	   (setq display-line-numbers 'relative)
-	 (progn
-	   (add-hook 'common-code-mode-hook 'linum-mode)
-	   (add-hook 'common-code-mode-hook
-		     (lambda () (linum-relative-on))))))
+           (setq display-line-numbers 'relative)
+         (progn
+           (add-hook 'common-code-mode-hook 'linum-mode)
+           (add-hook 'common-code-mode-hook
+                     (lambda () (linum-relative-on))))))
 
      (add-hook 'common-code-mode-hook 'flycheck-mode)
      (add-hook 'common-code-mode-hook 'company-mode)
@@ -1163,8 +1163,8 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (add-hook 'common-code-mode-hook
-	       (lambda () (add-hook 'before-save-hook
-				    #'delete-trailing-whitespace)))
+               (lambda () (add-hook 'before-save-hook
+                                    #'delete-trailing-whitespace)))
    #+end_src
 
    I want Emacs Lisp to use my fancy new minor mode.
@@ -1176,23 +1176,23 @@
    Install the needed packages in case they don't exists.
 
    #+begin_src emacs-lisp :tangle init.el
-	  ;; Syntax and error checker
-	  (use-package flycheck :ensure t :commands (flycheck-mode))
+          ;; Syntax and error checker
+          (use-package flycheck :ensure t :commands (flycheck-mode))
 
-	  ;; Auto completion
-	  (use-package company :ensure t :commands (company-mode))
+          ;; Auto completion
+          (use-package company :ensure t :commands (company-mode))
 
-	  ;; Rainbow delimiters
-	  (use-package rainbow-delimiters :ensure t
-	    :commands (rainbow-delimiters-mode))
+          ;; Rainbow delimiters
+          (use-package rainbow-delimiters :ensure t
+            :commands (rainbow-delimiters-mode))
 
-	  ;; Relative line numbering
-	  (use-package linum-relative :ensure t :commands (linum-relative-on))
+          ;; Relative line numbering
+          (use-package linum-relative :ensure t :commands (linum-relative-on))
 
-	  ;; Parens handling
-	  (use-package smartparens :ensure t :commands (smartparens-mode)
-	    :init
-	    (require 'smartparens-config))
+          ;; Parens handling
+          (use-package smartparens :ensure t :commands (smartparens-mode)
+            :init
+            (require 'smartparens-config))
    #+end_src
 
 ** TODO Java
@@ -1246,17 +1246,17 @@
        :mode ("\\.ghci$ . ghci-script-mode")
        :mode ("\\.cabal$ . haskell-cabal-mode")
        :interpreter (("runghc" . haskell-mode)
-		     ("runhaskell" . haskell-mode))
+                     ("runhaskell" . haskell-mode))
        :bind
        (:map haskell-mode-map
-	     ("C-`"     . haskell-interactive-bring)
-	     ("C-c C-t" . haskell-process-do-type)
-	     ("C-c c"   . haskell-process-cabal)
-	     ("C-c C-c" . haskell-process-cabal-build)
-	     ("C-c C-u" . haskell-insert-undefined)
-	     ("C-c C-a" . haskell-insert-doc)
-	     ("M-."     . haskell-mode-find-def)
-	     ("C-M-."   . haskell-mode-find-uses))
+             ("C-`"     . haskell-interactive-bring)
+             ("C-c C-t" . haskell-process-do-type)
+             ("C-c c"   . haskell-process-cabal)
+             ("C-c C-c" . haskell-process-cabal-build)
+             ("C-c C-u" . haskell-insert-undefined)
+             ("C-c C-a" . haskell-insert-doc)
+             ("M-."     . haskell-mode-find-def)
+             ("C-M-."   . haskell-mode-find-uses))
        :config
        (add-hook 'haskell-mode-hook 'common-code-mode)
        (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
@@ -1267,19 +1267,19 @@
        (add-to-list 'company-backends 'company-ghc)
        (setq company-ghc-show-info 'oneline)
        (if (executable-find "ghc-mod")
-	   (add-hook 'haskell-mode-hook #'ghc-comp-init)
-	 (warn "haskell-mode: couldn't find ghc-mod")))
+           (add-hook 'haskell-mode-hook #'ghc-comp-init)
+         (warn "haskell-mode: couldn't find ghc-mod")))
 
      (use-package dante :diminish t :defer t
        :config
        (if (executable-find "cabal")
-	   (progn
-	     (add-hook 'haskell-mode-hook 'dante-mode)
-	     (add-hook 'haskell-mode-hook 'interactive-haskell-mode))
-	 (warn "haskell-mode: couldn't find cabal"))
+           (progn
+             (add-hook 'haskell-mode-hook 'dante-mode)
+             (add-hook 'haskell-mode-hook 'interactive-haskell-mode))
+         (warn "haskell-mode: couldn't find cabal"))
        (add-hook 'dante-mode-hook
-		 (lambda () (flycheck-add-next-checker 'haskell-dante
-						       '(warning . haskell-hlint)))))
+                 (lambda () (flycheck-add-next-checker 'haskell-dante
+                                                       '(warning . haskell-hlint)))))
    #+end_src
 
 ** Agda
@@ -1290,7 +1290,7 @@
 
    #+begin_src emacs-lisp :tangle init.el
      (load-file (let ((coding-system-for-read 'utf-8))
-		  (shell-command-to-string "agda-mode locate")))
+                  (shell-command-to-string "agda-mode locate")))
    #+end_src
 
 ** TODO Python
@@ -1303,27 +1303,27 @@
      (use-package python-mode :commands python-mode
        :init
        (setq python-environment-directory cache-dir
-	     python-indent-guess-indent-offset-verbose nil
-	     python-shell-interpreter "python")
+             python-indent-guess-indent-offset-verbose nil
+             python-shell-interpreter "python")
        (add-hook 'python-mode-hook 'common-code-mode)
        :bind
        (:map python-mode-map
-	     ("C-<backspace>" . backward-kill-word))
+             ("C-<backspace>" . backward-kill-word))
 
        :config
        (when (executable-find "ipython")
-	 (setq python-shell-interpreter "ipython"
-	       python-shell-interpreter-args "-i --simple-prompt --no-color-info"
-	       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-	       python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
-	       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-	       python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
-	       python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+         (setq python-shell-interpreter "ipython"
+               python-shell-interpreter-args "-i --simple-prompt --no-color-info"
+               python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+               python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
+               python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+               python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+               python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
 
        (sp-with-modes 'python-mode
-	 (sp-local-pair "'" nil :unless
-			'(sp-point-before-word-p sp-point-after-word-p
-						 sp-point-before-same-p))))
+         (sp-local-pair "'" nil :unless
+                        '(sp-point-before-word-p sp-point-after-word-p
+                                                 sp-point-before-same-p))))
 
      (use-package pip-requirements
        :mode ("/requirements.txt$" . pip-requirements-mode))
@@ -1340,8 +1340,8 @@
        (add-hook 'web-mode-hook 'common-code-mode)
        :config
        (if web-mode-engines-alist
-	   (add-to-list 'web-mode-engines-alist '("django" . "\\.dtl$\\'"))
-	 (setq web-mode-engines-alist '(("django" . "\\.dtl$\\'")))))
+           (add-to-list 'web-mode-engines-alist '("django" . "\\.dtl$\\'"))
+         (setq web-mode-engines-alist '(("django" . "\\.dtl$\\'")))))
    #+end_src
 
 ** C#
@@ -1365,11 +1365,11 @@
      (use-package omnisharp :defer t
        :config
        (when (eq system-type 'windows-nt)
-	 (setq-default omnisharp-server-executable-path
-		       (concat include-dir "omnisharp/OmniSharp.exe")))
+         (setq-default omnisharp-server-executable-path
+                       (concat include-dir "omnisharp/OmniSharp.exe")))
        :bind (:map csharp-mode-map
-	      ("M-."   . omnisharp-find-implementations)
-	      ("C-M-." . omnisharp-find-usages)))
+              ("M-."   . omnisharp-find-implementations)
+              ("C-M-." . omnisharp-find-usages)))
    #+end_src
 
 * Reading
@@ -1412,14 +1412,14 @@
       :init (defvar weechat--auth-file (concat etc-dir "weechat-auth-file"))
       :config
       (local--init-file-if-missing weechat--auth-file
-				   #'weechat--prompt-for-auth)
+                                   #'weechat--prompt-for-auth)
       (setq weechat-color-list '(unspecified "black" "dark gray" "dark red"
-					     "red" "dark green" "light green"
-					     "brown" "yellow" "deepskyblue3"
-					     "light blue" "dark magenta"
-					     "magenta" "dark cyan" "light cyan"
-					     "gray" "white")
-	    weechat-password-callback #'weechat--get-password)
+                                             "red" "dark green" "light green"
+                                             "brown" "yellow" "deepskyblue3"
+                                             "light blue" "dark magenta"
+                                             "magenta" "dark cyan" "light cyan"
+                                             "gray" "white")
+            weechat-password-callback #'weechat--get-password)
       (add-hook 'weechat-connect-hook 'weechat-monitor-all-buffers))
 
     (defun weechat--get-password (host port)
@@ -1427,9 +1427,9 @@
     The credentials file should store an alist in the form ((HOST
     . PORT) . PASSWORD)."
       (if (file-exists-p weechat--auth-file)
-	  (let ((passwd-alist (read-from-file weechat--auth-file)))
-	    (cdr (assoc (cons host port) passwd-alist)))
-	(warn "Weechat auth file does not exist, can not auto-connect.")))
+          (let ((passwd-alist (read-from-file weechat--auth-file)))
+            (cdr (assoc (cons host port) passwd-alist)))
+        (warn "Weechat auth file does not exist, can not auto-connect.")))
   #+end_src
 
   To simplify the customization of =weechat= credentials I've created
@@ -1440,14 +1440,14 @@
     (defun weechat--prompt-for-auth ()
       "Store the weechat credentials in =etc-dir/weechat-auth-file.el=."
       (let ((host (read-from-minibuffer "Host: ")))
-	(let ((port (string-to-int (read-from-minibuffer "Port: "))))
-	  (let ((password (read-passwd "Password: ")))
-	    (cons (cons host port) password)))))
+        (let ((port (string-to-int (read-from-minibuffer "Port: "))))
+          (let ((password (read-passwd "Password: ")))
+            (cons (cons host port) password)))))
 
     (defun weechat--update-auth-info ()
       "Updates the weechat authentication file with information from
     the user."
       (interactive)
       (local--update-alist-file weechat--auth-file
-				(weechat--prompt-for-auth)))
+                                (weechat--prompt-for-auth)))
   #+end_src
