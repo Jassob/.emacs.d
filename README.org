@@ -1118,6 +1118,7 @@
             org-agenda-show-log t
             org-agenda-skip-scheduled-if-done t
             org-agenda-skip-deadline-if-done t
+	    org-agenda-skip-scheduled-if-deadline-is-shown 'not-today
             org-agenda-skip-deadline-prewarning-if-scheduled nil
             org-agenda-time-grid
             '((daily today require-timed)
