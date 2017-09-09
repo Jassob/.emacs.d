@@ -415,6 +415,19 @@
        (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
    #+end_src
 
+* External programs
+
+  There are sometimes when I need to interact with external programs.
+  For instance I sometimes like to open URL's in a more capable
+  browser than EWW (even though it is very good!).
+
+  Conkeror is currently my driver of choice.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq browse-url-browser-function 'browse-url-conkeror
+          browse-url-new-window-flag  t)
+  #+end_src
+
 * Editor
 ** Cursors
 
