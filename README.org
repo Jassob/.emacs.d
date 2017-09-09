@@ -828,7 +828,7 @@
 
 ** Tasks and notes
 
-   I store my org files in "~/.emacs.d/personal/" which is a symlink
+   I store my org files in "~/personal/" which is a symlink
    to a directory in my Dropbox folder, so I can update it on
    multiple devices (possibly also org-mobile?).
 
@@ -1098,13 +1098,17 @@
     This is the org files in which I keep agenda items and todos.
 
     #+begin_src emacs-lisp :tangle init.el
-      (setq org-agenda-files
-        (delq nil
-              (mapcar (lambda (x) (and (file-exists-p x) x))
-                '("~/.emacs.d/personal/organizer.org"
-                  "~/.emacs.d/personal/personal.org"
-                  "~/.emacs.d/personal/people.org"
-                  "~/.emacs.d/personal/studies.org"))))
+      (defun local/existing-files-in-dir (dir files)
+	"Return all files from the list FILES that exists in directory DIR."
+	(delq nil (mapcar
+		   (lambda (file) (let ((path (concat dir file)))
+				    (and (file-exists-p path) path)))
+		   files)))
+
+      (setq org-agenda-files (local/existing-files-in-dir
+			      org-directory
+			      '("organizer.org" "personal.org" "people.org"
+				"studies.org" "reading.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
