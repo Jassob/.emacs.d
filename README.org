@@ -1,3 +1,4 @@
+# -*- indent-tabs-mode: nil; -*-
 #+TITLE: Jassob's Emacs configuration
 #+DATE: <2016-07-16>
 
@@ -25,28 +26,28 @@
    #+begin_src emacs-lisp :tangle init.el
      (defvar local-dir (concat user-emacs-directory ".local/")
        "Root directory for local Emacs files. Use this as
-     permanent storage for files that are safe to share across
-     systems (if this config is symlinked across several computers).")
+       permanent storage for files that are safe to share across
+       systems (if this config is symlinked across several computers).")
 
      (defvar etc-dir (concat local-dir "@" (system-name) "/etc/")
        "Host-namespaced directory for non-volatile storage. These are not deleted or
-     tampored with by DOOM functions. Use this for dependencies like servers or
-     config files that are stable (i.e. it should be unlikely that you need to delete
-     them if something goes wrong).")
+       tampored with by DOOM functions. Use this for dependencies like servers or
+       config files that are stable (i.e. it should be unlikely that you need to delete
+       them if something goes wrong).")
 
      (defvar cache-dir (concat local-dir "@" (system-name) "/cache/")
        "Host-namespaced directory for volatile storage. Deleted
-     when `local/clean-cache' is called. Use this for transient files
-     that are generated on the fly like caches and temporary
-     files. Anything that may need to be cleared if there are
-     problems.")
+       when `local/clean-cache' is called. Use this for transient files
+       that are generated on the fly like caches and temporary
+       files. Anything that may need to be cleared if there are
+       problems.")
 
      (defvar packages-dir (concat local-dir "packages/")
        "Where package.el packages and cache are stored.")
 
      (defvar include-dir (concat user-emacs-directory "include/")
        "Where we store stuff that's not part of emacs packages or
-       other dependencies.")
+         other dependencies.")
 
    #+end_src
 
@@ -206,10 +207,10 @@
 
 ** Packages
 
-    First we need to activate the package system and add the melpa
-    repository, if it is not already added.
+   First we need to activate the package system and add the melpa
+   repository, if it is not already added.
 
-    #+begin_src emacs-lisp :tangle init.el
+   #+begin_src emacs-lisp :tangle init.el
       (require 'package)
       (setq package-user-dir (expand-file-name "elpa" packages-dir)
             package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
@@ -218,10 +219,10 @@
 
       ;; We've already enabled the package system.
       (setq package-enable-at-startup nil)
-    #+end_src
+   #+end_src
 
-    Make sure to reload the list of packages by calling =M-x
-    package-refresh-contents= when adding melpa for the first time.
+   Make sure to reload the list of packages by calling =M-x
+   package-refresh-contents= when adding melpa for the first time.
 
 ** use-package
 
@@ -264,30 +265,30 @@
 
   Give my setup a personal touch.
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (setq user-full-name "Jacob Jonsson"
        user-mail-address "jacob.t.jonsson@gmail.com")
-   #+end_src
+  #+end_src
 
-   I don't like to type more than necessary, so why do I need to type
-   1-2 extra letters when the first letter is enough?
+  I don't like to type more than necessary, so why do I need to type
+  1-2 extra letters when the first letter is enough?
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (fset 'yes-or-no-p 'y-or-n-p)
-   #+end_src
+  #+end_src
 
-   I've seen the splash screen enough times now, please don't show it
-   to me anymore.
+  I've seen the splash screen enough times now, please don't show it
+  to me anymore.
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (setq inhibit-splash-screen t)
-   #+end_src
+  #+end_src
 
-   Even though the standard Emacs interactive
-   execute-extended-command works in most cases I personally prefer
-   =smex= and use more Ido features.
+  Even though the standard Emacs interactive
+  execute-extended-command works in most cases I personally prefer
+  =smex= and use more Ido features.
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (use-package smex :ensure t :demand t
        :config
        (setq ido-everywhere t
@@ -297,12 +298,12 @@
              smex-save-file (concat cache-dir "smex-items"))
        (ido-mode t)
        :bind ("M-x" . smex))
-   #+end_src
+  #+end_src
 
-   I'd like to keep a list of my recently visited files and =recentf=
-   helps me do that.
+  I'd like to keep a list of my recently visited files and =recentf=
+  helps me do that.
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (use-package recentf
        :config
        (setq recentf-save-file (concat cache-dir "recentf"))
@@ -315,12 +316,12 @@
              (find-file file))))
 
        :bind ("C-x C-r" . recentf-ido-find-file))
-   #+end_src
+  #+end_src
 
-   To help me remember my commands I use =guide-key=, which displays a
-   popup showing all the keybindings belonging to a prefix key.
+  To help me remember my commands I use =guide-key=, which displays a
+  popup showing all the keybindings belonging to a prefix key.
 
-   #+begin_src emacs-lisp :tangle init.el
+  #+begin_src emacs-lisp :tangle init.el
      (use-package guide-key
        :ensure t
        :config
@@ -328,7 +329,7 @@
              guide-key/popup-window-position 'bottom
              guide-key/highlight-command-regexp ".*")
        (guide-key-mode t))
-   #+end_src
+  #+end_src
 
 ** Commands for local keymap
 
@@ -393,7 +394,7 @@
    redo is just an undo of your last undo!), but I like being able to
    visualise the timeline of my file. Enters =undo-tree-mode=!
 
-    #+begin_src emacs-lisp :tangle init.el
+   #+begin_src emacs-lisp :tangle init.el
       (use-package undo-tree
         :ensure t
         :diminish undo-tree-mode
@@ -401,7 +402,7 @@
         (global-undo-tree-mode)
         (setq undo-tree-visualizer-timestamps t)
         (setq undo-tree-visualizer-diff t))
-    #+end_src
+   #+end_src
 
 ** UTF8
 
@@ -918,7 +919,7 @@
     We want to show all habits, not just the ones for today.
 
     #+begin_src emacs-lisp :tangle init.el
-      (setq org-habit-show-habits-only-for-today nil)
+    (setq org-habit-show-habits-only-for-today nil)
     #+end_src emacs-lisp
 
 *** Task dependencies
@@ -958,12 +959,12 @@
 
 ** Org Capture templates
 
-  I want to start using =org-capture= to quickly add tasks and notes
-  and organize them in my life. First we define some handy templates
-  for more advanced capture types, like reading stuff and so
-  on.
+   I want to start using =org-capture= to quickly add tasks and notes
+   and organize them in my life. First we define some handy templates
+   for more advanced capture types, like reading stuff and so
+   on.
 
-  #+begin_src emacs-lisp :tangle init.el
+   #+begin_src emacs-lisp :tangle init.el
     (defvar local/org-basic-task-template "* TODO %^{Task}
       :PROPERTIES:
       :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
@@ -1000,22 +1001,22 @@
 
       [[%l][Link to blog post]]"
       "Blog post template.")
-  #+end_src
+   #+end_src
 
-  Quick legend of the template escape codes:
-  - ~%^{PROMPT}~ - Org will prompt me with "PROMPT: " and the input
-    will replace the occurrance of ~%^{Task}~ in the template,
-  - ~%?~ - Org will put the cursor here so I can edit the capture
-    before refiling it,
-  - ~%i~ - Org will insert the marked region from before the capture
-    here,
-  - ~%a~ - Org will insert an annotation here (,
-  - ~%U~ - Org will insert an inactive timestamp here,
-  - ~%l~ - Org will insert a literal link here,
+   Quick legend of the template escape codes:
+   - ~%^{PROMPT}~ - Org will prompt me with "PROMPT: " and the input
+     will replace the occurrance of ~%^{Task}~ in the template,
+   - ~%?~ - Org will put the cursor here so I can edit the capture
+     before refiling it,
+   - ~%i~ - Org will insert the marked region from before the capture
+     here,
+   - ~%a~ - Org will insert an annotation here (,
+   - ~%U~ - Org will insert an inactive timestamp here,
+   - ~%l~ - Org will insert a literal link here,
 
 
 
-  #+begin_src emacs-lisp :tangle init.el
+   #+begin_src emacs-lisp :tangle init.el
     (setq org-capture-templates
           `(("t" "Tasks" entry
              (file+headline (concat org-directory "organizer.org") "Inbox")
@@ -1084,7 +1085,7 @@
              (file+datetree (concat org-directory "organizer.org"))
              "* %?\n\n%i\n%U\n")))
     (bind-key "C-M-r" 'org-capture)
-  #+end_src
+   #+end_src
 
 ** Org agenda
 *** Basic configuration
@@ -1099,16 +1100,16 @@
 
     #+begin_src emacs-lisp :tangle init.el
       (defun local/existing-files-in-dir (dir files)
-	"Return all files from the list FILES that exists in directory DIR."
-	(delq nil (mapcar
-		   (lambda (file) (let ((path (concat dir file)))
-				    (and (file-exists-p path) path)))
-		   files)))
+        "Return all files from the list FILES that exists in directory DIR."
+        (delq nil (mapcar
+                   (lambda (file) (let ((path (concat dir file)))
+                                    (and (file-exists-p path) path)))
+                   files)))
 
       (setq org-agenda-files (local/existing-files-in-dir
-			      org-directory
-			      '("organizer.org" "personal.org" "people.org"
-				"studies.org" "reading.org")))
+                              org-directory
+                              '("organizer.org" "personal.org" "people.org"
+                                "studies.org" "reading.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
