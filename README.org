@@ -1448,6 +1448,7 @@
                                              "light blue" "dark magenta"
                                              "magenta" "dark cyan" "light cyan"
                                              "gray" "white")
+            weechat-modules '(weechat-button weechat-complete weechat-notifications)
             weechat-password-callback #'weechat--get-password)
       (add-hook 'weechat-connect-hook 'weechat-monitor-all-buffers))
 
