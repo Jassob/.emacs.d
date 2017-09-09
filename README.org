@@ -649,6 +649,17 @@
 
 * Writing
 ** TODO Latex
+
+   I want to be able to specify what TeX engine I use when typesetting
+   a document. Therefore we add ~TeX-engine~ to the list of safe local
+   variables.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (eval-after-load 'auctex
+       (add-to-list 'safe-local-variable-values '(TeX-engine . xetex)))
+   #+end_src
+
+
 ** TODO Pandoc
 * Org
 
