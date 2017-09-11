@@ -879,7 +879,7 @@
     #+begin_src emacs-lisp :tangle init.el
       (setq org-todo-keywords
         '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
-                    "IN-PROGRESS(p@/!)" "WAITING(w@/@)"
+                    "IN-PROGRESS(p!/@)" "WAITING(w@/@)"
                     "|" "DONE(d@)" "CANCELLED(c@)")
           (sequence "WANT-TO-READ(@)" "READING(!)" "|" "READ(@)")))
     #+end_src
@@ -1038,75 +1038,73 @@
    - ~%U~ - Org will insert an inactive timestamp here,
    - ~%l~ - Org will insert a literal link here,
 
-
-
    #+begin_src emacs-lisp :tangle init.el
     (setq org-capture-templates
           `(("t" "Tasks" entry
-             (file+headline (concat org-directory "organizer.org") "Inbox")
+             (file+headline ,org-default-notes-file "Inbox")
              ,local/org-basic-task-template)
 
             ("T" "Quick task" entry
-             (file+headline (concat org-directory "organizer.org") "Inbox")
+             (file+headline ,org-default-notes-file "Inbox")
              "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
 
             ("i" "Interrupting task" entry
-             (file+headline (concat org-directory "organizer.org") "Inbox")
+             (file+headline ,org-default-notes-file "Inbox")
              "* STARTED %^{Task}" :clock-in :clock-resume)
 
             ("E" "Energy" table-line
-             (file+headline (concat org-directory "organizer.org") "Track energy")
+             (file+headline ,org-default-notes-file "Track energy")
              "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
              :immediate-finish t)
 
             ("p" "People task" entry
-             (file+headline (concat org-directory "people.org") "Tasks")
+             (file+headline ,(concat org-directory "people.org") "Tasks")
              ,local/org-basic-task-template)
 
             ("j" "Journal entry" plain
-             (file+datetree (concat org-directory "journal.org"))
+             (file+datetree ,(concat org-directory "journal.org"))
              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
             ("J" "Journal entry with date" plain
-             (file+datetree+prompt (concat org-directory "journal.org"))
+             (file+datetree+prompt ,(concat org-directory "journal.org"))
              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
             ("s" "Journal entry with date, scheduled" entry
-             (file+datetree+prompt (concat org-directory "journal.org"))
+             (file+datetree+prompt ,(concat org-directory "journal.org"))
              "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
 
             ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
              "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
 
             ("dp" "Done - People" entry
-             (file+headline (concat org-directory "people.org") "Tasks")
+             (file+headline ,(concat org-directory "people.org") "Tasks")
              "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
             ("dt" "Done - Task" entry
-             (file+headline (concat org-directory "organizer.org") "Inbox")
+             (file+headline ,org-default-notes-file "Inbox")
              "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
             ("q" "Quick note" item
-             (file+headline (concat org-directory "organizer.org") "Quick notes"))
+             (file+headline ,org-default-notes-file "Quick notes"))
 
             ("B" "Book" entry
-             (file+headline (concat org-directory "reading.org") "Books")
+             (file+headline ,(concat org-directory "reading.org") "Books")
              ,local/org-book-template :clock-resume)
 
             ("A" "Article" entry
-             (file+headline (concat org-directory "reading.org") "Articles")
+             (file+headline ,(concat org-directory "reading.org") "Articles")
              ,local/org-article-template :clock-resume)
 
             ("bp" "Blog post" entry
-             (file+headline (concat org-directory "reading.org") "Blog entries")
+             (file+headline ,(concat org-directory "reading.org") "Blog entries")
              ,local/org-blog-post-template :clock-resume)
 
             ("n" "Daily note" table-line
-             (file+olp (concat org-directory "organizer.org") "Inbox")
+             (file+olp ,org-default-notes-file "Inbox")
              "| %u | %^{Note} |" :immediate-finish t)
 
             ("r" "Notes" entry
-             (file+datetree (concat org-directory "organizer.org"))
+             (file+datetree ,org-default-notes-file)
              "* %?\n\n%i\n%U\n")))
     (bind-key "C-M-r" 'org-capture)
    #+end_src
@@ -1151,8 +1149,9 @@
             org-agenda-skip-deadline-prewarning-if-scheduled nil
             org-agenda-time-grid
             '((daily today require-timed)
-              "----------------"
-              (800 1000 1200 1400 1600 1800 2000))
+              (800 1000 1200 1400 1600 1800 2000)
+              "......"
+              "----------------")
             org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
     #+end_src
 *** TODO Fix so that entries completed @ 01 is counted as yesterday.
