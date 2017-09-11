@@ -715,14 +715,14 @@
 
    #<<org-files>>
 
-   | organizer.org | Main org file, used for org-capture and tasks etc |
-   | personal.org  | Habits, personal tasks, etc                       |
-   | people.org    | People-related tasks                              |
-   | journal.org   | Journal entries                                   |
-   | studies.org   | Chalmers-related tasks                            |
-   | archive.org   | Archived subtrees                                 |
-   | reading.org   | Org file for book notes                           |
-   | calendar.org  | An org file with ambition to sync via org-gcal    |
+   | organizer.org   | Main org file, used for org-capture and tasks etc |
+   | personal.org    | Habits, personal tasks, etc                       |
+   | people.org      | People-related tasks                              |
+   | journal.org.gpg | Journal entries (encrypted)                       |
+   | studies.org     | Chalmers-related tasks                            |
+   | archive.org     | Archived subtrees                                 |
+   | reading.org     | Org file for book notes                           |
+   | calendar.org    | An org file with ambition to sync via org-gcal    |
 
 ** Modules
 
@@ -1062,15 +1062,15 @@
              ,local/org-basic-task-template)
 
             ("j" "Journal entry" plain
-             (file+datetree ,(concat org-directory "journal.org"))
+             (file+datetree ,(concat org-directory "journal.org.gpg"))
              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
             ("J" "Journal entry with date" plain
-             (file+datetree+prompt ,(concat org-directory "journal.org"))
+             (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
             ("s" "Journal entry with date, scheduled" entry
-             (file+datetree+prompt ,(concat org-directory "journal.org"))
+             (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
              "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
 
             ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
