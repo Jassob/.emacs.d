@@ -2,6 +2,11 @@
 #+TITLE: Jassob's Emacs configuration
 #+DATE: <2016-07-16>
 
+* TODO Steal some kind of module system
+  I want to be able to fire up a lightweight version of my emacs
+  config that only includes a specific set of modules to speed up
+  start up time.
+
 * About this file
   This file contains my configurations for Emacs.
 
@@ -1039,74 +1044,79 @@
    - ~%l~ - Org will insert a literal link here,
 
    #+begin_src emacs-lisp :tangle init.el
-    (setq org-capture-templates
-          `(("t" "Tasks" entry
-             (file+headline ,org-default-notes-file "Inbox")
-             ,local/org-basic-task-template)
+     (setq org-capture-templates
+           `(("t" "Tasks" entry
+              (file+headline ,org-default-notes-file "Inbox")
+              ,local/org-basic-task-template)
 
-            ("T" "Quick task" entry
-             (file+headline ,org-default-notes-file "Inbox")
-             "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
+             ("T" "Quick task" entry
+              (file+headline ,org-default-notes-file "Inbox")
+              "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
 
-            ("i" "Interrupting task" entry
-             (file+headline ,org-default-notes-file "Inbox")
-             "* STARTED %^{Task}" :clock-in :clock-resume)
+             ("i" "Interrupting task" entry
+              (file+headline ,org-default-notes-file "Inbox")
+              "* STARTED %^{Task}" :clock-in :clock-resume)
 
-            ("E" "Energy" table-line
-             (file+headline ,org-default-notes-file "Track energy")
-             "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
-             :immediate-finish t)
+             ("E" "Energy" table-line
+              (file+headline ,org-default-notes-file "Track energy")
+              "| %U | %^{Energy 5-awesome 3-fuzzy 1-zzz} | %^{Note} |"
+              :immediate-finish t)
 
-            ("p" "People task" entry
-             (file+headline ,(concat org-directory "people.org") "Tasks")
-             ,local/org-basic-task-template)
+             ("p" "People task" entry
+              (file+headline ,(concat org-directory "people.org") "Tasks")
+              ,local/org-basic-task-template)
 
-            ("j" "Journal entry" plain
-             (file+datetree ,(concat org-directory "journal.org.gpg"))
-             "%K - %a\n%i\n%?\n" :unnarrowed t)
+             ("j" "Journal entry" plain
+              (file+datetree ,(concat org-directory "journal.org.gpg"))
+              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-            ("J" "Journal entry with date" plain
-             (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-             "%K - %a\n%i\n%?\n" :unnarrowed t)
+             ("J" "Journal entry with date" plain
+              (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+              "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-            ("s" "Journal entry with date, scheduled" entry
-             (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-             "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
+             ("s" "Journal entry with date, scheduled" entry
+              (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+              "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
 
-            ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
-             "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
+             ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+              "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U")
 
-            ("dp" "Done - People" entry
-             (file+headline ,(concat org-directory "people.org") "Tasks")
-             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+             ("dp" "Done - People" entry
+              (file+headline ,(concat org-directory "people.org") "Tasks")
+              "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
-            ("dt" "Done - Task" entry
-             (file+headline ,org-default-notes-file "Inbox")
-             "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+             ("dt" "Done - Task" entry
+              (file+headline ,org-default-notes-file "Inbox")
+              "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
-            ("q" "Quick note" item
-             (file+headline ,org-default-notes-file "Quick notes"))
+             ("q" "Quick note" item
+              (file+headline ,org-default-notes-file "Quick notes"))
 
-            ("B" "Book" entry
-             (file+headline ,(concat org-directory "reading.org") "Books")
-             ,local/org-book-template :clock-resume)
+             ("B" "Book" entry
+              (file+headline ,(concat org-directory "reading.org") "Books")
+              ,local/org-book-template :clock-resume)
 
-            ("A" "Article" entry
-             (file+headline ,(concat org-directory "reading.org") "Articles")
-             ,local/org-article-template :clock-resume)
+             ("A" "Article" entry
+              (file+headline ,(concat org-directory "reading.org") "Articles")
+              ,local/org-article-template :clock-resume)
 
-            ("bp" "Blog post" entry
-             (file+headline ,(concat org-directory "reading.org") "Blog entries")
-             ,local/org-blog-post-template :clock-resume)
+             ("p" "Blog post" entry
+              (file+headline ,(concat org-directory "reading.org") "Blog entries")
+              ,local/org-blog-post-template :clock-resume)
 
-            ("n" "Daily note" table-line
-             (file+olp ,org-default-notes-file "Inbox")
-             "| %u | %^{Note} |" :immediate-finish t)
+             ("l" "Bookmark" entry
+              (file+headline ,(concat org-directory "bookmarks.org")
+                             "Captured entries")
+              "* [[%^{Link}][%^{Title}]]\n\n%i%?")
 
-            ("r" "Notes" entry
-             (file+datetree ,org-default-notes-file)
-             "* %?\n\n%i\n%U\n")))
-    (bind-key "C-M-r" 'org-capture)
+             ("n" "Daily note" table-line
+              (file+olp ,org-default-notes-file "Inbox")
+              "| %u | %^{Note} |" :immediate-finish t)
+
+             ("r" "Notes" entry
+              (file+datetree ,org-default-notes-file)
+              "* %?\n\n%i\n%U\n")))
+     (bind-key "C-M-r" 'org-capture)
    #+end_src
 
 ** Org agenda
