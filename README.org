@@ -1115,7 +1115,17 @@
 
              ("r" "Notes" entry
               (file+datetree ,org-default-notes-file)
-              "* %?\n\n%i\n%U\n")))
+              "* %?\n\n%i\n%U\n")
+
+             ;; Org protocol handlers
+             ("p" "Protocol" entry
+              (file+headline ,(concat org-directory "notes.org") "Inbox")
+              "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+
+             ("L" "Protocol Link" entry
+              (file+headline ,(concat org-directory "notes.org") "Inbox")
+              "* %? [[%:link][%:description]] \nCaptured On: %U")))
+
      (bind-key "C-M-r" 'org-capture)
    #+end_src
 
@@ -1165,6 +1175,84 @@
             org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
     #+end_src
 *** TODO Fix so that entries completed @ 01 is counted as yesterday.
+** Publishing
+
+   I want to be able to view my org documents so that I can see my
+   progress and what I've got left to do and so on. Org publish works
+   rather well for this scenario, even though I probably would like
+   do some automation on when it does the publishing.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'ox-html)
+     (setq org-publish-project-alist
+           `(("html"
+              :base-directory ,org-directory
+              :base-extension "org"
+              :publishing-directory "/ssh:jassob:/var/www/org"
+              :recursive t
+              :publishing-function org-html-publish-to-html)
+
+             ("org-static"
+              :base-directory ,org-directory
+              :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+              :publishing-directory "/ssh:jassob:/var/www/org"
+              :recursive t
+              :publishing-function org-publish-attachment)
+
+             ("archive"
+              :base-directory ,org-directory
+              :base-extension "org_archive"
+              :publishing-directory "/ssh:jassob:/var/www/org/archive"
+              :publishing-function org-html-publish-to-html)
+
+             ("html-chalmers"
+              :base-directory ,org-directory
+              :base-extension "org"
+              :publishing-directory "/ssh:chalmers:~/www/org"
+              :publishing-function org-html-publish-to-html
+              :recursive t)
+
+             ("org-static-chalmers"
+              :base-directory ,org-directory
+              :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+              :publishing-directory "/ssh:chalmers:~/www/org"
+              :recursive t
+              :publishing-function org-publish-attachment)
+
+             ("archive-chalmers"
+              :base-directory ,org-directory
+              :base-extension "org_archive"
+              :publishing-directory "/ssh:chalmers:~/www/org/archive"
+              :publishing-function org-html-publish-to-html)
+
+             ("web"
+              :base-directory ,(concat org-directory "web/")
+              :base-extension "org"
+              :publishing-directory "/ssh:jassob:/var/www/"
+              :publishing-function org-html-publish-to-html)
+
+             ("jassob" :components ("html" "archive" "org-static"))
+             ("chalmers" :components ("html-chalmers"
+                                      "org-static-chalmers"
+                                      "archive-chalmers"))
+             ("all" :components ("jassob" "chalmers"))))
+
+     (defun local/publish-jassob ()
+       "Publishes \"jassob\" project"
+       (interactive)
+       (org-publish "jassob" t))
+
+     (defun local/publish-chalmers ()
+       "Publishes \"chalmers\" project"
+       (interactive)
+       (org-publish "chalmers" t))
+
+     (defun local/publish-web ()
+       "Publishes \"web\" project"
+       (interactive)
+       (org-publish "web" t))
+   #+end_src
+
 * Coding
 ** Common settings for programming languages
 
@@ -1178,14 +1266,14 @@
        "A minor mode for enabling common minor modes and other
        features for programming modes."
        :lighter " Code"
-       :keymap (make-sparse-keymap)
+       :keymap (let (keymap (make-sparse-keymap))
+                 (bind-key "C-c g" #'god-mode keymap)
+                 keymap)
 
        (if (>= emacs-major-version 26)
-           (setq display-line-numbers 'relative)
+           (setq display-line-numbers 'on)
          (progn
-           (add-hook 'common-code-mode-hook 'linum-mode)
-           (add-hook 'common-code-mode-hook
-                     (lambda () (linum-relative-on))))))
+           (add-hook 'common-code-mode-hook 'linum-mode))))
 
      (add-hook 'common-code-mode-hook 'flycheck-mode)
      (add-hook 'common-code-mode-hook 'company-mode)
@@ -1247,9 +1335,9 @@
        (when (and (= (point-min)
                      (point-max))
                   (buffer-file-name))
-          (insert "-- | "
-                  "\n"
-                  "module ")
+         (insert "-- | "
+                 "\n"
+                 "module ")
          (let ((name (haskell-guess-module-name)))
            (if (string= name "")
                (progn (insert "Main")
@@ -1328,6 +1416,8 @@
    #+begin_src emacs-lisp :tangle init.el
      (load-file (let ((coding-system-for-read 'utf-8))
                   (shell-command-to-string "agda-mode locate")))
+
+     (add-hook 'agda2-mode-hook 'common-code-mode)
    #+end_src
 
 ** TODO Python
