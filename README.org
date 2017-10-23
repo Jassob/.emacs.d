@@ -1019,7 +1019,7 @@
 
       *Abstract*: %i%?
 
-      [[%l][Link to paper]"
+      [[%l][Link to paper]]"
       "Article template.")
 
     (defvar local/org-blog-post-template "* WANT-TO-READ %^{Title}  %^g
