@@ -1450,8 +1450,41 @@
        (sp-with-modes 'python-mode
          (sp-local-pair "'" nil :unless
                         '(sp-point-before-word-p sp-point-after-word-p
-                                                 sp-point-before-same-p))))
+                                                 sp-point-before-same-p)))))
+   #+end_src
 
+   As a Haskell-programmer I enjoy having the tools checking my types
+   for me and since Python 3.5 they added support for type hints in
+   Python. [[http://mypy-lang.org/][Mypy]] is a type checker for python and [[https://github.com/lbolla/emacs-flycheck-mypy][flycheck-mypy]] is an
+   Flycheck interface for said type checker.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package flycheck-mypy
+       :init
+       (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+       (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+       (add-to-list 'flycheck-disabled-checkers 'python-pycompile))
+       (setq flycheck-python-mypy-args '("--ignore-missing-imports"))
+   #+end_src
+
+
+   It is a convention to store a list of required dependencies in a
+   file called =requirements.txt=, which can easily be installed by
+   pip with the command
+
+   #+begin_src bash
+   $ pip install -r requirements.txt
+   #+end_src
+
+   To generate a fresh version of requirements.txt we run
+
+   #+begin_src bash
+   $ pip freeze > requirements.txt
+   #+end_src
+
+   There exists an Emacs mode for the requirement-file-format in pip.
+
+   #+begin_src emacs-lisp :tangle init.el
      (use-package pip-requirements
        :mode ("/requirements.txt$" . pip-requirements-mode))
    #+end_src
