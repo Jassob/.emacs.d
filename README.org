@@ -1151,7 +1151,7 @@
       (setq org-agenda-files (local/existing-files-in-dir
                               org-directory
                               '("organizer.org" "personal.org" "people.org"
-                                "studies.org" "reading.org")))
+                                "bookmarks.org" "studies.org" "reading.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
