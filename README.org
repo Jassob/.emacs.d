@@ -1360,7 +1360,6 @@
        "Insert undefined."
        (interactive)
        (insert "undefined"))
-
    #+end_src
 
    Next stop is to actually install and configure the modes and packages.
@@ -1387,14 +1386,6 @@
        (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
        (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template))
 
-     (use-package company-ghc :defer t
-       :config
-       (add-to-list 'company-backends 'company-ghc)
-       (setq company-ghc-show-info 'oneline)
-       (if (executable-find "ghc-mod")
-           (add-hook 'haskell-mode-hook #'ghc-comp-init)
-         (warn "haskell-mode: couldn't find ghc-mod")))
-
      (use-package dante :diminish t :defer t
        :config
        (if (executable-find "cabal")
@@ -1403,8 +1394,26 @@
              (add-hook 'haskell-mode-hook 'interactive-haskell-mode))
          (warn "haskell-mode: couldn't find cabal"))
        (add-hook 'dante-mode-hook
-                 (lambda () (flycheck-add-next-checker 'haskell-dante
-                                                       '(warning . haskell-hlint)))))
+                 (lambda ()
+                   (flycheck-add-next-checker 'haskell-dante
+                                              '(warning . haskell-hlint))
+                   (add-to-list 'flycheck-disabled-checkers 'haskell-stack-ghc)))
+
+       ;; Find out the right repl to use from what files exists in project root.
+       (setq-default dante-repl-command-line-methods-alist
+                     `((styx . ,(lambda (root)
+                                  (dante-repl-by-file root '("styx.yaml")
+                                                      '("styx" "repl"))))
+                       (nix-new . ,(lambda (root)
+                                     (dante-repl-by-file
+                                      (projectile-project-root)
+                                      '("shell.nix" "default.nix")
+                                      `("nix-shell" "--run" "cabal new-repl"
+                                        ,(concat (projectile-project-root) "/shell.nix")))))
+                       (stack . ,(lambda (root)
+                                   (dante-repl-by-file root '("stack.yaml")
+                                                       '("stack" "repl"))))
+                       (bare  . ,(lambda (_) '("cabal" "repl"))))))
    #+end_src
 
 ** Agda
@@ -1433,6 +1442,11 @@
              python-indent-guess-indent-offset-verbose nil
              python-shell-interpreter "python")
        (add-hook 'python-mode-hook 'common-code-mode)
+       (add-hook 'python-mode-hook
+                 (lambda ()
+                   (setq tab-width 4)
+                   (setq python-indent-offset 4)
+                   (setq indent-tabs-mode nil))
        :bind
        (:map python-mode-map
              ("C-<backspace>" . backward-kill-word))
@@ -1611,4 +1625,23 @@
       (interactive)
       (local--update-alist-file weechat--auth-file
                                 (weechat--prompt-for-auth)))
+  #+end_src
+
+  To read my mail inside Emacs I use =Gnus=. =Gnus= reads a downloaded
+  copy of my mailbox stored as a maildir, which is synchronized by
+  =mbsync=.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq user-mail-address "jacob.t.jonsson@gmail.com"
+          user-full-name "Jacob Jonsson")
+
+    (setq gnus-select-method
+          '(nnimap "gmail"
+               (nnimap-address "imap.gmail.com")  ; it could also be imap.googlemail.com if that's your server.
+               (nnimap-server-port "imaps")
+               (nnimap-stream ssl)))
+
+    (setq smtpmail-smtp-server "smtp.gmail.com"
+          smtpmail-smtp-service 587
+          gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
   #+end_src
