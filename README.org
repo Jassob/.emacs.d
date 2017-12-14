@@ -1386,13 +1386,13 @@
        (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
        (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template))
 
-     (use-package dante :diminish t :defer t
-       :config
+     (use-package dante :diminish t :after haskell-mode
+       :init
        (if (executable-find "cabal")
            (progn
-             (add-hook 'haskell-mode-hook 'dante-mode)
-             (add-hook 'haskell-mode-hook 'interactive-haskell-mode))
+             (add-hook 'haskell-mode-hook 'dante-mode))
          (warn "haskell-mode: couldn't find cabal"))
+       :config
        (add-hook 'dante-mode-hook
                  (lambda ()
                    (flycheck-add-next-checker 'haskell-dante
