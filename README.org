@@ -1546,6 +1546,14 @@
               ("C-M-." . omnisharp-find-usages)))
    #+end_src
 
+** Nix
+   When writing Nix expressions I want to activate the minor modes
+   active that I have when coding.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (add-hook 'nix-mode-hook 'common-code-mode)
+   #+end_src
+
 * Reading
 
   Emacs works beautifully as a PDF reader with the ~pdf-tools~
