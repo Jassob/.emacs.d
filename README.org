@@ -1438,20 +1438,20 @@
    #+begin_src emacs-lisp :tangle init.el
      (use-package python-mode :commands python-mode
        :init
-       (setq python-environment-directory cache-dir
-             python-indent-guess-indent-offset-verbose nil
-             python-shell-interpreter "python")
        (add-hook 'python-mode-hook 'common-code-mode)
        (add-hook 'python-mode-hook
                  (lambda ()
                    (setq tab-width 4)
                    (setq python-indent-offset 4)
-                   (setq indent-tabs-mode nil))
+                   (setq indent-tabs-mode nil)))
        :bind
        (:map python-mode-map
              ("C-<backspace>" . backward-kill-word))
 
        :config
+       (setq python-environment-directory cache-dir
+             python-indent-guess-indent-offset-verbose nil
+             python-shell-interpreter "python")
        (when (executable-find "ipython")
          (setq python-shell-interpreter "ipython"
                python-shell-interpreter-args "-i --simple-prompt --no-color-info"
@@ -1464,7 +1464,7 @@
        (sp-with-modes 'python-mode
          (sp-local-pair "'" nil :unless
                         '(sp-point-before-word-p sp-point-after-word-p
-                                                 sp-point-before-same-p)))))
+                                                 sp-point-before-same-p))))
    #+end_src
 
    As a Haskell-programmer I enjoy having the tools checking my types
