@@ -1338,7 +1338,7 @@
                  org-gcal-client-secret (cdr credentials)))
        (setq org-gcal-dir (concat etc-dir "org-gcal/")
              org-gcal-token-file (concat org-gcal-dir ".org-gcal-token")
-             org-gcal-file-alist '(( "your-email-here" . "your-calendar-file-here.org"))
+             org-gcal-file-alist '(( "your-email-here" . "your-calendar-file-here.org"))))
    #+end_src
 
    Some nifty helping functions to handle retrieving and storing
