@@ -1151,8 +1151,12 @@
 
       (setq org-agenda-files (local/existing-files-in-dir
                               org-directory
-                              '("organizer.org" "personal.org" "people.org"
-                                "bookmarks.org" "studies.org" "reading.org")))
+                              '("organizer.org" "people.org" "bookmarks.org"
+                                "studies.org" "reading.org"
+
+                                ;; Calendar files (synced with org-gcal)
+                                "calendar/family.org" "calendar/personal.org"
+                                "calendar/spex.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
@@ -1252,6 +1256,51 @@
        "Publishes \"web\" project"
        (interactive)
        (org-publish "web" t))
+   #+end_src
+
+** Access Google Calendar
+
+   Even though I use =org-mode= for scheduling a lot of tasks and
+   other stuff I also use Google Calendar to organize stuff together
+   with other people, this section is about how I make these two work
+   together.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package org-gcal
+       :init
+       (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file.gpg"))
+       :config
+       (local--init-file-if-missing org-gcal--auth-file
+                                    #'org-gcal--prompt-for-credentials)
+       (let ((credentials (org-gcal--get-credentials)))
+           (setq org-gcal-client-id (car credentials)
+                 org-gcal-client-secret (cdr credentials)))
+       (setq org-gcal-dir (concat etc-dir "org-gcal/")
+             org-gcal-token-file (concat org-gcal-dir ".org-gcal-token")
+             org-gcal-file-alist '(( "your-email-here" . "your-calendar-file-here.org"))
+   #+end_src
+
+   Some nifty helping functions to handle retrieving and storing
+   credentials.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun org-gcal--get-credentials ()
+       "Get the stored client id and client secret from FILEPATH and return it a conscell in form of (CLIENT_ID . CLIENT_SECRET)."
+       (if (file-exists-p org-gcal--auth-file)
+           (read-from-file org-gcal--auth-file)
+         (warn "org-gcal credential file does not exist, run org-gcal--init-credentials.")))
+
+     (defun org-gcal--prompt-for-credentials ()
+       "Prompt the user for a Google API client id and client secret and store them in org-gcal--auth-file."
+       (let ((client_id (read-from-minibuffer "Client ID: ")))
+         (let ((client_secret (read-from-minibuffer "Client Secret: ")))
+           (cons client_id client_secret))))
+
+     (defun org-gcal--update-credentials ()
+       "Update the org-gcal credential file with information from the user."
+       (interactive)
+       (local--update-alist-file org-gcal--auth-file
+                                 (org-gcal--prompt-for-credentials)))
    #+end_src
 
 * Coding
