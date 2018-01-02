@@ -1664,7 +1664,9 @@
    active that I have when coding.
 
    #+begin_src emacs-lisp :tangle init.el
-     (add-hook 'nix-mode-hook 'common-code-mode)
+     (use-package nix-mode
+       :init
+       (add-hook 'nix-mode-hook 'common-code-mode))
    #+end_src
 
 * Reading
