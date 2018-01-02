@@ -1431,9 +1431,8 @@
        (require 'smartparens-config))
    #+end_src
 
-** TODO Java
-** DONE Haskell
-   CLOSED: [2017-07-15 lör 23:23]
+** Java
+** Haskell
 
    Structuring haskell files as documented modules is good practice,
    although I don't remember doing it by myself so let us add functions
