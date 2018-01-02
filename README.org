@@ -1217,7 +1217,7 @@
 
                                 ;; Calendar files (synced with org-gcal)
                                 "calendar/family.org" "calendar/personal.org"
-                                "calendar/spex.org")))
+                                "calendar/spex.org" "calendar/ensemble.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
@@ -1338,7 +1338,7 @@
                  org-gcal-client-secret (cdr credentials)))
        (setq org-gcal-dir (concat etc-dir "org-gcal/")
              org-gcal-token-file (concat org-gcal-dir ".org-gcal-token")
-             org-gcal-file-alist '(( "your-email-here" . "your-calendar-file-here.org"))))
+             org-gcal-file-alist (eval (read-from-file (concat etc-dir "org-gcal-file-alist-file"))))
    #+end_src
 
    Some nifty helping functions to handle retrieving and storing
