@@ -727,6 +727,21 @@
        (projectile-mode))
    #+end_src
 
+** Dired
+
+   Dired is file manager and browser built into Emacs and it is
+   efficient enough. By default it shows every file, even hidden ones,
+   which results in a lot of noise.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'dired-x)
+     (setq dired-omit-files "^\\...+$")
+     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+     (define-key dired-mode-map (kbd "C-c h") 'dired-omit-mode)
+   #+end_src
+
+   Now, pressing =C-c h= will hide all hidden files in Dired.
+
 * Writing
 ** TODO Latex
 
