@@ -427,7 +427,7 @@
   For instance I sometimes like to open URL's in a more capable
   browser than EWW (even though it is very good!).
 
-  Conkeror is currently my driver of choice.
+  Firefox is currently my driver of choice.
 
   #+begin_src emacs-lisp :tangle init.el
     (setq browse-url-browser-function 'browse-url-firefox
