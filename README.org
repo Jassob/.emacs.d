@@ -1,6 +1,6 @@
 # -*- indent-tabs-mode: nil; -*-
 #+TITLE: Jassob's Emacs configuration
-#+DATE: <2016-07-16>
+#+DATE: <2018-01-19 Fri>
 
 * TODO Steal some kind of module system
   I want to be able to fire up a lightweight version of my emacs
@@ -430,7 +430,7 @@
   Conkeror is currently my driver of choice.
 
   #+begin_src emacs-lisp :tangle init.el
-    (setq browse-url-browser-function 'browse-url-conkeror
+    (setq browse-url-browser-function 'browse-url-firefox
           browse-url-new-window-flag  t)
   #+end_src
 
