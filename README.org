@@ -1310,37 +1310,14 @@
               :publishing-directory "/ssh:jassob:/var/www/org/archive"
               :publishing-function org-html-publish-to-html)
 
-             ("html-chalmers"
-              :base-directory ,org-directory
-              :base-extension "org"
-              :publishing-directory "/ssh:chalmers:~/www/org"
-              :publishing-function org-html-publish-to-html
-              :recursive t)
-
-             ("org-static-chalmers"
-              :base-directory ,org-directory
-              :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-              :publishing-directory "/ssh:chalmers:~/www/org"
-              :recursive t
-              :publishing-function org-publish-attachment)
-
-             ("archive-chalmers"
-              :base-directory ,org-directory
-              :base-extension "org_archive"
-              :publishing-directory "/ssh:chalmers:~/www/org/archive"
-              :publishing-function org-html-publish-to-html)
-
              ("web"
               :base-directory ,(concat org-directory "web/")
               :base-extension "org"
               :publishing-directory "/ssh:jassob:/var/www/"
               :publishing-function org-html-publish-to-html)
 
-             ("jassob" :components ("html" "archive" "org-static"))
-             ("chalmers" :components ("html-chalmers"
-                                      "org-static-chalmers"
-                                      "archive-chalmers"))
-             ("all" :components ("jassob" "chalmers"))))
+             ("jassob" :components ("html" "archive" "org-static" "web"))
+             ("all" :components ("jassob"))))
 
      (defun local/publish-jassob ()
        "Publishes \"jassob\" project"
