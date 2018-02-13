@@ -1231,7 +1231,8 @@
 
                                 ;; Calendar files (synced with org-gcal)
                                 "calendar/family.org" "calendar/personal.org"
-                                "calendar/spex.org" "calendar/ensemble.org")))
+                                "calendar/spex.org" "calendar/ensemble.org"
+                                "calendar/chalmers.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
@@ -1342,27 +1343,7 @@
    with other people, this section is about how I make these two work
    together.
 
-   #+begin_src emacs-lisp :tangle init.el
-     (use-package org-gcal
-       :init
-       (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file"))
-       :config
-       (local--init-file-if-missing org-gcal--auth-file
-                                    #'org-gcal--prompt-for-credentials)
-       (let ((credentials (org-gcal--get-credentials)))
-           (setq org-gcal-client-id (car credentials)
-                 org-gcal-client-secret (cdr credentials)))
-       (setq org-gcal-dir (concat etc-dir "org-gcal/")
-             org-gcal-token-file (concat org-gcal-dir ".org-gcal-token"))
-       (if (file-exists-p (concat etc-dir "org-gcal-file-alist-file"))
-           (setq org-gcal-file-alist (eval (read-from-file (concat etc-dir "org-gcal-file-alist-file"))))
-         (warn (concat "File " (concat etc-dir "org-gcal-file-alist-file")
-                       " not found. Create it and fill it with an alist in "
-                       "the following format: "
-                       "'(( \"calendar-id\" . \"calendar-org-file\"))"))))
-   #+end_src
-
-   Some nifty helping functions to handle retrieving and storing
+   First some nifty helping functions to handle retrieving and storing
    credentials.
 
    #+begin_src emacs-lisp :tangle init.el
@@ -1383,6 +1364,28 @@
        (interactive)
        (local--update-alist-file org-gcal--auth-file
                                  (org-gcal--prompt-for-credentials)))
+   #+end_src
+
+   Now that we have our functions in place, let's use them when
+   customizing our org-gcal package.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package org-gcal
+       :init
+       (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file"))
+       (local--init-file-if-missing org-gcal--auth-file
+                                    #'org-gcal--prompt-for-credentials)
+       (let ((credentials (org-gcal--get-credentials)))
+           (setq org-gcal-client-id (car credentials)
+                 org-gcal-client-secret (cdr credentials)))
+       (setq org-gcal-dir (concat etc-dir "org-gcal/")
+             org-gcal-token-file (concat org-gcal-dir ".org-gcal-token"))
+       (if (file-exists-p (concat etc-dir "org-gcal-file-alist-file"))
+           (setq org-gcal-file-alist (eval (read-from-file (concat etc-dir "org-gcal-file-alist-file"))))
+         (warn (concat "File " (concat etc-dir "org-gcal-file-alist-file")
+                       " not found. Create it and fill it with an alist in "
+                       "the following format: "
+                       "'(( \"calendar-id\" . \"calendar-org-file\"))"))))
    #+end_src
 
 * Coding
