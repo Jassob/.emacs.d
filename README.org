@@ -796,14 +796,19 @@
 
    #<<org-files>>
 
-   | organizer.org   | Main org file, used for org-capture and tasks etc |
-   | personal.org    | Habits, personal tasks, etc                       |
-   | people.org      | People-related tasks                              |
-   | journal.org.gpg | Journal entries (encrypted)                       |
-   | studies.org     | Chalmers-related tasks                            |
-   | archive.org     | Archived subtrees                                 |
-   | reading.org     | Org file for book notes                           |
-   | calendar.org    | An org file with ambition to sync via org-gcal    |
+   | organizer.org         | Main org file, used for org-capture and tasks etc             |
+   | people.org            | People-related tasks                                          |
+   | journal.org.gpg       | Journal entries (encrypted)                                   |
+   | studies.org           | Chalmers-related tasks                                        |
+   | reading.org           | Org file for book notes                                       |
+   | watching.org          | Org file for stuff I'd like to watch                          |
+   | calendar/personal.org | Events and todos from my calendar                             |
+   | calendar/family.org   | Events and todos from my familys calendar                     |
+   | calendar/spex.org     | Events and todos from the Chalmersspex Bob 2018 calendar      |
+   | calendar/ensemble.org | Events and todos from the Ensemble 2018 calendar              |
+   | calendar/theatre.org  | Events and todos from the practice schedule for Ensemble 2018 |
+   | calendar/chalmers.org | Events and todos from my current Chalmers course schedule     |
+
 
 ** Modules
 
@@ -1232,7 +1237,7 @@
                                 ;; Calendar files (synced with org-gcal)
                                 "calendar/family.org" "calendar/personal.org"
                                 "calendar/spex.org" "calendar/ensemble.org"
-                                "calendar/chalmers.org")))
+                                "calendar/chalmers.org" "calendar/theatre.org")))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
