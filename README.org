@@ -1842,5 +1842,132 @@
                                 (weechat--prompt-for-auth)))
   #+end_src
 
+* Different configs
 
+  I've added =noweb= references to every code block that I want
+  tangled to source files. Therefore I can select which source blocks
+  I want for less complete environments, to save startup time.
+
+  We start by defining what code blocks are common for every config.
+
+  #+name: common-base-config
+  #+begin_src emacs-lisp :noweb yes
+    ;; System init stuff
+    <<sys-dir-init>>
+    <<create-sys-dir>>
+    <<package/settings>>
+    <<package/use-package>>
+    <<file-help-funs>>
+    <<tramp-dir-settings>>
+    <<utf8>>
+
+    ;; Backup and auto-save
+    <<set-backup-directory-alist>>
+    <<backup-settings>>
+    <<auto-save-settings>>
+    <<identity-stuff>>
+    <<local-alist-funs>>
+    <<local-keymap-functions>>
+    <<local-keymap>>
+    <<toolbar-settings>>
+    <<hide-splash-screen>>
+
+    ;; Packages
+    <<package/smex>>
+    <<package/guide-key>>
+    <<package/recentf>>
+    <<font-settings>>
+    <<theme-settings>>
+    <<windmove-keybindings>>
+    <<buf-move-keybindings>>
+    <<resize-window-keybindings>>
+  #+end_src
+
+  Because I want to be able to script stuff with =org-gcal= and other
+  =org= packages I think I need a smaller emacs+org config.
+
+  #+name: base+org
+  #+begin_src emacs-lisp :noweb yes :tangle org.el
+    <<common-base-config>>
+
+    ;; Org stuff
+    <<package/org>>
+    <<org/drawers>>
+    <<org/modules-and-export-backends>>
+    <<org/global-keybindings>>
+    <<org/keybindings>>
+    <<org/project-links>>
+    <<org/clock-in-agenda>>
+    <<org/org-cut-subtrees>>
+    <<org/agenda-speed-commands>>
+    <<org/dir-and-default-settings>>
+    <<org/todo-keywords>>
+    <<org/task-tags>>
+    <<org/task-efforts>>
+    <<org/effort-on-clock-in>>
+    <<org/habits-everyday>>
+    <<org/task-dependencies>>
+    <<org/structure-templates>>
+    <<org/capture-templates-variables>>
+    <<org/capture-templates>>
+    <<org/agenda-files>>
+    <<org/agenda-settings>>
+    <<org/exclude-function>>
+    <<org/publishing>>
+    <<org-gcal/functions>>
+    <<package/org-gcal>>
+  #+end_src
+
+  Other kinds of configs are the coding configs and since they will be
+  largely the same we start by defining a base code config.
+
+  #+name: code-config
+  #+begin_src emacs-lisp :noweb yes
+    <<common-base-config>>
+    <<common-code-mode>>
+    <<common-code-map/trailing-whitespace>>
+    <<common-code-map/elisp>>
+    <<package/common-code-mode-dependencies>>
+    <<package/projectile>>
+    <<package/spaceline>>
+    <<package/magit>>
+  #+end_src
+
+  A Haskell config.
+
+  #+begin_src emacs-lisp :tangle haskell.el :noweb yes
+    <<code-config>>
+    <<package/haskell>>
+    <<haskell/auto-insert-module-template>>
+    <<haskell/insert-undefined>>
+  #+end_src
+
+  A Python config.
+
+  #+begin_src emacs-lisp :tangle python.el :noweb yes
+    <<code-config>>
+    <<package/python>>
+    <<package/flycheck-mypy>>
+    <<package/pip-requirements>>
+  #+end_src
+
+  A Web development config.
+
+  #+begin_src emacs-lisp :tangle web.el :noweb yes
+    <<code-config>>
+    <<package/web-mode>>
+  #+end_src
+
+  A C# config.
+
+  #+begin_src emacs-lisp :tangle csharp.el :noweb yes
+    <<code-config>>
+    <<package/csharp>>
+  #+end_src
+
+  A Nix config.
+
+  #+begin_src emacs-lisp :tangle nix.el :noweb yes
+    <<code-config>>
+    <<package/csharp>>
   #+end_src
