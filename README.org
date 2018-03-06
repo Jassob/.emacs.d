@@ -28,6 +28,7 @@
    directory, so let's create a directory hierarchy for all files that
    I'm not interested in.
 
+   #+name: sys-dir-init
    #+begin_src emacs-lisp :tangle init.el
      (defvar local-dir (concat user-emacs-directory ".local/")
        "Root directory for local Emacs files. Use this as
@@ -59,6 +60,7 @@
    We need to make sure that the directories are created before we try
    to make Emacs store stuff there.
 
+   #+name: create-sys-dir
    #+begin_src emacs-lisp :tangle init.el
      (dolist (dir (list local-dir etc-dir cache-dir packages-dir include-dir))
        (unless (file-exists-p dir)
@@ -80,6 +82,7 @@
    We might want to read and store values to/from a file, these
    routines lets us store Emacs lisp values and then retrieve them.
 
+   #+name: file-help-funs
    #+begin_src emacs-lisp :tangle init.el
      (defun print-to-file (filename data)
        "Create FILENAME and store DATA inside it."
@@ -98,6 +101,7 @@
    exist is a common operation, such as activating a mode for the
    first time.
 
+   #+name: local-alist-funs
    #+begin_src emacs-lisp :tangle init.el
      (defun local--update-alist-file (file val)
        "Update FILE with value VAL.
@@ -124,6 +128,7 @@
 
    So, lets store all backups in the local directory!
 
+   #+name: set-backup-directory-alist
    #+begin_src emacs-lisp :tangle init.el
      (setq backup-directory-alist `((".*" . ,(concat local-dir "backups"))))
    #+end_src
@@ -132,6 +137,7 @@
    backup files that is under version control (in case we forget to
    commit every interesting change).
 
+   #+name: backup-settings
    #+begin_src emacs-lisp :tangle init.el
      (setq delete-old-versions -1
            version-control t
@@ -142,6 +148,7 @@
    files where we want them instead of having them in the emacs root
    directory.
 
+   #+name: auto-save-settings
    #+begin_src emacs-lisp :tangle init.el
      (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
        ;; Create directory
@@ -203,6 +210,7 @@
    over SSH, rlogin or Telnet and can also be used to edit write local
    protected files using sudo.
 
+   #+name: tramp-dir-settings
    #+begin_src emacs-lisp :tangle init.el
      (setq tramp-backup-directory-alist backup-directory-alist
            tramp-persistency-file-name (concat cache-dir "tramp")
@@ -215,6 +223,7 @@
    First we need to activate the package system and add the melpa
    repository, if it is not already added.
 
+   #+name: package/settings
    #+begin_src emacs-lisp :tangle init.el
       (require 'package)
       (setq package-user-dir (expand-file-name "elpa" packages-dir)
@@ -234,23 +243,12 @@
    I use =use-package= for keeping track of my packages, customising them
    and load them lazily.
 
+   #+name: package/use-package
    #+begin_src emacs-lisp :tangle init.el
      (unless (package-installed-p 'use-package)
        (package-refresh-contents)
        (package-install 'use-package))
      (setq use-package-verbose t)
-   #+end_src
-
-** Automatic byte code compilation of Elisp
-
-   Executing byte-compiled elisp code is faster than source code and
-   we like speed!
-
-   #+begin_src emacs-lisp :tangle init.el
-     (require 'use-package)
-     (use-package auto-compile
-       :config (auto-compile-on-load-mode))
-     (setq load-prefer-newer t)
    #+end_src
 
 ** Secrets and custom settings
@@ -271,6 +269,7 @@
 
   Give my setup a personal touch.
 
+  #+name: identity-stuff
   #+begin_src emacs-lisp :tangle init.el
      (setq user-full-name "Jacob Jonsson"
        user-mail-address "jacob.t.jonsson@gmail.com")
@@ -286,6 +285,7 @@
   I've seen the splash screen enough times now, please don't show it
   to me anymore.
 
+  #+name: hide-splash-screen
   #+begin_src emacs-lisp :tangle init.el
      (setq inhibit-splash-screen t)
   #+end_src
@@ -294,6 +294,7 @@
   execute-extended-command works in most cases I personally prefer
   =smex= and use more Ido features.
 
+  #+name: package/smex
   #+begin_src emacs-lisp :tangle init.el
      (use-package smex :ensure t :demand t
        :config
@@ -309,6 +310,7 @@
   I'd like to keep a list of my recently visited files and =recentf=
   helps me do that.
 
+  #+name: package/recentf
   #+begin_src emacs-lisp :tangle init.el
      (use-package recentf
        :config
@@ -327,6 +329,7 @@
   To help me remember my commands I use =guide-key=, which displays a
   popup showing all the keybindings belonging to a prefix key.
 
+  #+name: package/guide-key
   #+begin_src emacs-lisp :tangle init.el
      (use-package guide-key
        :ensure t
@@ -343,6 +346,7 @@
    to quickly edit my config for some reason. A command for editing
    and untangling the org file.
 
+   #+name: local-keymap-functions
    #+begin_src emacs-lisp :tangle init.el
      (defun local--find-init-file ()
        "Find the init file."
@@ -370,6 +374,7 @@
    I have defined a keymap for commands that I'd like to execute as if
    they were defined in global keymap.
 
+   #+name: local-keymap
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys :prefix-map my-local-map
                 :prefix "M--"
@@ -400,6 +405,7 @@
    redo is just an undo of your last undo!), but I like being able to
    visualise the timeline of my file. Enters =undo-tree-mode=!
 
+   #+name: package/undo-tree
    #+begin_src emacs-lisp :tangle init.el
       (use-package undo-tree
         :ensure t
@@ -415,6 +421,7 @@
    We would like Emacs to prefer UTF8 when reading ambiguous bit
    strings.
 
+   #+name: utf8
    #+begin_src emacs-lisp :tangle init.el
      (prefer-coding-system 'utf-8)
      (when (display-graphic-p)
@@ -429,6 +436,7 @@
 
   Firefox is currently my driver of choice.
 
+  #+name: external-programs
   #+begin_src emacs-lisp :tangle init.el
     (setq browse-url-browser-function 'browse-url-firefox
           browse-url-new-window-flag  t)
@@ -441,6 +449,7 @@
    without. Luckily there exists an aptly named package that solves
    this use case.
 
+   #+name: package/multiple-cursors
    #+begin_src emacs-lisp :tangle init.el
      (use-package multiple-cursors :ensure t
        :init
@@ -458,6 +467,7 @@
    use ~windmove~ and ~buffer-move~ to navigate amongst my buffers and
    I have them bound to, in my opinion at least, sensible keybindings.
 
+   #+name: windmove-keybindings
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("<S-s-left>"  . windmove-left)
                 ("<S-s-up>"    . windmove-up)
@@ -468,6 +478,7 @@
    With ~buffer-move~ I can move around buffers and swap them around
    on the screen with ease.
 
+   #+name: buf-move-keybindings
    #+begin_src emacs-lisp :tangle init.el
      (use-package buffer-move :ensure t
        :bind (("C-c <left>"  . buf-move-left)
@@ -479,6 +490,7 @@
    Sometimes it is nice to be able to shrink and enlarge windows
    easily and that is why I've bounded them to simple keys:
 
+   #+name: resize-window-keybindings
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("S-C-<left>"  . shrink-window-horizontally)
                 ("S-C-<right>" . enlarge-window-horizontally)
@@ -493,31 +505,29 @@
    bar. However, on a smaller screen I find it a waste of screen
    space (especially since I don't use the mouse myself).
 
+   #+name: toolbar-settings
    #+begin_src emacs-lisp :tangle init.el
      (tool-bar-mode -1)
      (menu-bar-mode -1)
      (scroll-bar-mode -1)
    #+end_src
 
-   I used to use =theme-changer= to change theme depending on whether
-   the sun was up or not, but I don't do that anymore. Location
-   information can however still be interesting.
+   I really like the =sanity-tomorrow-night= theme. It's a dark theme
+   with good contrast and stuff.
 
+   #+name: theme-settings
    #+begin_src emacs-lisp :tangle init.el
-     (defvar calendar-location-name "Gothenburg, SE")
-     (defvar calendar-latitude 57.71)
-     (defvar calendar-longitude 11.97)
-
      (unless (package-installed-p 'color-theme-sanityinc-tomorrow)
        (package-install 'color-theme-sanityinc-tomorrow))
 
      (load-theme 'sanityinc-tomorrow-night t)
    #+end_src
 
-   I've found the spaceline-all-the-icons mode-line theme. It is a
+   I've found the =spaceline-all-the-icons= mode-line theme. It is a
    reasonably customizable mode-line theme for spaceline (spacemacs'
    mode-line).
 
+   #+name: package/spaceline
    #+begin_src emacs-lisp :tangle init.el
      (use-package spaceline :demand t :ensure t
        :config
@@ -533,6 +543,7 @@
    on my system, in descending order. The first font that is available
    will be set as the main font for Emacs.
 
+   #+name: font-settings
    #+begin_src emacs-lisp :tangle init.el
           (use-package cl-lib :ensure t)
           (defun font-existsp (font)
@@ -554,9 +565,10 @@
             (let ((fonts (font-avail font-preferences)))
               (unless (null fonts) (progn
                   (set-face-attribute 'default nil :font (car fonts))
-                  (set-face-attribute 'default nil :weight 'thin)))))
+                  (set-face-attribute 'default nil :weight 'medium)))))
    #+end_src
 
+   #+name: ligature-settings
    #+begin_src emacs-lisp :tangle init.el
      (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
                     (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
@@ -598,6 +610,7 @@
    the beginning of the text on the line (and skip all the
    indentation whitespace).
 
+   #+name: move-to-start-of-line
    #+begin_src emacs-lisp :tangle init.el
      (defun local/smarter-move-beginning-of-line (arg)
        "Move point back to indentation of beginning of line.
@@ -637,6 +650,7 @@
    =magit=, which is a Git frontend to Emacs and one of the few Git
    frontends I really like.
 
+   #+name: package/magit
    #+begin_src emacs-lisp :tangle init.el
      (use-package magit :ensure t :defer t)
    #+end_src
@@ -644,6 +658,7 @@
    =Git-gutter+= is a package that shows a line's status (added,
    modifid or deleted) in a file that is version controlled by Git.
 
+   #+name: package/git-gutter+
    #+begin_src emacs-lisp :tangle init.el
      (use-package git-gutter+ :ensure t :defer t
        :bind (:map git-gutter+-mode-map
@@ -662,6 +677,7 @@
 
    To help me interact with my Github repositories I use =magithub=.
 
+   #+name: package/magithub
    #+begin_src emacs-lisp :tangle init.el
      (use-package magithub :after magit
        :init (defvar magithub--auth-file (concat etc-dir "magithub-auth-file"))
@@ -693,6 +709,7 @@
    setup of this customization I have a function that fills this files
    with the needed data.
 
+   #+name: magithub-auth-settings
    #+begin_src emacs-lisp :tangle init.el
      (defun magithub--prompt-for-auth ()
        "Prompts the user for magithub credentials."
@@ -718,6 +735,7 @@
    multiple projects and it also ties in well with my mode-line
    config.
 
+   #+name: package/projectile
    #+begin_src emacs-lisp :tangle init.el
      (use-package projectile :ensure t :demand t
        :config
@@ -732,6 +750,7 @@
    efficient enough. By default it shows every file, even hidden ones,
    which results in a lot of noise.
 
+   #+name: dired-hidden-files
    #+begin_src emacs-lisp :tangle init.el
      (require 'dired-x)
      (setq dired-omit-files "^\\...+$")
@@ -748,6 +767,7 @@
    a document. Therefore we add ~TeX-engine~ to the list of safe local
    variables.
 
+   #+name: auctex
    #+begin_src emacs-lisp :tangle init.el
      (eval-after-load 'auctex
        (add-to-list 'safe-local-variable-values '(TeX-engine . xetex)))
@@ -762,6 +782,7 @@
 
   Set some initialization options regarding time tracking.
 
+  #+name: package/org
   #+begin_src emacs-lisp :tangle init.el
     (use-package org :ensure t :defer t
       :config
@@ -781,6 +802,7 @@
 
   Put all org logs into a drawer.
 
+  #+name: org/drawers
   #+begin_src emacs-lisp :tangle init.el
     (setq org-log-into-drawer "LOGBOOK"
           org-clock-into-drawer t)
@@ -809,12 +831,12 @@
    | calendar/theatre.org  | Events and todos from the practice schedule for Ensemble 2018 |
    | calendar/chalmers.org | Events and todos from my current Chalmers course schedule     |
 
-
 ** Modules
 
    There are a lot of modules that extend the core functionality of
    Org mode. This is the modules I personally use and find useful.
 
+   #+name: org/modules-and-export-backends
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
        (setq org-modules '(org-bbdb
@@ -841,6 +863,7 @@
    Some global Org keybindings to set up easy capturing and
    retrieving links and so on.
 
+   #+name: org/global-keybindings
    #+begin_src emacs-lisp :tangle init.el
      (bind-keys ("C-c c"     . org-capture)
                 ("C-c a"     . org-agenda)
@@ -854,6 +877,7 @@
    Stacking killed content with =append-next-kill= is more useful
    than being able to copy a region in a table.
 
+   #+name: org/keybindings
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
        (bind-keys
@@ -875,6 +899,7 @@
    tasks, if they for instance depend on each other. These functions
    enable me link tasks and to quickly jump between linked tasks.
 
+   #+name: org/project-links
    #+begin_src emacs-lisp :tangle init.el
      (defun local/org-follow-entry-link ()
        "Follow the defined link for this entry."
@@ -898,6 +923,7 @@
 
    To be able to clock in easily is more interesting than the diary.
 
+   #+name: org/clock-in-agenda
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
          (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
@@ -905,6 +931,7 @@
 
    Killing and yanking subtrees.
 
+   #+name: org/org-cut-subtrees
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'org
        (bind-key "C-c k" 'org-cut-subtree org-mode-map)
@@ -917,6 +944,7 @@
     agenda entries. Used for instance to easily clock in or out on a
     the task at point.
 
+    #+name: org/agenda-speed-commands
     #+begin_src emacs-lisp :tangle init.el
       (defun local/org-use-speed-commands-for-headings-and-lists ()
       "Activate speed commands on list items too."
@@ -943,6 +971,7 @@
    to a directory in my Dropbox folder, so I can update it on
    multiple devices (possibly also org-mobile?).
 
+   #+name: org/dir-and-default-settings
    #+begin_src emacs-lisp :tangle init.el
      (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
                                  (file-name-as-directory "personal"))
@@ -962,6 +991,7 @@
     tells org that it should automatically log timestamp of the state
     change.
 
+    #+name: org/todo-keywords
     #+begin_src emacs-lisp :tangle init.el
       (setq org-todo-keywords
         '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
@@ -975,6 +1005,7 @@
     Many GTD-apps organize the tasks into projects and contexts, this
     is of course doable inside =Org mode= as well.
 
+    #+name: org/task-tags
     #+begin_src emacs-lisp :tangle init.el
       (setq org-tag-alist '(("@work" . ?w)
                             ("@study" . ?s)
@@ -994,6 +1025,7 @@
     I think that this should make the efforts filterable, so that I
     can find short tasks to complete.
 
+    #+name: org/task-efforts
     #+begin_src emacs-lisp :tangle init.el
       (with-eval-after-load 'org
         (add-to-list 'org-global-properties
@@ -1005,6 +1037,7 @@
     From "Add an effort estimate on the fly when clocking in" on the
     [[http://orgmode.org/worg/org-hacks.html][Org Hacks]] page:
 
+    #+name: org/effort-on-clock-in
     #+begin_src emacs-lisp :tangle init.el
       (add-hook 'org-clock-in-prepare-hook
                 'local/org-mode-ask-effort)
@@ -1028,6 +1061,7 @@
 
     We want to show all habits, not just the ones for today.
 
+    #+name: org/habits-everyday
     #+begin_src emacs-lisp :tangle init.el
     (setq org-habit-show-habits-only-for-today nil)
     #+end_src emacs-lisp
@@ -1037,6 +1071,7 @@
     If tasks depend on each other, make sure that their dependencies
     are enforced by =Org mode= and that this is clear when I show tasks.
 
+    #+name: org/task-dependencies
     #+begin_src emacs-lisp :tangle init.el
       (setq org-enforce-todo-dependencies t
             org-track-ordered-properties-with-tag t
@@ -1049,6 +1084,7 @@
    by a letter in ~org-structure-template-alist~ and then pressing the TAB key.
    So lets customize this alist a bit.
 
+   #+name: org/structure-templates
    #+begin_src emacs-lisp :tangle init.el
     (setq org-structure-template-alist
           '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
@@ -1074,6 +1110,7 @@
    for more advanced capture types, like reading stuff and so
    on.
 
+   #+name: org/capture-templates-variables
    #+begin_src emacs-lisp :tangle init.el
     (defvar local/org-basic-task-template "* TODO %^{Task}
       :PROPERTIES:
@@ -1124,6 +1161,7 @@
    - ~%U~ - Org will insert an inactive timestamp here,
    - ~%l~ - Org will insert a literal link here,
 
+   #+name: org/capture-templates
    #+begin_src emacs-lisp :tangle init.el
      (setq org-capture-templates
            `(("t" "Tasks" entry
@@ -1221,6 +1259,7 @@
 
     This is the org files in which I keep agenda items and todos.
 
+    #+name: org/agenda-files
     #+begin_src emacs-lisp :tangle init.el
       (defun local/existing-files-in-dir (dir files)
         "Return all files from the list FILES that exists in directory DIR."
@@ -1244,6 +1283,7 @@
     also want the agenda to hide finished items, even if they are
     scheduled.
 
+    #+name: org/agenda-settings
     #+begin_src emacs-lisp :tangle init.el
       (setq org-agenda-tags-column -100
             org-agenda-sticky nil
@@ -1270,6 +1310,7 @@
     is down, errands and calls are hidden during non-work time and
     inactive tasks are always hidden.
 
+    #+name: org/exclude-function
     #+begin_src emacs-lisp :tangle init.el
       (defun local/org-auto-exclude-function (tag)
         (and (cond
@@ -1293,6 +1334,7 @@
    rather well for this scenario, even though I probably would like
    do some automation on when it does the publishing.
 
+   #+name: org/publishing
    #+begin_src emacs-lisp :tangle init.el
      (require 'ox-html)
      (setq org-publish-project-alist
@@ -1351,6 +1393,7 @@
    First some nifty helping functions to handle retrieving and storing
    credentials.
 
+   #+name: org-gcal/functions
    #+begin_src emacs-lisp :tangle init.el
      (defun org-gcal--get-credentials ()
        "Get the stored client id and client secret from FILEPATH and return it a conscell in form of (CLIENT_ID . CLIENT_SECRET)."
@@ -1374,6 +1417,7 @@
    Now that we have our functions in place, let's use them when
    customizing our org-gcal package.
 
+   #+name: package/org-gcal
    #+begin_src emacs-lisp :tangle init.el
      (use-package org-gcal
        :init
@@ -1401,6 +1445,7 @@
    checking and auto-completion when it exists and line indicators
    that shows if a line is modified, added or removed.
 
+   #+name: common-code-mode
    #+begin_src emacs-lisp :tangle init.el
      (define-minor-mode common-code-mode
        "A minor mode for enabling common minor modes and other
@@ -1428,6 +1473,7 @@
 
    I want trailing white space to be removed automatically before saving.
 
+   #+name: common-code-map/trailing-whitespace
    #+begin_src emacs-lisp :tangle init.el
      (add-hook 'common-code-mode-hook
                (lambda () (add-hook 'before-save-hook
@@ -1436,12 +1482,14 @@
 
    I want Emacs Lisp to use my fancy new minor mode.
 
+   #+name: common-code-mode/elisp
    #+begin_src emacs-lisp :tangle init.el
      (add-hook 'emacs-lisp-mode-hook 'common-code-mode)
    #+end_src
 
    Install the needed packages in case they don't exists.
 
+   #+name: package/common-code-mode-dependencies
    #+begin_src emacs-lisp :tangle init.el
      ;; Syntax and error checker
      (use-package flycheck :ensure t)
@@ -1468,6 +1516,7 @@
    although I don't remember doing it by myself so let us add functions
    that do this automatically in new files.
 
+   #+name: haskell/auto-insert-module-template
    #+begin_src emacs-lisp :tangle init.el
      (defun haskell-auto-insert-module-template ()
        "Insert a module template for the newly created buffer."
@@ -1495,6 +1544,7 @@
    Undefined is a long and complicated word to type correctly and I
    write it a lot when coding Haskell so here is a shortcut for it.
 
+   #+name: haskell/insert-undefined
    #+begin_src emacs-lisp :tangle init.el
      (defun haskell-insert-undefined ()
        "Insert undefined."
@@ -1504,6 +1554,7 @@
 
    Next stop is to actually install and configure the modes and packages.
 
+   #+name: package/haskell
    #+begin_src emacs-lisp :tangle init.el
      (use-package haskell-mode
        :mode "\\.hs$"
@@ -1565,6 +1616,7 @@
    support for dependant types. It is used in some courses at
    Chalmers, where it is also mainly developed.
 
+   #+name: package/agda
    #+begin_src emacs-lisp :tangle no
      (load-file (let ((coding-system-for-read 'utf-8))
                   (shell-command-to-string "agda-mode locate")))
@@ -1578,6 +1630,7 @@
    programming Haskell. Thanks to company and flycheck, I get some
    helpful information about the code.
 
+   #+name: package/python
    #+begin_src emacs-lisp :tangle init.el
      (use-package python-mode :commands python-mode
        :init
@@ -1615,6 +1668,7 @@
    Python. [[http://mypy-lang.org/][Mypy]] is a type checker for python and [[https://github.com/lbolla/emacs-flycheck-mypy][flycheck-mypy]] is an
    Flycheck interface for said type checker.
 
+   #+name: package/flycheck-mypy
    #+begin_src emacs-lisp :tangle init.el
      (use-package flycheck-mypy
        :init
@@ -1641,6 +1695,7 @@
 
    There exists an Emacs mode for the requirement-file-format in pip.
 
+   #+name: package/pip-requirements
    #+begin_src emacs-lisp :tangle init.el
      (use-package pip-requirements
        :mode ("/requirements.txt$" . pip-requirements-mode))
@@ -1651,6 +1706,7 @@
    I use web-mode for when I have to do web programming and I actually
    consider it programming, so I'll want to load my ~common-code-mode~.
 
+   #+name: package/web-mode
    #+begin_src emacs-lisp :tangle init.el
      (use-package web-mode :ensure t :mode "\\.dtl$"
        :init
@@ -1673,6 +1729,7 @@
    in Emacs, even though I still need to use VS to run tests and
    build.
 
+   #+name: package/csharp
    #+begin_src emacs-lisp :tangle init.el
      (use-package csharp-mode :defer t
        :mode "\\.cs'"
@@ -1693,6 +1750,7 @@
    When writing Nix expressions I want to activate the minor modes
    active that I have when coding.
 
+   #+name: package/nix-mode
    #+begin_src emacs-lisp :tangle init.el
      (use-package nix-mode
        :init
@@ -1707,6 +1765,7 @@
   when scolling with a touchpad. So I disable ~pdf-view-continous~ and
   use =SPC= to scroll and advance the pages instead.
 
+  #+name: package/pdf-tools
   #+begin_src emacs-lisp :tangle init.el
     (use-package pdf-tools
       :config
@@ -1719,6 +1778,7 @@
 
   EMMS (Emacs MultiMedia System) is a mode for playing music.
 
+  #+name: package/emms
   #+begin_src emacs-lisp :tangle init.el
     (use-package emms :defer t
       :config (setq emms-directory (concat cache-dir "emms")))
@@ -1734,6 +1794,7 @@
   and will thus not need to use a separate chat protocol besides IRC,
   but until then I stick with weechat.
 
+  #+name: package/weechat
   #+begin_src emacs-lisp :tangle init.el
     (use-package weechat :commands (weechat-connect)
       :init (defvar weechat--auth-file (concat etc-dir "weechat-auth-file"))
@@ -1764,6 +1825,7 @@
   this function to create the =weechat-auth-file= in the correct
   format.
 
+  #+name: weechat/auth-settings
   #+begin_src emacs-lisp :tangle init.el
     (defun weechat--prompt-for-auth ()
       "Store the weechat credentials in =etc-dir/weechat-auth-file.el=."
@@ -1780,11 +1842,5 @@
                                 (weechat--prompt-for-auth)))
   #+end_src
 
-  To read my mail inside Emacs I use =Gnus=. =Gnus= reads a downloaded
-  copy of my mailbox stored as a maildir, which is synchronized by
-  =mbsync=.
 
-  #+begin_src emacs-lisp :tangle init.el
-    (setq user-mail-address "jacob.t.jonsson@gmail.com"
-          user-full-name "Jacob Jonsson")
   #+end_src
