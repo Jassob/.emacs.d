@@ -218,6 +218,22 @@
 
    #+end_src
 
+   When I edit system configuration files I might accidentally find
+   files as my regular user, even though I need sudo rights to edit
+   them. This advice makes =ido-find-file= automatically open it
+   through =TRAMP= as sudo if it is not writable by my user.
+
+   #+name: tramp-sudo-edit
+   #+begin_src emacs-lisp :tangle init.el
+     (defadvice ido-find-file (after find-file-sudo activate)
+       "Find file as root if necessary."
+       (unless (and buffer-file-name
+                    (file-writable-p buffer-file-name)
+                    (not (file-directory-p buffer-file-name)))
+         (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+   #+end_src
+
 ** Packages
 
    First we need to activate the package system and add the melpa
@@ -331,9 +347,8 @@
 
   #+name: package/guide-key
   #+begin_src emacs-lisp :tangle init.el
-     (use-package guide-key
-       :ensure t
-       :config
+     (use-package guide-key :diminish t
+       :ensure t :config
        (setq guide-key/guide-key-sequence t
              guide-key/popup-window-position 'bottom
              guide-key/highlight-command-regexp ".*")
@@ -408,8 +423,7 @@
    #+name: package/undo-tree
    #+begin_src emacs-lisp :tangle init.el
       (use-package undo-tree
-        :ensure t
-        :diminish undo-tree-mode
+        :ensure t :diminish t
         :config
         (global-undo-tree-mode)
         (setq undo-tree-visualizer-timestamps t)
@@ -660,7 +674,7 @@
 
    #+name: package/git-gutter+
    #+begin_src emacs-lisp :tangle init.el
-     (use-package git-gutter+ :ensure t :defer t
+     (use-package git-gutter+ :ensure t :defer t :diminish t
        :bind (:map git-gutter+-mode-map
                    ;; Navigate on hunks
                    ("C-x n"   . git-gutter+-next-hunk)
@@ -1495,7 +1509,7 @@
      (use-package flycheck :ensure t)
 
      ;; Auto completion
-     (use-package company :ensure t)
+     (use-package company :ensure t :diminish t)
 
      ;; Rainbow delimiters
      (use-package rainbow-delimiters :ensure t)
@@ -1504,7 +1518,7 @@
      (use-package linum-relative :ensure t)
 
      ;; Parens handling
-     (use-package smartparens :ensure t
+     (use-package smartparens :ensure t :diminish t
        :init
        (require 'smartparens-config))
    #+end_src
@@ -1580,7 +1594,7 @@
            (setq haskell-font-lock-symbols nil)
          (setq haskell-font-lock-symbols 'unicode)))
 
-     (use-package dante :diminish t :after haskell-mode
+     (use-package dante :after haskell-mode :diminish t
        :init
        (if (executable-find "cabal")
            (progn
@@ -1929,14 +1943,16 @@
     <<common-code-map/elisp>>
     <<package/common-code-mode-dependencies>>
     <<package/projectile>>
-    <<package/spaceline>>
     <<package/magit>>
+    <<package/multiple-cursors>>
   #+end_src
 
   A Haskell config.
 
   #+begin_src emacs-lisp :tangle haskell.el :noweb yes
     <<code-config>>
+    <<font-settings>>
+    <<ligature-settings>>
     <<package/haskell>>
     <<haskell/auto-insert-module-template>>
     <<haskell/insert-undefined>>
