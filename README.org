@@ -1577,12 +1577,16 @@
        :bind
        (:map haskell-mode-map
              ("C-`"     . haskell-interactive-bring)
+             ("C-c C-r" . xref-find-references)
+             ("C-c C-," . xref-find-definitions)
+             ("C-c C-." . pop-tag-mark)
              ("C-c C-t" . haskell-process-do-type)
              ("C-c c"   . haskell-process-cabal)
              ("C-c C-c" . haskell-process-cabal-build)
              ("C-c C-u" . haskell-insert-undefined)
              ("C-c C-a" . haskell-insert-doc))
        :config
+       (setq haskell-tags-on-save t)
        (add-hook 'haskell-mode-hook 'common-code-mode)
        (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
        (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
