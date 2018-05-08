@@ -1327,7 +1327,7 @@
               (800 1000 1200 1400 1600 1800 2000)
               "......"
               "----------------")
-            org-columns-default-format "%14SCHEDULED %Effort{:} %1PRIORITY %TODO %50ITEM %TAGS")
+            org-columns-default-format "14%DEADLINE %Effort{:} %CLOCKSUM %1PRIORITY %TODO %50ITEM %TAGS")
     #+end_src
 
     Sometimes I want to be able to exclude stuff from the agenda view,
