@@ -1922,6 +1922,32 @@
   Because I want to be able to script stuff with =org-gcal= and other
   =org= packages I think I need a smaller emacs+org config.
 
+  #+name: org-gcal
+  #+begin_src emacs-lisp :noweb yes :tangle minimal.el
+    ;; System init stuff
+    <<sys-dir-init>>
+    <<create-sys-dir>>
+    <<package/settings>>
+    <<package/use-package>>
+    <<file-help-funs>>
+    <<tramp-dir-settings>>
+    <<org/dir-and-default-settings>>
+    <<utf8>>
+
+    ;; Backup and auto-save
+    <<set-backup-directory-alist>>
+    <<backup-settings>>
+    <<auto-save-settings>>
+    <<identity-stuff>>
+    <<local-alist-funs>>
+    <<local-keymap-functions>>
+    <<local-keymap>>
+
+    ;; Packages
+    <<org-gcal/functions>>
+    <<package/org-gcal>>
+  #+end_src
+
   #+name: base+org
   #+begin_src emacs-lisp :noweb yes :tangle org.el
     <<common-base-config>>
