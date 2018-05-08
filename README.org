@@ -1622,6 +1622,9 @@
              (add-hook 'haskell-mode-hook 'dante-mode))
          (warn "haskell-mode: couldn't find cabal"))
        :config
+       (setq dante-load-flags '("+c" "-Wall"
+                                "-Wwarn=missing-home-modules"
+                                "-fno-diagnostics-show-caret"))
        (add-hook 'dante-mode-hook
                  (lambda ()
                    (flycheck-add-next-checker 'haskell-dante
