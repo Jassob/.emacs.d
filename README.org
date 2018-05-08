@@ -535,22 +535,6 @@
      (load-theme 'sanityinc-tomorrow-night t)
    #+end_src
 
-   I've found the =spaceline-all-the-icons= mode-line theme. It is a
-   reasonably customizable mode-line theme for spaceline (spacemacs'
-   mode-line).
-
-   #+name: package/spaceline
-   #+begin_src emacs-lisp :tangle init.el
-     (use-package spaceline :demand t :ensure t
-       :config
-       (use-package spaceline-all-the-icons :demand t :ensure t
-         :config
-         (spaceline-all-the-icons--setup-git-ahead)
-         (setq spaceline-all-the-icons-flycheck-alternate t
-               spaceline-all-the-icons-separator-type 'none)
-         (spaceline-all-the-icons-theme)))
-   #+end_src
-
    The fonts in =font-preferences= are the preferred fonts that I use
    on my system, in descending order. The first font that is available
    will be set as the main font for Emacs.
