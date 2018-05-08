@@ -1721,7 +1721,7 @@
 
    #+name: package/flycheck-mypy
    #+begin_src emacs-lisp :tangle init.el
-     (use-package flycheck-mypy
+     (use-package flycheck-mypy :defer t
        :init
        (add-to-list 'flycheck-disabled-checkers 'python-flake8)
        (add-to-list 'flycheck-disabled-checkers 'python-pylint)
@@ -1818,7 +1818,7 @@
 
   #+name: package/pdf-tools
   #+begin_src emacs-lisp :tangle init.el
-    (use-package pdf-tools
+    (use-package pdf-tools :defer t
       :config
       (pdf-tools-install)
       (setq pdf-view-continuous nil)
@@ -1910,6 +1910,7 @@
     <<package/use-package>>
     <<file-help-funs>>
     <<tramp-dir-settings>>
+    <<org/dir-and-default-settings>>
     <<utf8>>
 
     ;; Backup and auto-save
@@ -1951,7 +1952,6 @@
     <<org/clock-in-agenda>>
     <<org/org-cut-subtrees>>
     <<org/agenda-speed-commands>>
-    <<org/dir-and-default-settings>>
     <<org/todo-keywords>>
     <<org/task-tags>>
     <<org/task-efforts>>
