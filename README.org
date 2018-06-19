@@ -354,6 +354,20 @@
        (guide-key-mode t))
   #+end_src
 
+  Now that I'm trying out Dvorak (Svorak A5) these changes makes the
+  transition between key layouts easier.
+
+  #+name: dvorak-bindings
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Bind C-z to C-x
+    (global-set-key (kbd "C-z") ctl-x-map)
+
+    ;; Bind C-h to previous-line since C-p is no longer on the same half
+    ;; of the keyboard
+    (global-set-key (kbd "C-x C-h") help-map)
+    (global-set-key (kbd "C-h") 'previous-line)
+  #+end_src
+
 ** Commands for local keymap
 
    This is a command for finding the init file, for the times I need
