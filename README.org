@@ -228,7 +228,8 @@
      (defadvice ido-find-file (after find-file-sudo activate)
        "Find file as root if necessary."
        (when (and buffer-file-name
-                  (not (file-writable-p buffer-file-name)))
+                  (not (file-writable-p buffer-file-name))
+                  (y-or-n-p "Do you want to edit as sudo?"))
          (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
    #+end_src
 
