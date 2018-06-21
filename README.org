@@ -1770,8 +1770,8 @@
    #+end_src
 
 ** Nix
-   When writing Nix expressions I want to activate the minor modes
-   active that I have when coding.
+   When writing Nix expressions I want to activate the common code
+   minor mode.
 
    #+name: package/nix-mode
    #+begin_src emacs-lisp :tangle init.el
