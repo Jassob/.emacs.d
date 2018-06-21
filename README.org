@@ -1883,6 +1883,7 @@
     <<file-help-funs>>
     <<tramp-dir-settings>>
     <<org/dir-and-default-settings>>
+    <<dvorak-bindings>>
     <<utf8>>
 
     ;; Backup and auto-save
