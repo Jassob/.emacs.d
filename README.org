@@ -1780,6 +1780,15 @@
        (add-hook 'nix-mode-hook 'common-code-mode))
    #+end_src
 
+** Golang
+   When writing code in Go I want to activate the common code minor mode.
+
+   #+name: package/go-mode
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package go-mode
+       :init
+       (add-hook 'go-mode-hook 'common-code-mode))
+   #+end_src
 * Reading
 
   Emacs works beautifully as a PDF reader with the ~pdf-tools~
@@ -2022,4 +2031,11 @@
   #+begin_src emacs-lisp :tangle nix.el :noweb yes
     <<code-config>>
     <<package/csharp>>
+  #+end_src
+
+  A Go config.
+
+  #+begin_src emacs-lisp :tangle go.el :noweb yes
+    <<code-config>>
+    <<package/go-mode>>
   #+end_src
