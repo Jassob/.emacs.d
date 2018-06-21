@@ -2,11 +2,6 @@
 #+TITLE: Jassob's Emacs configuration
 #+DATE: <2018-01-19 Fri>
 
-* TODO Steal some kind of module system
-  I want to be able to fire up a lightweight version of my emacs
-  config that only includes a specific set of modules to speed up
-  start up time.
-
 * About this file
   This file contains my configurations for Emacs.
 
@@ -2039,3 +2034,8 @@
     <<code-config>>
     <<package/go-mode>>
   #+end_src
+
+* TODO Steal some kind of module system
+  I want to be able to fire up a lightweight version of my emacs
+  config that only includes a specific set of modules to speed up
+  start up time.
