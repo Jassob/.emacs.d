@@ -2030,7 +2030,7 @@
 
   #+begin_src emacs-lisp :tangle nix.el :noweb yes
     <<code-config>>
-    <<package/csharp>>
+    <<package/nix-mode>>
   #+end_src
 
   A Go config.
