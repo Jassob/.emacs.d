@@ -1776,13 +1776,37 @@
    #+end_src
 
 ** Golang
-   When writing code in Go I want to activate the common code minor mode.
+   When writing code in Go I want to activate the common code minor
+   mode and have the Go tools do the work for me.
 
    #+name: package/go-mode
    #+begin_src emacs-lisp :tangle init.el
      (use-package go-mode
        :init
-       (add-hook 'go-mode-hook 'common-code-mode))
+       (setq gofmt-command "goimports")
+       (add-hook 'go-mode-hook 'common-code-mode)
+       (add-hook 'go-mode-hook 'go-eldoc-setup)
+       (add-hook 'go-mode-hook (lambda ()
+                                 (add-hook 'before-save-hook 'gofmt-before-save)
+                                 (append company-backends 'company-go)))
+
+       ;; Go Guru's keymap is on "C-c C-o"
+       :bind (:map go-mode-map
+                   ("C-c C-." . pop-tag-mark)
+                   ("C-c C-," . go-guru-jump)
+                   ("C-c C-r" . go-remove-unused-imports)
+                   ("C-c C-g" . go-goto-imports)
+                   ("C-c C-f" . gofmt)
+                   ("C-c C-k" . godoc))
+
+       :config
+        (if (not (string-match "go" compile-command))
+           (set (make-local-variable 'compile-command)
+                "go build -v && go test -v && go vet"))
+
+        ;; Use package defaults for these packages
+        (use-package go-guru)
+        (use-package company-go))
    #+end_src
 * Reading
 
