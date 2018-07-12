@@ -476,11 +476,26 @@
      (use-package multiple-cursors :ensure t
        :init
        (setq mc/list-file (concat cache-dir ".mc-lists.el"))
+
+       ;; Unset to make mc/add-cursor-on-click listen to its binding
+       (global-unset-key (kbd "M-<down-mouse-1>"))
        :bind (("C-S-c C-S-c" . mc/edit-lines)
-              ("C->" . mc/mark-next-like-this)     ;; C-> for the next word
-              ("C-<" . mc/mark-previous-like-this) ;; C-< for the previous
-              ("C-c C->" . mc/mark-all-like-this))) ;; C-c C-> for all words
+              ("C->" . mc/mark-next-like-this)
+              ("C-<" . mc/mark-previous-like-this)
+              ("C-c C->" . mc/mark-all-like-this)
+              ("C-," . mc/mark-pop)
+              ("M-<mouse-1>" . mc/add-cursor-on-click)))
    #+end_src
+
+   This sets the following keybindings:
+
+   - =C->= for the next word
+   - =C-<= for the previous
+   - =C-c C->= for all words
+   - =C-,= places a cursor on the point and pops the mark stack
+   - =M-<mouse-1>= adds new cursor on mouse pointer
+
+   It also unsets the (for me) mysteric M-mouse1 key bindings.
 
 ** Buffer and window navigation
 
