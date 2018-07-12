@@ -1469,6 +1469,13 @@
    checking and auto-completion when it exists and line indicators
    that shows if a line is modified, added or removed.
 
+   Worth noting is that I turn off Transient Mark mode in Common-Code
+   minor mode, because I like to use the tag stack for navigation (i.e
+   activating a mark = temporarily "bookmark" current position,
+   popping marker stack = jumping to last "bookmark). Besides the
+   original behaviour (i.e beginning a region) is still available on
+   =C-SPC C-SPC=.
+
    #+name: common-code-mode
    #+begin_src emacs-lisp :tangle init.el
      (define-minor-mode common-code-mode
@@ -1482,7 +1489,8 @@
        (if (>= emacs-major-version 26)
            (setq display-line-numbers 'on)
          (progn
-           (add-hook 'common-code-mode-hook 'linum-mode))))
+           (add-hook 'common-code-mode-hook 'linum-mode)))
+       (transient-mark-mode -1))
 
      (add-hook 'common-code-mode-hook 'flycheck-mode)
      (add-hook 'common-code-mode-hook 'company-mode)
