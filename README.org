@@ -1812,6 +1812,7 @@
        (add-hook 'go-mode-hook (lambda ()
                                  (add-hook 'before-save-hook 'gofmt-before-save)
                                  (append company-backends 'company-go)))
+       (add-hook 'go-mode-hook #'flycheck-golangci-lint-setup)
 
        ;; Go Guru's keymap is on "C-c C-o"
        :bind (:map go-mode-map
@@ -1828,8 +1829,9 @@
                 "go build -v && go test -v && go vet"))
 
         ;; Use package defaults for these packages
-        (use-package go-guru)
-        (use-package company-go))
+        (use-package go-guru :ensure t)
+        (use-package company-go :ensure t)
+        (use-package flycheck-golangci-lint :ensure t))
    #+end_src
 * Reading
 
