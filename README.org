@@ -1918,6 +1918,46 @@
                                 (weechat--prompt-for-auth)))
   #+end_src
 
+  In addition to connecting to my own IRC client/bouncer configuration
+  with weechat+znc I want to be able to use ERC as my client as well.
+
+  #+name: erc
+  #+begin_src emacs-lisp :tangle init.el
+    (require 'erc)
+    (require 'erc-services)
+
+    (add-to-list 'erc-server-alist
+                 '("dtek: Datateknologsektionens IRC server" ; Description
+                   dtek                                      ; symbol
+                   "irc.dtek.se"                             ; address
+                   (6667 6697)))                             ; port
+
+    ;; Add some erc-modules
+    (add-to-list 'erc-modules 'log)
+    (add-to-list 'erc-modules 'notifications)
+    (add-to-list 'erc-modules 'services)
+    (add-to-list 'erc-modules 'smiley)
+
+    ;; Hide some message types in ERC
+    (setq erc-hide-list '("JOIN" "PART" "QUIT"))
+
+    ;; Configure erc-nickserv to work with irc.dtek.se
+    (add-to-list 'erc-nickserv-alist
+                 '(dtek
+                   "NickServ!NickServ@services.dtek.se"
+                   "This\\s-nickname\\s-is\\s-registered.\\s-Please\\s-choose"
+                   "NickServ" "IDENTIFY" nil nil
+                   "You\\s-are\\s-now\\s-identified\\s-for\\s-"))
+
+    ;; Set the NickServ password for dtek
+    (setq erc-nickserv-passwords
+          `((dtek (("jassob" . ,dtek-nick-pass)))))
+
+    ;; Don't prompt for passwords (I have them configured already)
+    (setq erc-prompt-for-nickserv-password nil)
+
+  #+end_src
+
 * Different configs
 
   I've added =noweb= references to every code block that I want
