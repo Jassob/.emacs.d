@@ -2136,3 +2136,7 @@
 
    If I expose the module activation mechanism in a good way it should
    be possible to customize that from nix-shell.
+
+* TODO Add linters and formatters to common-code-mode
+  Variable =buffer-file-name= could be used together with a asynch
+  shell command.
