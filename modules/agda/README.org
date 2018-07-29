@@ -1,0 +1,19 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Agda module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the Agda module.
+
+* Module
+  Agda is a functional programming language / functional logic with
+  support for dependant types. It is used in some courses at
+  Chalmers, where it is also mainly developed.
+
+  #+begin_src emacs-lisp :tangle module.el
+     (load-file (let ((coding-system-for-read 'utf-8))
+		  (shell-command-to-string "agda-mode locate")))
+
+     (add-hook 'agda2-mode-hook 'common-code-mode)
+   #+end_src

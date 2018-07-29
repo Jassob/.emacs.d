@@ -1,0 +1,18 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: LaTeX module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the LaTeX module.
+
+* Module
+  I want to be able to specify what TeX engine I use when typesetting
+  a document. Therefore we require add ~TeX-engine~ to the list of safe local
+  variables when =auctex= has loaded.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package auctex
+      :config
+      (add-to-list 'safe-local-variable-values '(TeX-engine . xetex)))
+  #+end_src

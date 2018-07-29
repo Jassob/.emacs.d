@@ -1,0 +1,26 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Recentf module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the Recentf module.
+
+* Module
+  I'd like to keep a list of my recently visited files and =recentf=
+  helps me do that.
+
+  #+begin_src emacs-lisp :tangle module.el
+     (use-package recentf
+       :config
+       (setq recentf-save-file (concat cache-dir "recentf"))
+
+       (defun recentf-ido-find-file ()
+         "Find a recent file using Ido."
+         (interactive)
+         (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
+           (when file
+             (find-file file))))
+
+       :bind ("C-x C-r" . recentf-ido-find-file))
+  #+end_src

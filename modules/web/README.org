@@ -1,0 +1,21 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Web module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the Web module.
+
+* Module
+   I use web-mode for when I have to do web programming and I actually
+   consider it programming, so I'll want to load my ~common-code-mode~.
+
+   #+begin_src emacs-lisp :tangle module.el
+     (use-package web-mode :ensure t :mode "\\.dtl$"
+       :init
+       (add-hook 'web-mode-hook 'common-code-mode)
+       :config
+       (if web-mode-engines-alist
+           (add-to-list 'web-mode-engines-alist '("django" . "\\.dtl$\\'"))
+         (setq web-mode-engines-alist '(("django" . "\\.dtl$\\'")))))
+   #+end_src

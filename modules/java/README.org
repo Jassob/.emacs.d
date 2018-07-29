@@ -1,0 +1,14 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Java module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the Java module.
+
+* Module
+  This module is empty, please help me expand it.
+
+  #+begin_src emacs-lisp :tangle module.el
+      (warn "The Java module is empty")
+  #+end_src

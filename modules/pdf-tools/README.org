@@ -1,0 +1,22 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: PDF-tools module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the PDF-tools module.
+
+* Module
+  Emacs works beautifully as a PDF reader with the ~pdf-tools~
+  package! However by default it advances automatically to the next
+  page when scrolling past the current page, which I find annoying
+  when scolling with a touchpad. So I disable ~pdf-view-continous~ and
+  use =SPC= to scroll and advance the pages instead.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package pdf-tools :defer t
+      :config
+      (pdf-tools-install)
+      (setq pdf-view-continuous nil)
+      (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry))
+  #+end_src

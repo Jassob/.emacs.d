@@ -1,0 +1,59 @@
+#+TITLE: Org-Gcal module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the Org-gcal module.
+
+* Module
+** Access Google Calendar
+
+   Even though I use =org-mode= for scheduling a lot of tasks and
+   other stuff I also use Google Calendar to organize stuff together
+   with other people, this section is about how I make these two work
+   together.
+
+   First some nifty helping functions to handle retrieving and storing
+   credentials.
+
+   #+begin_src emacs-lisp :tangle module.el
+     (defun org-gcal--get-credentials ()
+       "Get the stored client id and client secret from FILEPATH and return it a conscell in form of (CLIENT_ID . CLIENT_SECRET)."
+       (if (file-exists-p org-gcal--auth-file)
+           (read-from-file org-gcal--auth-file)
+         (warn "org-gcal credential file does not exist, run org-gcal--init-credentials.")))
+
+     (defun org-gcal--prompt-for-credentials ()
+       "Prompt the user for a Google API client id and client secret and store them in org-gcal--auth-file."
+       (let ((client_id (read-from-minibuffer "Client ID: ")))
+         (let ((client_secret (read-from-minibuffer "Client Secret: ")))
+           (cons client_id client_secret))))
+
+     (defun org-gcal--update-credentials ()
+       "Update the org-gcal credential file with information from the user."
+       (interactive)
+       (local--update-alist-file org-gcal--auth-file
+                                 (org-gcal--prompt-for-credentials)))
+   #+end_src
+
+   Now that we have our functions in place, let's use them when
+   customizing our org-gcal package.
+
+   #+begin_src emacs-lisp :tangle module.el
+     (use-package org-gcal
+       :init
+       (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file"))
+       (local--init-file-if-missing org-gcal--auth-file
+                                    #'org-gcal--prompt-for-credentials)
+       (let ((credentials (org-gcal--get-credentials)))
+           (setq org-gcal-client-id (car credentials)
+                 org-gcal-client-secret (cdr credentials)))
+       (setq org-gcal-dir (concat etc-dir "org-gcal/")
+             org-gcal-token-file (concat org-gcal-dir ".org-gcal-token"))
+       (if (file-exists-p (concat etc-dir "org-gcal-file-alist-file"))
+           (setq org-gcal-file-alist (eval (read-from-file (concat etc-dir "org-gcal-file-alist-file"))))
+         (warn (concat "File " (concat etc-dir "org-gcal-file-alist-file")
+                       " not found. Create it and fill it with an alist in "
+                       "the following format: "
+                       "'(( \"calendar-id\" . \"calendar-org-file\"))"))))
+   #+end_src

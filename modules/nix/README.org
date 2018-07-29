@@ -1,0 +1,17 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Nix module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the Nix module.
+
+* Module
+  When writing Nix expressions I want to activate the common code
+  minor mode.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package nix-mode
+      :init
+      (add-hook 'nix-mode-hook 'common-code-mode))
+  #+end_src

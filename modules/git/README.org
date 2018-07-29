@@ -1,0 +1,92 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Git module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the Git module.
+
+* Module
+  I mostly use [[https://git-scm.com/][Git]] to handle my version control and while it
+  certainly got somewhat of a steep learning curve and a few rough
+  edges here and there I mostly find it intuitive.
+
+  To help me manage my Git repositories I use the fantastic package
+  =magit=, which is a Git frontend to Emacs and one of the few Git
+  frontends I really like.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package magit :ensure t :defer t)
+  #+end_src
+
+  =Git-gutter+= is a package that shows a line's status (added,
+  modifid or deleted) in a file that is version controlled by Git.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package git-gutter+ :ensure t :defer t :diminish t
+      :bind (:map git-gutter+-mode-map
+                  ;; Navigate on hunks
+                  ("C-x n"   . git-gutter+-next-hunk)
+                  ("C-x p"   . git-gutter+-previous-hunk)
+                  ;; Act on hunks
+                  ("C-x v =" . git-gutter+-show-hunk)
+                  ("C-x r"   . git-gutter+-revert-hunks)
+                  ("C-x t"   . git-gutter+-stage-hunks)
+                  ("C-x c"   . git-gutter+-commit)
+                  ("C-x C"   . git-gutter+-stage-and-commit)
+                  ("C-x C-y" . git-gutter+-stage-and-commit-whole-buffer)
+                  ("C-x U"   . git-gutter+-unstage-whole-buffer)))
+  #+end_src
+
+  To help me interact with my Github repositories I use =magithub=.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package magithub :after magit
+      :init (defvar magithub--auth-file (concat etc-dir "magithub-auth-file"))
+      :config
+      (magithub-feature-autoinject t)
+      (local--init-file-if-missing magithub--auth-file
+                                   #'magithub--prompt-for-auth)
+      (magithub--import-auth-file)
+      (setq magithub-dir (concat cache-dir "magithub")))
+
+    (defun magithub--import-auth-file ()
+      "Import magithub credentials from =magit-auth-file= in =etc-dir=.
+    The file must only contain a alist with the following keys:
+    \(
+     (ghub-base-url . VAL)
+     (ghub-username . VAL)
+     (ghub-token    . VAL)
+    \)"
+      (if (file-exists-p magithub--auth-file)
+          (let-alist (read-from-file magithub--auth-file)
+            (progn
+              (setq ghub-base-url .ghub-base-url)
+              (setq ghub-username .ghub-username)
+              (setq ghub-token    .ghub-token)))
+        (warn (concat "magithub: Could not find file: " magithub--auth-file))))
+  #+end_src
+
+  I store the authentication files in the =etc-dir= and to ease the
+  setup of this customization I have a function that fills this files
+  with the needed data.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun magithub--prompt-for-auth ()
+      "Prompts the user for magithub credentials."
+      (let ((res (make-local-variable 'auth-alist)))
+        (setq-local auth-alist ())
+        (dolist (key '((ghub-base-url . "Github base URL: ")
+                       (ghub-username . "Github username: ")
+                       (ghub-token . "Github token: ")))
+          (add-to-list 'auth-alist (cons (car key)
+                                         (read-from-minibuffer (cdr key)))))
+        ;; Return the result
+        auth-alist))
+
+    (defun magithub--set-auth-info ()
+      "Prompts the user for credentials for magithub and store them
+    in etc-dir/magithub-auth-file."
+      (local--update-alist-file magithub--auth-file
+                                (magithub--prompt-for-auth)))
+  #+end_src

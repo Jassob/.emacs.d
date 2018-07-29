@@ -1,0 +1,20 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Project module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the Project module.
+
+* Module
+  I use projectile to ease the task of keeping track of files in
+  multiple projects and it also ties in well with my mode-line
+  config.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package projectile :ensure t :demand t
+      :config
+      (setq projectile-cache-file (concat cache-dir "projectile.cache")
+            projectile-known-projects-file (concat etc-dir "projectile-bookmarks.el"))
+      (projectile-mode))
+  #+end_src

@@ -1,0 +1,43 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Go module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-28>
+
+* About this file
+  This file contains the literate source of the Go module.
+
+* Module
+  This configuration sets up a Go mode where common-code minor mode is
+  enabled together with a plethora of other useful stuff, such as
+  linter and formatters etc.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package go-mode
+      :init
+      (setq gofmt-command "goimports")
+      (add-hook 'go-mode-hook 'common-code-mode)
+      (add-hook 'go-mode-hook 'go-eldoc-setup)
+      (add-hook 'go-mode-hook (lambda ()
+                                (add-hook 'before-save-hook 'gofmt-before-save)
+                                (append company-backends 'company-go)))
+      (add-hook 'go-mode-hook #'flycheck-golangci-lint-setup)
+
+      ;; Go Guru's keymap is on "C-c C-o"
+      :bind (:map go-mode-map
+                  ("C-c C-." . pop-tag-mark)
+                  ("C-c C-," . go-guru-jump)
+                  ("C-c C-r" . go-remove-unused-imports)
+                  ("C-c C-g" . go-goto-imports)
+                  ("C-c C-f" . gofmt)
+                  ("C-c C-k" . godoc))
+
+      :config
+      (if (not (string-match "go" compile-command))
+          (set (make-local-variable 'compile-command)
+               "go build -v && go test -v && go vet"))
+
+      ;; Use package defaults for these packages
+      (use-package go-guru :ensure t)
+      (use-package company-go :ensure t)
+      (use-package flycheck-golangci-lint :ensure t))
+  #+end_src

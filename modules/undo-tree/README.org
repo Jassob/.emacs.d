@@ -1,0 +1,21 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Undo-tree module
+#+AUTHOR: Jassob
+#+DATE: <2018-07-29>
+
+* About this file
+  This file contains the literate source of the Undo-tree module.
+
+* Module
+   I find Emacs default undo behaviour rather intuitive (of course a
+   redo is just an undo of your last undo!), but I like being able to
+   visualise the timeline of my file. Enters =undo-tree-mode=!
+
+   #+begin_src emacs-lisp :tangle module.el
+      (use-package undo-tree
+        :ensure t :diminish t
+        :config
+        (global-undo-tree-mode)
+        (setq undo-tree-visualizer-timestamps t)
+        (setq undo-tree-visualizer-diff t))
+   #+end_src
