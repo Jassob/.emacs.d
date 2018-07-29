@@ -1,3 +1,2 @@
-/init.el
 .local/
-*module.el
+*.el
