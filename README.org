@@ -2124,7 +2124,10 @@
     <<package/go-mode>>
   #+end_src
 
-* TODO Steal some kind of module system
+* IN-PROGRESS Steal some kind of module system
+  :LOGBOOK:
+  - State "IN-PROGRESS" from "TODO"     [2018-07-29 sön 16:12]
+  :END:
   I want to be able to fire up a lightweight version of my emacs
   config that only includes a specific set of modules to speed up
   start up time.
