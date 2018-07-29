@@ -1,0 +1,412 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Core EMACS configuration
+#+DATE: <2018-01-19 Fri>
+
+* About this file
+  This file contains the core configuration for my Emacs setup.
+  It consists of settings that I considered are sane defaults.
+
+* Emacs initialisation
+** System directories
+
+   I don't like keeping a lot of files visible in my =.emacs.d=
+   directory, so let's create a directory hierarchy for all files that
+   I'm not interested in.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (defvar local-dir (concat user-emacs-directory ".local/")
+       "Root directory for local Emacs files. Use this as
+       permanent storage for files that are safe to share across
+       systems (if this config is symlinked across several computers).")
+
+     (defvar etc-dir (concat local-dir "@" (system-name) "/etc/")
+       "Host-namespaced directory for non-volatile storage. These are not deleted or
+       tampored with by DOOM functions. Use this for dependencies like servers or
+       config files that are stable (i.e. it should be unlikely that you need to delete
+       them if something goes wrong).")
+
+     (defvar cache-dir (concat local-dir "@" (system-name) "/cache/")
+       "Host-namespaced directory for volatile storage. Deleted
+       when `local/clean-cache' is called. Use this for transient files
+       that are generated on the fly like caches and temporary
+       files. Anything that may need to be cleared if there are
+       problems.")
+
+     (defvar packages-dir (concat local-dir "packages/")
+       "Where package.el packages and cache are stored.")
+
+     (defvar include-dir (concat user-emacs-directory "include/")
+       "Where we store stuff that's not part of emacs packages or
+         other dependencies.")
+
+   #+end_src
+
+   We need to make sure that the directories are created before we try
+   to make Emacs store stuff there.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (dolist (dir (list local-dir etc-dir cache-dir packages-dir include-dir))
+       (unless (file-exists-p dir)
+         (make-directory dir t)))
+   #+end_src
+
+   We might want to clear the local cache, here is a command for doing
+   that.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (defun local/clean-cache()
+       "Clears local cache (`local-dir') directory. You may need to
+     restart Emacs for some components to feel its effects."
+       (interactive)
+       (delete-directory cache-dir t)
+       (make-directory cache-dir t))
+   #+end_src
+
+   We might want to read and store values to/from a file, these
+   routines lets us store Emacs lisp values and then retrieve them.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (defun print-to-file (filename data)
+       "Create FILENAME and store DATA inside it."
+       (with-temp-file filename
+         (prin1 data (current-buffer))))
+
+     (defun read-from-file (filename)
+       "Read Emacs Lisp variables from FILENAME."
+       (with-temp-buffer
+         (insert-file-contents filename)
+         (cl-assert (eq (point) (point-min)))
+         (read (current-buffer))))
+   #+end_src
+
+   Sometimes updating config files and creating them if they don't
+   exist is a common operation, such as activating a mode for the
+   first time.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (defun local--update-alist-file (file val)
+       "Update FILE with value VAL.
+     If FILE exists VAL will be appended to it's variable,
+     otherwise VAL will be stored in a new file FILE."
+       (if (file-exists-p file)
+           (let ((alist (read-from-file file)))
+             (add-to-list 'alist val)
+             (print-to-file file alist))
+         (print-to-file file val)))
+
+     (defun local--init-file-if-missing (file init-fn)
+       "Check if FILE exists and if not it creates it and initializes
+      it with the unary function INIT-FN."
+       (unless (file-exists-p file)
+         (print-to-file file (list (funcall init-fn)))))
+   #+end_src
+
+** System files and backups
+
+   Emacs stores backups of the file you are working on in the current
+   directory by default and while backups are great I prefer keeping
+   them in the directories defined above.
+
+   So, lets store all backups in the local directory!
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq backup-directory-alist `((".*" . ,(concat local-dir "backups"))))
+   #+end_src
+
+   Also, we'd like to store versioned backups and also make sure to
+   backup files that is under version control (in case we forget to
+   commit every interesting change).
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq delete-old-versions -1
+           version-control t
+           vc-make-backup-files t)
+   #+end_src
+
+   Emacs auto-saving feature can be a life saver, let's put those
+   files where we want them instead of having them in the emacs root
+   directory.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
+       ;; Create directory
+       (unless (file-exists-p auto-save-dir)
+         (make-directory auto-save-dir t))
+
+       ;; Store auto-saves in the newly created directory
+       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))
+             auto-save-list-file-prefix auto-save-dir))
+
+   #+end_src
+
+   Similar to backups I dont like my bookmarks to litter in the config
+   directory, so we put them in =cache-dir= with everything else.
+   Also EWW stores it's own bookmarks in a file that by default exists
+   in Emacs dir.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq bookmark-default-file (concat etc-dir "bookmarks")
+           eww-bookmark-directory etc-dir)
+   #+end_src
+
+   The Emacs Shell (eshell) is very nice to use since it integrates
+   the shell experience well with Emacs, but it too litters my Emacs
+   directory by default, please don't!
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq eshell-directory-name (concat etc-dir "eshell"))
+   #+end_src
+
+   I don't use Gnus yet, but the ambition is there. It stores a cache
+   that by default not lives in the Emacs directory, but in my home
+   directory(!) which is even worse.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq gnus-cache-directory (concat cache-dir "news")
+           gnus-directory       (concat local-dir "news")
+           gnus-kill-files-directory (concat local-dir "news"))
+   #+end_src
+
+   Url package files are also stored in the Emacs directory, move them
+   to the local-dir and its' sub directories.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq url-cache-directory (concat cache-dir "url")
+           url-configuration-directory (concat etc-dir "url"))
+   #+end_src
+
+   I also don't like to keep my diary file nor the journal folder in
+   the Emacs directory.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq diary-file (concat local-dir "diary")
+           org-journal-dir (concat local-dir "journal/"))
+   #+end_src
+
+   TRAMP is a wonderful way to edit files that does not exist on this
+   machine or that is not writable by your user. It can write to files
+   over SSH, rlogin or Telnet and can also be used to edit write local
+   protected files using sudo.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (setq tramp-backup-directory-alist backup-directory-alist
+           tramp-persistency-file-name (concat cache-dir "tramp")
+           tramp-default-method        "ssh")
+   #+end_src
+
+   When I edit system configuration files I might accidentally find
+   files as my regular user, even though I need sudo rights to edit
+   them. This advice makes =ido-find-file= automatically open it
+   through =TRAMP= as sudo if it is not writable by my user.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (defadvice ido-find-file (after find-file-sudo activate)
+       "Find file as root if necessary."
+       (when (and buffer-file-name
+                  (not (file-writable-p buffer-file-name))
+                  (y-or-n-p "Do you want to edit as sudo?"))
+         (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+   #+end_src
+
+** Packages
+
+   First we need to activate the package system and add the melpa
+   repository, if it is not already added.
+
+   #+begin_src emacs-lisp :tangle core.el
+      (require 'package)
+      (setq package-user-dir (expand-file-name "elpa" packages-dir)
+            package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
+                               ("melpa" . "https://melpa.org/packages/")))
+      (package-initialize)
+
+      ;; We've already enabled the package system.
+      (setq package-enable-at-startup nil)
+   #+end_src
+
+   Make sure to reload the list of packages by calling =M-x
+   package-refresh-contents= when adding melpa for the first time.
+
+** use-package
+
+   I use =use-package= for keeping track of my packages, customising them
+   and load them lazily.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+     (setq use-package-verbose t)
+   #+end_src
+
+** Secrets and custom settings
+
+   I store more sensitive data in =~/.emacs.d/.local/.secrets= and
+   customized settings in
+   =~/.emacs.d/.local/@host-name/etc/custom-settings.el= so I easily
+   can store my main configuration in a public version control system.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (load "~/.emacs.d/.local/.secrets" t)
+
+     (setq custom-file (concat etc-dir "custom-settings.el"))
+     (load custom-file t)
+   #+end_src
+* Editor
+** Encoding system
+   We would like Emacs to prefer UTF8 when reading ambiguous bit
+   strings.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (prefer-coding-system 'utf-8)
+     (when (display-graphic-p)
+       (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
+   #+end_src
+
+** Buffer and window navigation
+
+   Switching between windows can be a bit of a pain, just cycling
+   through them with =C-x o= is not really good enough. I therefore
+   use ~windmove~ and ~buffer-move~ to navigate amongst my buffers and
+   I have them bound to, in my opinion at least, sensible keybindings.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (bind-keys ("<S-s-left>"  . windmove-left)
+                ("<S-s-up>"    . windmove-up)
+                ("<S-s-down>"  . windmove-down)
+                ("<S-s-right>" . windmove-right))
+   #+end_src
+
+   Sometimes it is nice to be able to shrink and enlarge windows
+   easily and that is why I've bounded them to simple keys:
+
+   #+begin_src emacs-lisp :tangle core.el
+     (bind-keys ("S-C-<left>"  . shrink-window-horizontally)
+                ("S-C-<right>" . enlarge-window-horizontally)
+                ("S-C-<down>"  . shrink-window)
+                ("S-C-<up>"    . enlarge-window))
+   #+end_src
+
+** Dired
+
+   Dired is file manager and browser built into Emacs and it is
+   efficient enough. By default it shows every file, even hidden ones,
+   which results in a lot of noise.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (require 'dired-x)
+     (setq dired-omit-files "^\\...+$")
+     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+     (define-key dired-mode-map (kbd "C-c h") 'dired-omit-mode)
+   #+end_src
+
+   Now, pressing =C-c h= will hide all hidden files in Dired.
+* Common programming settings
+
+  There are some common things I want to use for all every
+  programming language I code in. For instance I would like error
+  checking and auto-completion when it exists and line indicators
+  that shows if a line is modified, added or removed.
+
+  Worth noting is that I turn off Transient Mark mode in Common-Code
+  minor mode, because I like to use the tag stack for navigation (i.e
+  activating a mark = temporarily "bookmark" current position,
+  popping marker stack = jumping to last "bookmark). Besides the
+  original behaviour (i.e beginning a region) is still available on
+  =C-SPC C-SPC=.
+
+  #+begin_src emacs-lisp :tangle core.el
+    (define-minor-mode common-code-mode
+      "A minor mode for enabling common minor modes and other
+      features for programming modes."
+      :lighter " Code"
+      :keymap (let (keymap (make-sparse-keymap))
+                (bind-key "C-c g" #'god-mode keymap)
+                keymap)
+
+      (if (>= emacs-major-version 26)
+          (setq display-line-numbers 'on)
+        (progn
+          (add-hook 'common-code-mode-hook 'linum-mode)))
+      (transient-mark-mode -1))
+
+    (add-hook 'common-code-mode-hook 'flycheck-mode)
+    (add-hook 'common-code-mode-hook 'company-mode)
+    (add-hook 'common-code-mode-hook 'git-gutter+-mode)
+    (add-hook 'common-code-mode-hook 'hs-minor-mode)
+    (add-hook 'common-code-mode-hook 'rainbow-delimiters-mode)
+    (add-hook 'common-code-mode-hook 'auto-revert-mode)
+    (add-hook 'common-code-mode-hook 'smartparens-mode)
+    (add-hook 'common-code-mode-hook 'subword-mode)
+    (add-hook 'common-code-mode-hook 'hl-line-mode)
+  #+end_src
+
+  I want trailing white space to be removed automatically before saving.
+
+  #+begin_src emacs-lisp :tangle core.el
+    (add-hook 'common-code-mode-hook
+              (lambda () (add-hook 'before-save-hook
+                                   #'delete-trailing-whitespace)))
+  #+end_src
+
+  I want Emacs Lisp to use my fancy new minor mode.
+
+  #+begin_src emacs-lisp :tangle core.el
+    (add-hook 'emacs-lisp-mode-hook 'common-code-mode)
+  #+end_src
+
+  Install the needed packages in case they don't exists.
+
+  #+begin_src emacs-lisp :tangle core.el
+    ;; Syntax and error checker
+    (use-package flycheck :ensure t)
+
+    ;; Auto completion
+    (use-package company :ensure t :diminish t)
+
+    ;; Rainbow delimiters
+    (use-package rainbow-delimiters :ensure t)
+
+    ;; Relative line numbering
+    (use-package linum-relative :ensure t)
+
+    ;; Parens handling
+    (use-package smartparens :ensure t :diminish t
+      :init
+      (require 'smartparens-config))
+  #+end_src
+
+* Modules
+  This function is defined to make loading of modules easier. The
+  arguments to ~enable-modules~ should be directory names in the
+  =modules/= directory
+
+  #+begin_src emacs-lisp :tangle core.el
+    (defun enable-modules (&rest modules)
+      "Enables MODULES, by loading each module.el in modules/"
+      (dolist (module modules)
+        (load (concat user-emacs-directory "modules/" module "/module.el"))))
+  #+end_src
+
+  See MODULES.org for which modules are defined.
+
+
+* IN-PROGRESS Steal some kind of module system
+  :LOGBOOK:
+  - State "IN-PROGRESS" from "TODO"     [2018-07-29 sön 16:12]
+  :END:
+  I want to be able to fire up a lightweight version of my emacs
+  config that only includes a specific set of modules to speed up
+  start up time.
+
+** Proposal 1
+   If I tangle the package-specific parts in the config to files that
+   only contain what's needed for that package or mode then these
+   files can be loaded by =init.el= depending on what modules I activate.
+
+   If I expose the module activation mechanism in a good way it should
+   be possible to customize that from nix-shell.
+
+* TODO Add linters and formatters to common-code-mode
+  Variable =buffer-file-name= could be used together with a asynch
+  shell command.
