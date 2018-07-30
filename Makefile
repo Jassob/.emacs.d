@@ -6,7 +6,7 @@ NOOUTPUT:=>/dev/null 2>&1
 # targets all and modules are PHONY targets
 .PHONY: all modules
 
-all: core.el personal.el init.el modules
+all: core.el init.el modules
 	-echo "All done!"
 
 # Tangle all the modules
