@@ -54,3 +54,23 @@
      "smex"
      "undo-tree")
   #+end_src
+
+* IN-PROGRESS Steal some kind of module system
+  :LOGBOOK:
+  - State "IN-PROGRESS" from "TODO"     [2018-07-29 sön 16:12]
+  :END:
+  I want to be able to fire up a lightweight version of my emacs
+  config that only includes a specific set of modules to speed up
+  start up time.
+
+** Proposal 1
+   If I tangle the package-specific parts in the config to files that
+   only contain what's needed for that package or mode then these
+   files can be loaded by =init.el= depending on what modules I activate.
+
+   If I expose the module activation mechanism in a good way it should
+   be possible to customize that from nix-shell.
+
+* TODO Add linters and formatters to common-code-mode
+  Variable =buffer-file-name= could be used together with a asynch
+  shell command.
