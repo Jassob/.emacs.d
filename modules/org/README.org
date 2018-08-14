@@ -481,15 +481,24 @@
                                     (and (file-exists-p path) path)))
                    files)))
 
-      (setq org-agenda-files (local/existing-files-in-dir
-                              org-directory
-                              '("organizer.org" "people.org" "bookmarks.org"
-                                "studies.org" "reading.org"
+      (setq org-agenda-files
+            (local/existing-files-in-dir
+             org-directory
+             '("organizer.org"
+               "people.org"
+               "bookmarks.org"
+               "studies.org"
+               "reading.org"
+               "work.org"
 
-                                ;; Calendar files (synced with org-gcal)
-                                "calendar/family.org" "calendar/personal.org"
-                                "calendar/spex.org" "calendar/ensemble.org"
-                                "calendar/chalmers.org" "calendar/theatre.org")))
+               ;; Calendar files (synced with org-gcal)
+               "calendar/family.org"
+               "calendar/personal.org"
+               "calendar/spex.org"
+               "calendar/ensemble.org"
+               "calendar/chalmers.org"
+               "calendar/theatre.org"
+               )))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
