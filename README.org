@@ -308,3 +308,5 @@
 * TODO Add linters and formatters to common-code-mode
   Variable =buffer-file-name= could be used together with a asynch
   shell command.
+* TODO Add work configuration
+  Add work config where browse-url opens links in Chrome etc.
