@@ -1,0 +1,110 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: Mail module
+#+AUTHOR: Jassob
+#+DATE: <2018-08-16>
+
+* About this file
+  This file contains the literate source of the Mail module.
+  It contains stuff for viewing e-mail messages in Emacs.
+
+* Module
+  I have configured offlineimap to request passwords from emacs, so
+  that I can store them in auth-sources (such as ~/.authinfo.gpg). The
+  entrypoint for offlineimap to ask for password is the function below.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun local/offlineimap-get-password (host port)
+      (let* ((found (nth 0 (auth-source-search :host host
+                                               :port port
+                                               :require '(:user :secret)
+                                               :create nil))))
+        (if found (let ((secret (plist-get found :secret)))
+                    (if (functionp secret)
+                        (funcall secret)
+                      secret))
+          nil)))
+  #+end_src
+
+  I use notmuch as a mail frontend in Emacs, but it does not come with
+  any predefined keybindings for marking messages as spam, deleting or
+  archiving them.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package notmuch :ensure t)
+  #+end_src
+
+  We start by marking messages as spam.
+
+  #+begin_src emacs-lisp :tangle module.el
+    ;; Mark messages as spam in notmuch-search-mode
+    (define-key notmuch-search-mode-map "S"
+      (lambda (&optional beg end)
+        "mark message as spam"
+        (interactive (notmuch-search-interactive-region))
+        (notmuch-search-tag (list "+spam" "-inbox") beg end)))
+
+    ;; Mark message as spam in notmuch-show-mode
+    (define-key notmuch-show-mode-map "S"
+      (lambda ()
+        "mark message as spam"
+        (interactive)
+        (notmuch-show-tag (list "+spam" "-inbox"))))
+
+    ;; Mark messages in thread as spam in notmuch-tree-mode
+    (define-key notmuch-tree-mode-map "S"
+      (lambda ()
+        "mark thread as spam"
+        (interactive)
+        (notmuch-tree-tag (list "+spam" "-inbox"))))
+  #+end_src
+
+  We continue with deleting messages, it's basically the same
+  procedure, only with different tags.
+
+  #+begin_src emacs-lisp :tangle module.el
+    ;; Delete messages in notmuch-search-mode
+    (define-key notmuch-search-mode-map "D"
+      (lambda (&optional beg end)
+        "mark message as deleted"
+        (interactive (notmuch-search-interactive-region))
+        (notmuch-search-tag (list "+deleted" "-inbox") beg end)))
+
+    ;; Delete message in notmuch-show-mode
+    (define-key notmuch-show-mode-map "D"
+      (lambda ()
+        "mark message as deleted"
+        (interactive)
+        (notmuch-show-tag (list "+deleted" "-inbox"))))
+
+    ;; Delete message thread in notmuch-tree-mode
+    (define-key notmuch-tree-mode-map "D"
+      (lambda ()
+        "mark thread as deleted"
+        (interactive)
+        (notmuch-tree-tag (list "+deleted" "-inbox"))))
+  #+end_src
+
+  And lastly we add keybindings for just archiving messages.
+
+    #+begin_src emacs-lisp :tangle module.el
+      ;; Archive messages in notmuch-search-mode
+      (define-key notmuch-search-mode-map "A"
+        (lambda (&optional beg end)
+          "archive message"
+          (interactive (notmuch-search-interactive-region))
+          (notmuch-search-tag (list "-inbox") beg end)))
+
+      ;; Archive message in notmuch-show-mode
+      (define-key notmuch-show-mode-map "A"
+        (lambda ()
+          "archive message"
+          (interactive)
+          (notmuch-show-tag (list "-inbox"))))
+
+      ;; Archive message thread in notmuch-tree-mode
+      (define-key notmuch-tree-mode-map "A"
+        (lambda ()
+          "archive thread"
+          (interactive)
+          (notmuch-tree-tag (list "-inbox"))))
+  #+end_src

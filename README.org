@@ -275,6 +275,7 @@
      "org"
      "python"
      "web"
+     "mail"
 
      ;; Tools
      "erc"
