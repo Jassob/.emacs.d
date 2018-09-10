@@ -31,11 +31,16 @@
     ;; Hide some message types in ERC
     (setq erc-hide-list '("JOIN" "PART" "QUIT"))
 
+    ;; Automatically join #dhack and #dtek on dtek.se
+    (setq erc-autojoin-mode t
+          erc-notifications-last-notification t)
+    (add-to-list 'erc-autojoin-channels-alist '("dtek.se" "#dhack" "#dtek"))
+
     ;; Configure erc-nickserv to work with irc.dtek.se
     (add-to-list 'erc-nickserv-alist
                  '(dtek
                    "NickServ!NickServ@services.dtek.se"
-                   "This\\s-nickname\\s-is\\s-registered.\\s-Please\\s-choose"
+                   "This\\s-nickname\\s-is\\s-registered.\\-Please\\-choose"
                    "NickServ" "IDENTIFY" nil nil
                    "You\\s-are\\s-now\\s-identified\\s-for\\s-"))
 
