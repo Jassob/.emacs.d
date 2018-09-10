@@ -39,5 +39,20 @@
       ;; Use package defaults for these packages
       (use-package go-guru :ensure t)
       (use-package company-go :ensure t)
-      (use-package flycheck-golangci-lint :ensure t))
+      (use-package flycheck-golangci-lint :ensure t
+        :init
+        (setq flycheck-golangci-lint-config (concat (getenv "HOME") "/.config/golangci.yml")
+              flycheck-golangci-lint-fast t)))
+  #+end_src
+
+  To make it easy to switch between the fast and slow check of
+  ~golangci-lint~ I have this convenience function.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun toggle-flycheck-golangci-lint-fast ()
+      "Toggles between only using fast checkers and using all checkers for golangci-lint"
+      (interactive)
+      (if flycheck-golangci-lint-fast
+          (setq flycheck-golangci-lint-fast nil)
+        (setq flycheck-golangci-lint-fast t)))
   #+end_src
