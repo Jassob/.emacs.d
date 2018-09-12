@@ -362,6 +362,17 @@
     ;; Syntax and error checker
     (use-package flycheck :ensure t)
 
+    ;; Hide minor modes in modeline
+    (use-package diminish :ensure t
+      :init
+      (diminish 'git-gutter+-mode)
+      (diminish 'hs-minor-mode)
+      (diminish 'auto-revert-mode)
+      (diminish 'subword-mode)
+      (diminish 'hl-line-mode)
+      (diminish 'undo-tree-mode)
+      (diminish 'guide-key-mode))
+
     ;; Auto completion
     (use-package company :ensure t :diminish company-mode)
 
@@ -375,21 +386,6 @@
     (use-package smartparens :ensure t :diminish smartparens-mode
       :init
       (require 'smartparens-config))
-  #+end_src
-
-  I want to hide some built-in minor modes from the modeline so it is less cluttered.
-
-  #+begin_src emacs-lisp :tangle core.el
-    (require 'diminish)
-
-    (diminish 'git-gutter+-mode)
-    (diminish 'hs-minor-mode)
-    (diminish 'auto-revert-mode)
-    (diminish 'subword-mode)
-    (diminish 'hl-line-mode)
-    (diminish 'undo-tree-mode)
-    (diminish 'guide-key-mode)
-
   #+end_src
 
 * Modules
