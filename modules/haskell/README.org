@@ -69,7 +69,6 @@
             ("C-c C-u" . haskell-insert-undefined)
             ("C-c C-a" . haskell-insert-doc))
       :config
-      (setq haskell-tags-on-save t)
       (add-hook 'haskell-mode-hook 'common-code-mode)
       (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
       (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
