@@ -23,7 +23,18 @@
   3. Run ~make all~ in =~/.emacs.d/
   4. Profit!
 
-* Personal customization
+* Initialization
+
+  Before doing anything else, let us disable the garbage collector
+  during setup, this saves us some time and we're not likely to run in
+  to memory issues while setting everything up.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq gc-cons-threshold 64000000)
+    (add-hook 'after-init-hook #'(lambda ()
+                                   ;; restore after startup
+                                   (setq gc-cons-threshold 800000)))
+  #+end_src
 
   Load the core configuration to setup stuff.
 
@@ -32,6 +43,7 @@
     (load (concat user-emacs-directory "core.el"))
   #+end_src
 
+* Personal customization
   Give my setup a personal touch.
 
   #+begin_src emacs-lisp :tangle init.el
