@@ -10,7 +10,7 @@ all: $(modules)
 # Implicit rule to create the module.el from the README.org
 %/module.el: %/README.org
 	-echo "Tangling $<"
-	-$(CC) --eval '(org-babel-tangle-file "$<")' > /dev/null 2>&1
+	-$(CC) --eval '(org-babel-tangle-file "$<")'
 
 # Remove
 clean:
