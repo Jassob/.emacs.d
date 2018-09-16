@@ -17,6 +17,14 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package org :ensure t :defer t
+      :bind
+      ("C-c c"     . org-capture)
+      ("C-c a"     . org-agenda)
+      ("C-c l"     . org-store-link)
+      ("C-c L"     . org-insert-link-global)
+      ("C-c O"     . org-open-at-point-global)
+      ("<f9> <f9>" . org-agenda-list)
+      ("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r")))
       :config
       (setq org-clock-persist-file (concat cache-dir "org-clock-save.el")
             org-expiry-inactive-timestamps t
@@ -35,8 +43,10 @@
   Put all org logs into a drawer.
 
   #+begin_src emacs-lisp :tangle module.el
-    (setq org-log-into-drawer "LOGBOOK"
-          org-clock-into-drawer t)
+    (with-eval-after-load 'org
+      (setq org-log-into-drawer "LOGBOOK"
+            org-clock-into-drawer t))
+
   #+end_src
 
 ** My files
@@ -89,19 +99,6 @@
    #+end_src
 
 ** Keyboard shortcuts
-
-   Some global Org keybindings to set up easy capturing and
-   retrieving links and so on.
-
-   #+begin_src emacs-lisp :tangle module.el
-     (bind-keys ("C-c c"     . org-capture)
-                ("C-c a"     . org-agenda)
-                ("C-c l"     . org-store-link)
-                ("C-c L"     . org-insert-link-global)
-                ("C-c O"     . org-open-at-point-global)
-                ("<f9> <f9>" . org-agenda-list)
-                ("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r"))))
-   #+end_src
 
    Stacking killed content with =append-next-kill= is more useful
    than being able to copy a region in a table.
@@ -196,10 +193,11 @@
    multiple devices (possibly also org-mobile?).
 
    #+begin_src emacs-lisp :tangle module.el
-     (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
-                                 (file-name-as-directory "personal"))
-           org-default-notes-file (concat org-directory "organizer.org")
-           org-refile-targets '((org-agenda-files :maxlevel . 6)))
+     (with-eval-after-load 'org
+       (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
+                                   (file-name-as-directory "personal"))
+             org-default-notes-file (concat org-directory "organizer.org")
+             org-refile-targets '((org-agenda-files :maxlevel . 6))))
    #+end_src
 
 *** Todo states
@@ -215,11 +213,12 @@
     change.
 
     #+begin_src emacs-lisp :tangle module.el
-      (setq org-todo-keywords
-        '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
-                    "IN-PROGRESS(p!/@)" "WAITING(w@/@)"
-                    "|" "DONE(d@)" "CANCELLED(c@)")
-          (sequence "WANT-TO-READ(@)" "READING(!)" "|" "READ(@)")))
+      (with-eval-after-load 'org
+        (setq org-todo-keywords
+              '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
+                          "IN-PROGRESS(p!/@)" "WAITING(w@/@)"
+                          "|" "DONE(d@)" "CANCELLED(c@)")
+                (sequence "WANT-TO-READ(@)" "READING(!)" "|" "READ(@)"))))
     #+end_src
 
 *** Tag tasks
@@ -228,11 +227,12 @@
     is of course doable inside =Org mode= as well.
 
     #+begin_src emacs-lisp :tangle module.el
-      (setq org-tag-alist '(("@work" . ?w)
-                            ("@study" . ?s)
-                            ("@coding" . ?c)
-                            ("@reading" . ?r)
-                            ("@home" . ?h)))
+      (with-eval-after-load 'org
+        (setq org-tag-alist '(("@work" . ?w)
+                              ("@study" . ?s)
+                              ("@coding" . ?c)
+                              ("@reading" . ?r)
+                              ("@home" . ?h))))
     #+end_src
 
     I'll probably add some more when I have used this for a while.
@@ -258,8 +258,9 @@
     [[http://orgmode.org/worg/org-hacks.html][Org Hacks]] page:
 
     #+begin_src emacs-lisp :tangle module.el
-      (add-hook 'org-clock-in-prepare-hook
-                'local/org-mode-ask-effort)
+      (with-eval-after-load 'org
+        (add-hook 'org-clock-in-prepare-hook
+                  'local/org-mode-ask-effort))
 
       (defun local/org-mode-ask-effort ()
         "Ask for an effort estimate when clocking in."
@@ -281,8 +282,9 @@
     We want to show all habits, not just the ones for today.
 
     #+begin_src emacs-lisp :tangle module.el
-    (setq org-habit-show-habits-only-for-today nil)
-    #+end_src emacs-lisp
+      (with-eval-after-load 'org
+        (setq org-habit-show-habits-only-for-today nil))
+    #+end_src
 
 *** Task dependencies
 
@@ -290,9 +292,10 @@
     are enforced by =Org mode= and that this is clear when I show tasks.
 
     #+begin_src emacs-lisp :tangle module.el
-      (setq org-enforce-todo-dependencies t
-            org-track-ordered-properties-with-tag t
-            org-agenda-dim-blocked-tasks t)
+      (with-eval-after-load 'org
+        (setq org-enforce-todo-dependencies t
+              org-track-ordered-properties-with-tag t
+              org-agenda-dim-blocked-tasks t))
     #+end_src
 
 ** Structure templates
@@ -302,21 +305,22 @@
    So lets customize this alist a bit.
 
    #+begin_src emacs-lisp :tangle module.el
-    (setq org-structure-template-alist
-          '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
-            ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
-            ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
-            ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
-            ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
-            ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
-            ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
-            ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
-            ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
-            ("H" "#+html: " "<literal style=\"html\">?</literal>")
-            ("a" "#+begin_ascii\n?\n#+end_ascii")
-            ("A" "#+ascii: ")
-            ("i" "#+index: ?" "#+index: ?")
-            ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+     (with-eval-after-load 'org
+       (setq org-structure-template-alist
+             '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+             ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+             ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+             ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+             ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+             ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+             ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+             ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+             ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+             ("H" "#+html: " "<literal style=\"html\">?</literal>")
+             ("a" "#+begin_ascii\n?\n#+end_ascii")
+             ("A" "#+ascii: ")
+             ("i" "#+index: ?" "#+index: ?")
+             ("I" "#+include %file ?" "<include file=%file markup=\"?\">"))))
    #+end_src
 
 ** Org Capture templates
@@ -377,84 +381,85 @@
    - ~%l~ - Org will insert a literal link here,
 
    #+begin_src emacs-lisp :tangle module.el
-     (setq org-capture-templates
-           `(("t" "Tasks" entry
-              (file+headline ,org-default-notes-file "Inbox")
-              ,local/org-basic-task-template)
+     (with-eval-after-load 'org
+       (setq org-capture-templates
+             `(("t" "Tasks" entry
+                (file+headline ,org-default-notes-file "Inbox")
+                ,local/org-basic-task-template)
 
-             ("tD" "Done - Task" entry
-              (file+headline ,org-default-notes-file "Inbox")
-              "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+               ("tD" "Done - Task" entry
+                (file+headline ,org-default-notes-file "Inbox")
+                "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
 
-             ("T" "Quick task" entry
-              (file+headline ,org-default-notes-file "Inbox")
-              "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
+               ("T" "Quick task" entry
+                (file+headline ,org-default-notes-file "Inbox")
+                "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
 
-             ("i" "Interrupting task" entry
-              (file+headline ,org-default-notes-file "Inbox")
-              "* IN-PROGRESS %^{Task}\n" :clock-in :clock-resume)
+               ("i" "Interrupting task" entry
+                (file+headline ,org-default-notes-file "Inbox")
+                "* IN-PROGRESS %^{Task}\n" :clock-in :clock-resume)
 
-             ("P" "People task" entry
-              (file+headline ,(concat org-directory "people.org") "Tasks")
-              ,local/org-basic-task-template)
+               ("P" "People task" entry
+                (file+headline ,(concat org-directory "people.org") "Tasks")
+                ,local/org-basic-task-template)
 
-             ("j" "Journal entry" plain
-              (file+datetree ,(concat org-directory "journal.org.gpg"))
-              "%K - %a\n%i\n%?\n" :unnarrowed t)
+               ("j" "Journal entry" plain
+                (file+datetree ,(concat org-directory "journal.org.gpg"))
+                "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-             ("J" "Journal entry with date" plain
-              (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-              "%K - %a\n%i\n%?\n" :unnarrowed t)
+               ("J" "Journal entry with date" plain
+                (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+                "%K - %a\n%i\n%?\n" :unnarrowed t)
 
-             ("s" "Journal entry with date, scheduled" entry
-              (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-              "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
+               ("s" "Journal entry with date, scheduled" entry
+                (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+                "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
 
-             ("Pd" "Done - People" entry
-              (file+headline ,(concat org-directory "people.org") "Tasks")
-              "* DONE %^{Task}\nSCHEDULED: %^t\n%?\n")
+               ("Pd" "Done - People" entry
+                (file+headline ,(concat org-directory "people.org") "Tasks")
+                "* DONE %^{Task}\nSCHEDULED: %^t\n%?\n")
 
-             ("q" "Quick note" item
-              (file+headline ,org-default-notes-file "Quick notes"))
+               ("q" "Quick note" item
+                (file+headline ,org-default-notes-file "Quick notes"))
 
-             ("B" "Book" entry
-              (file+headline ,(concat org-directory "reading.org") "Books")
-              ,local/org-book-template :clock-resume)
+               ("B" "Book" entry
+                (file+headline ,(concat org-directory "reading.org") "Books")
+                ,local/org-book-template :clock-resume)
 
-             ("A" "Article" entry
-              (file+headline ,(concat org-directory "reading.org") "Articles")
-              ,local/org-article-template :clock-resume)
+               ("A" "Article" entry
+                (file+headline ,(concat org-directory "reading.org") "Articles")
+                ,local/org-article-template :clock-resume)
 
-             ("p" "Blog post" entry
-              (file+headline ,(concat org-directory "reading.org") "Blog entries")
-              ,local/org-blog-post-template :clock-resume)
+               ("p" "Blog post" entry
+                (file+headline ,(concat org-directory "reading.org") "Blog entries")
+                ,local/org-blog-post-template :clock-resume)
 
-             ("l" "Bookmark" entry
-              (file+headline ,(concat org-directory "bookmarks.org")
-                             "Captured entries")
-              "* [[%^{Link}][%^{Title}]]\n\n%i%?\n")
+               ("l" "Bookmark" entry
+                (file+headline ,(concat org-directory "bookmarks.org")
+                               "Captured entries")
+                "* [[%^{Link}][%^{Title}]]\n\n%i%?\n")
 
-             ("n" "Daily note" table-line
-              (file+olp ,org-default-notes-file "Inbox")
-              "| %u | %^{Note} |\n" :immediate-finish t)
+               ("n" "Daily note" table-line
+                (file+olp ,org-default-notes-file "Inbox")
+                "| %u | %^{Note} |\n" :immediate-finish t)
 
-             ("r" "Notes" entry
-              (file+datetree ,org-default-notes-file)
-              "* %?\n\n%i\n%U\n")
+               ("r" "Notes" entry
+                (file+datetree ,org-default-notes-file)
+                "* %?\n\n%i\n%U\n")
 
-             ;; Org protocol handlers
-             ("p" "Protocol" entry
-              (file+headline ,(concat org-directory "notes.org") "Inbox")
-              "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?\n")
+               ;; Org protocol handlers
+               ("p" "Protocol" entry
+                (file+headline ,(concat org-directory "notes.org") "Inbox")
+                "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?\n")
 
-             ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
-              "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U\n")
+               ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+                "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U\n")
 
-             ("L" "Protocol Link" entry
-              (file+headline ,(concat org-directory "notes.org") "Inbox")
-              "* %? [[%:link][%:description]] \nCaptured On: %U\n")))
+               ("L" "Protocol Link" entry
+                (file+headline ,(concat org-directory "notes.org") "Inbox")
+                "* %? [[%:link][%:description]] \nCaptured On: %U\n")))
 
-     (bind-key "C-M-r" 'org-capture)
+       (bind-key "C-M-r" 'org-capture))
    #+end_src
 
 ** Org agenda
@@ -476,24 +481,25 @@
                                     (and (file-exists-p path) path)))
                    files)))
 
-      (setq org-agenda-files
-            (local/existing-files-in-dir
-             org-directory
-             '("organizer.org"
-               "people.org"
-               "bookmarks.org"
-               "studies.org"
-               "reading.org"
-               "work.org"
+      (with-eval-after-load 'org
+        (setq org-agenda-files
+              (local/existing-files-in-dir
+               org-directory
+               '("organizer.org"
+                 "people.org"
+                 "bookmarks.org"
+                 "studies.org"
+                 "reading.org"
+                 "work.org"
 
-               ;; Calendar files (synced with org-gcal)
-               "calendar/family.org"
-               "calendar/personal.org"
-               "calendar/spex.org"
-               "calendar/ensemble.org"
-               "calendar/chalmers.org"
-               "calendar/theatre.org"
-               )))
+                 ;; Calendar files (synced with org-gcal)
+                 "calendar/family.org"
+                 "calendar/personal.org"
+                 "calendar/spex.org"
+                 "calendar/ensemble.org"
+                 "calendar/chalmers.org"
+                 "calendar/theatre.org"
+               ))))
     #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
@@ -501,7 +507,8 @@
     scheduled.
 
     #+begin_src emacs-lisp :tangle module.el
-      (setq org-agenda-tags-column -100
+      (with-eval-after-load 'org
+        (setq org-agenda-tags-column -100
             org-agenda-sticky nil
             org-agenda-use-tag-inheritance t
             org-agenda-show-log t
@@ -514,7 +521,7 @@
               (800 1000 1200 1400 1600 1800 2000)
               "......"
               "----------------")
-            org-columns-default-format "14%DEADLINE %Effort{:} %CLOCKSUM %1PRIORITY %TODO %50ITEM %TAGS")
+            org-columns-default-format "14%DEADLINE %Effort{:} %CLOCKSUM %1PRIORITY %TODO %50ITEM %TAGS"))
     #+end_src
 
     Sometimes I want to be able to exclude stuff from the agenda view,
@@ -550,49 +557,50 @@
    do some automation on when it does the publishing.
 
    #+begin_src emacs-lisp :tangle module.el
-     (require 'ox-html)
-     (setq org-publish-project-alist
-           `(("html"
-              :base-directory ,org-directory
-              :base-extension "org"
-              :publishing-directory "/ssh:jassob:/var/www/org"
-              :recursive t
-              :publishing-function org-html-publish-to-html)
+     (with-eval-after-load 'org
+       (require 'ox-html)
+       (setq org-publish-project-alist
+             `(("html"
+                :base-directory ,org-directory
+                :base-extension "org"
+                :publishing-directory "/ssh:jassob:/var/www/org"
+                :recursive t
+                :publishing-function org-html-publish-to-html)
 
-             ("org-static"
-              :base-directory ,org-directory
-              :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-              :publishing-directory "/ssh:jassob:/var/www/org"
-              :recursive t
-              :publishing-function org-publish-attachment)
+               ("org-static"
+                :base-directory ,org-directory
+                :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+                :publishing-directory "/ssh:jassob:/var/www/org"
+                :recursive t
+                :publishing-function org-publish-attachment)
 
-             ("archive"
-              :base-directory ,org-directory
-              :base-extension "org_archive"
-              :publishing-directory "/ssh:jassob:/var/www/org/archive"
-              :publishing-function org-html-publish-to-html)
+               ("archive"
+                :base-directory ,org-directory
+                :base-extension "org_archive"
+                :publishing-directory "/ssh:jassob:/var/www/org/archive"
+                :publishing-function org-html-publish-to-html)
 
-             ("web"
-              :base-directory ,(concat org-directory "web/")
-              :base-extension "org"
-              :publishing-directory "/ssh:jassob:/var/www/"
-              :publishing-function org-html-publish-to-html)
+               ("web"
+                :base-directory ,(concat org-directory "web/")
+                :base-extension "org"
+                :publishing-directory "/ssh:jassob:/var/www/"
+                :publishing-function org-html-publish-to-html)
 
-             ("jassob" :components ("html" "archive" "org-static" "web"))
-             ("all" :components ("jassob"))))
+               ("jassob" :components ("html" "archive" "org-static" "web"))
+               ("all" :components ("jassob"))))
 
-     (defun local/publish-jassob ()
-       "Publishes \"jassob\" project"
-       (interactive)
-       (org-publish "jassob" t))
+       (defun local/publish-jassob ()
+         "Publishes \"jassob\" project"
+         (interactive)
+         (org-publish "jassob" t))
 
-     (defun local/publish-chalmers ()
-       "Publishes \"chalmers\" project"
-       (interactive)
-       (org-publish "chalmers" t))
+       (defun local/publish-chalmers ()
+         "Publishes \"chalmers\" project"
+         (interactive)
+         (org-publish "chalmers" t))
 
-     (defun local/publish-web ()
-       "Publishes \"web\" project"
-       (interactive)
-       (org-publish "web" t))
+       (defun local/publish-web ()
+         "Publishes \"web\" project"
+         (interactive)
+         (org-publish "web" t)))
    #+end_src
