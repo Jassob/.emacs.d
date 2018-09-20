@@ -275,30 +275,41 @@
    #+end_src
 
 * Modules
-  These are the modules that are
+  These are the modules that are enabled. We store them in a separate
+  file so that we can load it without loading everything.
+
+  #+begin_src emacs-lisp :tangle modules.el
+    ;; Enabled modules
+    (setq
+     enabled-modules '(
+       ;; Coding
+       ;;"csharp"
+       "golang"
+       "haskell"
+       "org"
+       "python"
+       "web"
+       ;;"mail"
+
+       ;; Tools
+       "erc"
+       "git"
+       "guide-key"
+       "multiple-cursors"
+       "pdf-tools"
+       "project"
+       "recentf"
+       "smex"
+       "undo-tree"
+    ))
+  #+end_src
+
+  Therefore we have to load the module list and then load our modules
+  before we let Emacs take over and start up everything else.
 
   #+begin_src emacs-lisp :tangle init.el
-    ;; Enabled modules
-    (enable-modules
-     ;; Coding
-     "csharp"
-     "golang"
-     "haskell"
-     "org"
-     "python"
-     "web"
-     "mail"
-
-     ;; Tools
-     "erc"
-     "git"
-     "guide-key"
-     "multiple-cursors"
-     "pdf-tools"
-     "project"
-     "recentf"
-     "smex"
-     "undo-tree")
+    (load (concat user-emacs-directory "modules.el"))
+    (load-modules)
   #+end_src
 
 

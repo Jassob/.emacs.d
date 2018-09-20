@@ -332,7 +332,6 @@
 
     (add-hook 'common-code-mode-hook 'flycheck-mode)
     (add-hook 'common-code-mode-hook 'company-mode)
-    (add-hook 'common-code-mode-hook 'git-gutter+-mode)
     (add-hook 'common-code-mode-hook 'hs-minor-mode)
     (add-hook 'common-code-mode-hook 'rainbow-delimiters-mode)
     (add-hook 'common-code-mode-hook 'auto-revert-mode)
@@ -399,13 +398,68 @@
   #+end_src
 
 * Modules
-  This function is defined to make loading of modules easier. The
-  arguments to ~enable-modules~ should be directory names in the
-  =modules/= directory
+  In order to make it possible to only compile the enabled modules and
+  not just making everything my module system needs to be a bit more
+  clever. A possible and rather "simple" solution is to have a
+  directory where all available modules reside and another directory
+  where all enabled modules are and then Emacs will only read modules
+  from the enabled directory. This approach is a rather common way of
+  enabling and disabling stuff in other projects as well.
+
+  However, this means that we need to have a way to configure stuff a
+  bit and why not use Emacs built-in customize tool?
 
   #+begin_src emacs-lisp :tangle core.el
-    (defun enable-modules (&rest modules)
-      "Enables MODULES, by loading each module.el in modules/"
-      (dolist (module modules)
-        (load (concat user-emacs-directory "modules/" module "/module.el"))))
+    (defgroup core nil "Core configurable options."
+      :group 'emacs)
+
+    (defcustom enabled-modules-directory (concat user-emacs-directory "modules/")
+      "Where enabled modules reside, Emacs look here for modules to load."
+      :type 'string
+      :group 'core)
+
+    (defcustom available-modules-directory (concat user-emacs-directory "available-modules/")
+      "Where available modules reside, Emacs look here for modules to enable."
+      :type 'string
+      :group 'core)
+
+    ;; Enabled modules
+    (defcustom enabled-modules nil
+      "The list of enabled modules.
+    A module represents a subdirectory inside modules/ directory that will contain a module.el file which will be loaded by Emacs as part of the init process."
+      :type '(repeat string)
+      :group 'core)
+  #+end_src
+
+  Now that we have customizable directories and a list of enabled
+  modules we start by symlinking the enabled modules to the enabled subdirectory.
+
+  #+begin_src emacs-lisp :tangle core.el
+    (defun enable-modules ()
+      "Enable modules by symlinking them from available-modules/ to modules/."
+      (dolist (module enabled-modules)
+        (let ((mod-dir (concat enabled-modules-directory module))
+              (src-dir (concat available-modules-directory module)))
+          (unless (file-directory-p mod-dir)
+            (if (file-directory-p src-dir)
+                (make-symbolic-link (expand-file-name src-dir) (expand-file-name mod-dir) t)
+              (warn (concat "Could not enable module " module ", make sure that it's sources are available in " available-modules-directory)))))))
+  #+end_src
+
+  Now we only need to load the modules using a superficially modified
+  version of the old ~enable-modules~ function. Since we now know that
+  the only modules that should be in the ~enabled-modules-directory~
+  are the ones we want to load we don't need to read from the
+  enabled-modules variable, but I have changed that yet.
+
+  #+begin_src emacs-lisp :tangle core.el
+    (defun load-modules ()
+      "Load modules specified in ENABLED-MODULES, by loading each module.el in modules/."
+      (unless (listp enabled-modules)
+        (error "Customizable variable enabled-modules is not a list"))
+      (dolist (module enabled-modules)
+        (let ((code (concat enabled-modules-directory module "/module.el")))
+          (if (file-exists-p code)
+              (load code)
+            (warn (concat "Could not find module file " code))))))
   #+end_src

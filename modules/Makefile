@@ -1,4 +1,4 @@
-CC:=emacs --batch -l ./setup.el
+CC:=emacs --batch --eval "(require 'org)"
 
 # Get all module.el files
 readmes := $(wildcard */README.org)

@@ -12,6 +12,14 @@
   linter and formatters etc.
 
   #+begin_src emacs-lisp :tangle module.el
+    ;; Use package defaults for these packages
+    (use-package go-guru :ensure t)
+    (use-package company-go :ensure t)
+    (use-package flycheck-golangci-lint :ensure t
+      :init
+      (setq flycheck-golangci-lint-config (concat (getenv "HOME") "/.config/golangci.yml")
+            flycheck-golangci-lint-fast t))
+
     (use-package go-mode
       :init
       (setq gofmt-command "goimports")
@@ -34,15 +42,7 @@
       :config
       (if (not (string-match "go" compile-command))
           (set (make-local-variable 'compile-command)
-               "go build -v && go test -v && go vet"))
-
-      ;; Use package defaults for these packages
-      (use-package go-guru :ensure t)
-      (use-package company-go :ensure t)
-      (use-package flycheck-golangci-lint :ensure t
-        :init
-        (setq flycheck-golangci-lint-config (concat (getenv "HOME") "/.config/golangci.yml")
-              flycheck-golangci-lint-fast t)))
+               "go build -v && go test -v && go vet")))
   #+end_src
 
   To make it easy to switch between the fast and slow check of

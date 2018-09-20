@@ -9,24 +9,26 @@ FINDELCFILES:=find . $(SKIPLOCAL) -type f -name \*.elc
 # targets all and modules are PHONY targets
 .PHONY: all modules
 
-all: core.el init.el modules
+all: core.el init.el .local/packages/elpa modules.el modules
 	-echo "All done!"
 
 # Install packages
 .local/packages/elpa: core.el init.el
+	echo "Starting Emacs to download and install packages.."
 	-emacs -nw -e kill-emacs
 
 # Tangle all the modules
-modules:
+modules: core.el modules.el
+	-$(CC) $(CCFLAGS) -l core.el -l modules.el --eval '(enable-modules)'
 	-$(MAKE) -C modules --silent all
 
 # Tangle the init file
-init.el: README.org
+modules.el init.el: README.org
 	-echo "Tangling $@"
 	-$(CC) $(CCFLAGS) --eval '(org-babel-tangle-file "$<")' $(NOOUTPUT)
 
 # Compile elisp files
-byte-compile: .local/packages/elpa
+byte-compile: modules.el modules .local/packages/elpa
 	-echo "Byte compiling .el files.."
 	-$(FINDELFILES) -exec $(CC) $(CCFLAGS) -l ~/.emacs.d/init.el -f batch-byte-compile '{}' +
 
@@ -36,10 +38,15 @@ byte-compile: .local/packages/elpa
 	-$(CC) $(CCFLAGS) --eval '(org-babel-tangle-file "$<")' $(NOOUTPUT)
 
 # Remove .el files
-clean: clean-byte-compiled
+clean: clean-byte-compiled clean-enabled
 	-$(MAKE) -C modules --silent clean
 	-$(FINDELFILES) -exec rm '{}' +
 
 # Remove .elc files
 clean-byte-compiled:
 	-$(FINDELCFILES) -exec rm '{}' +
+
+
+# Remove enable symlinks
+clean-enabled:
+	-cd modules && ls -I Makefile | xargs -r rm
