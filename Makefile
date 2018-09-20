@@ -9,13 +9,14 @@ FINDELCFILES:=find . $(SKIPLOCAL) -type f -name \*.elc
 # targets all and modules are PHONY targets
 .PHONY: all modules
 
-all: core.el init.el .local/packages/elpa modules.el modules
+all: core.el init.el .packages-installed modules.el modules
 	-echo "All done!"
 
 # Install packages
-.local/packages/elpa: core.el init.el
+.packages-installed: core.el init.el
 	echo "Starting Emacs to download and install packages.."
 	-emacs -nw -e kill-emacs
+	-touch .packages-installed
 
 # Tangle all the modules
 modules: core.el modules.el
@@ -28,7 +29,7 @@ modules.el init.el: README.org
 	-$(CC) $(CCFLAGS) --eval '(org-babel-tangle-file "$<")' $(NOOUTPUT)
 
 # Compile elisp files
-byte-compile: modules.el modules .local/packages/elpa
+byte-compile: modules.el modules .packages-installed
 	-echo "Byte compiling .el files.."
 	-$(FINDELFILES) -exec $(CC) $(CCFLAGS) -l ~/.emacs.d/init.el -f batch-byte-compile '{}' +
 
