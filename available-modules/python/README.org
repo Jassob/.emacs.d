@@ -12,7 +12,7 @@
   helpful information about the code.
 
   #+begin_src emacs-lisp :tangle module.el
-     (use-package python-mode :commands python-mode
+     (use-package python-mode :commands python-mode :ensure t
        :init
        (add-hook 'python-mode-hook 'common-code-mode)
        (add-hook 'python-mode-hook
@@ -49,7 +49,7 @@
   Flycheck interface for said type checker.
 
   #+begin_src emacs-lisp :tangle module.el
-     (use-package flycheck-mypy :defer t
+     (use-package flycheck-mypy :defer t :ensure t
        :init
        (add-to-list 'flycheck-disabled-checkers 'python-flake8)
        (add-to-list 'flycheck-disabled-checkers 'python-pylint)
@@ -75,6 +75,6 @@
   There exists an Emacs mode for the requirement-file-format in pip.
 
    #+begin_src emacs-lisp :tangle module.el
-     (use-package pip-requirements
+     (use-package pip-requirements :ensure t
        :mode ("/requirements.txt$" . pip-requirements-mode))
    #+end_src

@@ -50,36 +50,7 @@
   Next stop is to actually install and configure the modes and packages.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package haskell-mode
-      :mode "\\.hs$"
-      :mode ("\\.ghci$ . ghci-script-mode")
-      :mode ("\\.cabal$ . haskell-cabal-mode")
-      :interpreter (("runghc" . haskell-mode)
-                    ("runhaskell" . haskell-mode))
-      :bind
-      (:map haskell-mode-map
-            ("C-`"     . haskell-interactive-bring)
-            ("C-c C-r" . xref-find-references)
-            ("C-c C-," . xref-find-definitions)
-            ("C-c C-." . pop-tag-mark)
-            ("C-c C-t" . haskell-process-do-type)
-            ("C-c c"   . haskell-process-cabal)
-            ("C-c C-c" . haskell-process-cabal-build)
-            ("C-c C-u" . haskell-insert-undefined)
-            ("C-c C-a" . haskell-insert-doc))
-      :config
-      (add-hook 'haskell-mode-hook 'common-code-mode)
-      (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-      (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-
-      (if (string-match-p (regexp-quote "Hasklig")
-                          (aref (query-font (face-attribute 'default :font)) 0))
-          (progn
-            (setq haskell-font-lock-symbols nil)
-            (add-hook 'haskell-mode-hook 'my-set-hasklig-ligatures))
-        (setq haskell-font-lock-symbols 'unicode)))
-
-    (use-package dante :after haskell-mode :diminish t
+    (use-package dante :after haskell-mode :diminish t :ensure t
       :init
       (if (executable-find "cabal")
           (progn
@@ -110,4 +81,33 @@
                                   (dante-repl-by-file root '("stack.yaml")
                                                       '("stack" "repl"))))
                       (bare  . ,(lambda (_) '("cabal" "repl"))))))
+
+    (use-package haskell-mode :ensure t
+      :mode "\\.hs$"
+      :mode ("\\.ghci$ . ghci-script-mode")
+      :mode ("\\.cabal$ . haskell-cabal-mode")
+      :interpreter (("runghc" . haskell-mode)
+                    ("runhaskell" . haskell-mode))
+      :bind
+      (:map haskell-mode-map
+            ("C-`"     . haskell-interactive-bring)
+            ("C-c C-r" . xref-find-references)
+            ("C-c C-," . xref-find-definitions)
+            ("C-c C-." . pop-tag-mark)
+            ("C-c C-t" . haskell-process-do-type)
+            ("C-c c"   . haskell-process-cabal)
+            ("C-c C-c" . haskell-process-cabal-build)
+            ("C-c C-u" . haskell-insert-undefined)
+            ("C-c C-a" . haskell-insert-doc))
+      :config
+      (add-hook 'haskell-mode-hook 'common-code-mode)
+      (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+      (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
+
+      (if (string-match-p (regexp-quote "Hasklig")
+                          (aref (query-font (face-attribute 'default :font)) 0))
+          (progn
+            (setq haskell-font-lock-symbols nil)
+            (add-hook 'haskell-mode-hook 'my-set-hasklig-ligatures))
+        (setq haskell-font-lock-symbols 'unicode)))
   #+end_src

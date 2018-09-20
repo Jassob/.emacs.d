@@ -14,7 +14,7 @@
   use =SPC= to scroll and advance the pages instead.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package pdf-tools :defer t
+    (use-package pdf-tools :defer t :ensure t
       :config
       (pdf-tools-install)
       (setq pdf-view-continuous nil)

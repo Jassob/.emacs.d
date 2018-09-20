@@ -42,7 +42,7 @@
   To help me interact with my Github repositories I use =magithub=.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package magithub :after magit
+    (use-package magithub :after magit :ensure t
       :init (defvar magithub--auth-file (concat etc-dir "magithub-auth-file"))
       :config
       (magithub-feature-autoinject t)
