@@ -14,18 +14,20 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (require 'erc)
-    (require 'erc-services)
+    (require 'erc-networks)
+    ;; Add dtek to the list of networks
+    (add-to-list 'erc-networks-alist '(dtek "irc.dtek.se"))
 
+    ;; Add irc.dtek.se to the list of servers
     (add-to-list 'erc-server-alist
                  '("dtek: Datateknologsektionens IRC server" ; Description
                    dtek                                      ; symbol
                    "irc.dtek.se"                             ; address
-                   (6667 6697)))                             ; port
+                   (6697 6667)))                             ; port
 
     ;; Add some erc-modules
     (add-to-list 'erc-modules 'log)
     (add-to-list 'erc-modules 'notifications)
-    (add-to-list 'erc-modules 'services)
     (add-to-list 'erc-modules 'smiley)
 
     ;; Hide some message types in ERC
@@ -34,20 +36,21 @@
     ;; Automatically join #dhack and #dtek on dtek.se
     (setq erc-autojoin-mode t
           erc-notifications-last-notification t
-          erc-autojoin-channels-alist '(("irc.dtek.se" . ("#dtek" "#dhack"))))
+          erc-autojoin-channels-alist '(("irc.dtek.se" "#dtek" "#dhack")))
+  #+end_src
 
-    ;; Configure erc-nickserv to work with irc.dtek.se
-    (add-to-list 'erc-nickserv-alist
-                 '(dtek
-                   "NickServ!NickServ@services.dtek.se"
-                   "This\\s-nickname\\s-is\\s-registered.\\-Please\\-choose"
-                   "NickServ" "IDENTIFY" nil nil
-                   "You\\s-are\\s-now\\s-identified\\s-for\\s-"))
+  The irc server is protected by NickServ so that nobody can steal
+  anothers identity. ERC can be configured to prompt for the NickServ
+  password, but I want to be able to just put my password in a file
+  and forget about it and not having to input it every time I connect.
 
-    ;; Set the NickServ password for dtek
-    (setq erc-nickserv-passwords
-          `((dtek (("jassob" . ,dtek-nick-pass)))))
+  #+begin_src emacs-lisp :tangle module.el
+    ;; Authenticate to irc.dtek.se
+    (add-hook 'erc-after-connect
+              `(lambda (SERVER NICK)
+                 "If connecting to irc.dtek.se identify myself to NickServ"
+                 (when (string-equal SERVER "irc.dtek.se")
+                   (erc-message "PRIVMSG" (concat "NickServ identify " ,dtek-nick-pass)))))
+  #+end_src
 
-    ;; Don't prompt for passwords (I have them configured already)
-    (setq erc-prompt-for-nickserv-password nil)
   #+end_src
