@@ -53,4 +53,14 @@
                    (erc-message "PRIVMSG" (concat "NickServ identify " ,dtek-nick-pass)))))
   #+end_src
 
+  To continue my strive for not being prompted about everything, I
+  define a command for starting ERC and connecting to every network
+  that I'm interested in.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun local/erc ()
+      "Start ERC and connect to the networks that I am interested
+      in"
+      (interactive)
+      (erc-tls :server "irc.dtek.se" :port "6697" :nick "jassob"))
   #+end_src
