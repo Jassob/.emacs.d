@@ -20,7 +20,7 @@ all: core.el init.el .packages-installed modules.el modules
 
 # Tangle all the modules
 modules: core.el modules.el
-	-$(CC) $(CCFLAGS) -l core.el -l modules.el --eval '(enable-modules)'
+	-$(CC) $(CCFLAGS) -l core.el -l modules.el --eval '(enable-modules)' $(NOOUTPUT)
 	-$(MAKE) -C modules --silent all
 
 # Tangle the init file
