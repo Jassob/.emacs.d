@@ -34,7 +34,7 @@
     ;; Automatically join #dhack and #dtek on dtek.se
     (setq erc-autojoin-mode t
           erc-notifications-last-notification t
-          erc-autojoin-channels-alist '("dtek.se" . '("#dhack" "#dtek")))
+          erc-autojoin-channels-alist '(("irc.dtek.se" . ("#dtek" "#dhack"))))
 
     ;; Configure erc-nickserv to work with irc.dtek.se
     (add-to-list 'erc-nickserv-alist
