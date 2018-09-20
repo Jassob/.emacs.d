@@ -50,7 +50,7 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (defun toggle-flycheck-golangci-lint-fast ()
-      "Toggles between only using fast checkers and using all checkers for golangci-lint"
+      "Toggle between only using fast checkers and using all checkers for golangci-lint."
       (interactive)
       (if flycheck-golangci-lint-fast
           (setq flycheck-golangci-lint-fast nil)
