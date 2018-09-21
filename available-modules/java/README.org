@@ -7,8 +7,18 @@
   This file contains the literate source of the Java module.
 
 * Module
-  This module is empty, please help me expand it.
+
+  I use Java Development Environment for Emacs (JDEE) which is a major
+  mode for developing in Java. It gives a lot of support that
+  full-blown IDEs gives, such as: syntax and error checking;
+  dependency and project management support.
+
+  I also want the =java-mode= to automatically load
+  =common-code-mode=, so I get line numbering and all the other
+  goodies.
 
   #+begin_src emacs-lisp :tangle module.el
-      (warn "The Java module is empty")
+    (use-package jdee :ensure t
+      :config
+      (add-hook 'java-mode-hook 'common-code-mode))
   #+end_src
