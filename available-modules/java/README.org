@@ -20,5 +20,22 @@
   #+begin_src emacs-lisp :tangle module.el
     (use-package jdee :ensure t
       :config
-      (add-hook 'java-mode-hook 'common-code-mode))
+      (add-hook 'java-mode-hook 'common-code-mode)
+      (setq semanticdb-default-save-directory (concat cache-dir "semanticdb")))
+  #+end_src
+
+  One thing that JDEE does not do is to format the source
+  code. =google-java-format= to the rescue!  Credits for
+  =emacs-google-java-format.el= goes to
+  http://github.com/sideshowcoder (source:
+  https://github.com/sideshowcoder/emacs-google-java-format)
+
+  #+begin_src emacs-lisp :tangle module.el
+    ;; Load our local format code
+    (load (concat user-emacs-directory "include/emacs-google-java-format.el"))
+    (setq emacs-google-java-format-jar-path (concat cache-dir "google-java-format/"))
+    (emacs-google-java-format-setup-formatter)
+
+    ;; Always format the buffer on save
+    (bind-key (kbd "C-c C-f") 'emacs-google-java-format-reformat-buffer java-mode-map)
   #+end_src
