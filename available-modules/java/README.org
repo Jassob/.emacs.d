@@ -15,12 +15,15 @@
 
   I also want the =java-mode= to automatically load
   =common-code-mode=, so I get line numbering and all the other
-  goodies.
+  goodies. To comply with Google Java styleguide I set indentation to
+  be done with spaces.
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package jdee :ensure t
       :config
       (add-hook 'java-mode-hook 'common-code-mode)
+      (add-hook 'java-mode-hook (lambda ()
+                                  (setq-local indent-tabs-mode nil)))
       (setq semanticdb-default-save-directory (concat cache-dir "semanticdb")))
   #+end_src
 
