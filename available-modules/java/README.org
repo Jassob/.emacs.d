@@ -34,7 +34,8 @@
     ;; Load our local format code
     (load (concat user-emacs-directory "include/emacs-google-java-format.el"))
     (setq emacs-google-java-format-jar-path (concat cache-dir "google-java-format/"))
-    (emacs-google-java-format-setup-formatter)
+    (ignore-errors
+      (emacs-google-java-format-setup-formatter))
 
     ;; Always format the buffer on save
     (bind-key (kbd "C-c C-f") 'emacs-google-java-format-reformat-buffer java-mode-map)
