@@ -1,0 +1,26 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: XML module
+#+AUTHOR: Jassob
+#+DATE: <2018-09-28 fre>
+
+* About this file
+  This file contains the literate source of the XML module.
+
+* Module
+  This module sets some options for editing XML files.
+
+  For instance, I'd like to default to indent with spaces
+
+  #+begin_src emacs-lisp :tangle module.el
+    (eval-after-load 'nxml-mode
+      (add-hook 'nxml-mode-hook
+                (lambda ()
+                  (setq-local indent-tabs-mode nil))))
+  #+end_src
+
+  Also, I'd like to have =nxml-mode= to load =common-code-mode=:
+
+  #+begin_src emacs-lisp :tangle module.el
+    (eval-after-load 'nxml-mode
+      (add-hook 'nxml-mode-hook 'common-code-mode))
+  #+end_src
