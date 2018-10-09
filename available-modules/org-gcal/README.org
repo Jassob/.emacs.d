@@ -40,7 +40,7 @@
    customizing our org-gcal package.
 
    #+begin_src emacs-lisp :tangle module.el
-     (use-package org-gcal :after org-mode
+     (use-package org-gcal :after org
        :init
        (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file"))
        (local--init-file-if-missing org-gcal--auth-file
