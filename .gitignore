@@ -2,3 +2,5 @@
 *.el
 *.elc
 /modules*
+/.packages-installed
+elpa
