@@ -14,8 +14,6 @@
    #+begin_src emacs-lisp :tangle module.el
      (use-package multiple-cursors :ensure t
        :init
-       (setq mc/list-file (concat cache-dir ".mc-lists.el"))
-
        ;; Unset to make mc/add-cursor-on-click listen to its binding
        (global-unset-key (kbd "M-<down-mouse-1>"))
        :bind (("C-S-c C-S-c" . mc/edit-lines)

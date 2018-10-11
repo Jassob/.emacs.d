@@ -16,9 +16,7 @@
        :config
        (setq ido-everywhere t
              ido-enable-flex-matching t
-             ido-create-new-buffer t
-             ido-save-directory-list-file (concat cache-dir "ido.last")
-             smex-save-file (concat cache-dir "smex-items"))
+             ido-create-new-buffer t)
        (ido-mode t)
        :bind ("M-x" . smex))
   #+end_src

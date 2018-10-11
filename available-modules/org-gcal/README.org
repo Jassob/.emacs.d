@@ -41,19 +41,7 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (use-package org-gcal :after org
-       :init
-       (defvar org-gcal--auth-file (concat etc-dir "org-gcal-auth-file"))
-       (local--init-file-if-missing org-gcal--auth-file
-                                    #'org-gcal--prompt-for-credentials)
-       (let ((credentials (org-gcal--get-credentials)))
-           (setq org-gcal-client-id (car credentials)
-                 org-gcal-client-secret (cdr credentials)))
-       (setq org-gcal-dir (concat etc-dir "org-gcal/")
-             org-gcal-token-file (concat org-gcal-dir ".org-gcal-token"))
-       (if (file-exists-p (concat etc-dir "org-gcal-file-alist-file"))
-           (setq org-gcal-file-alist (eval (read-from-file (concat etc-dir "org-gcal-file-alist-file"))))
-         (warn (concat "File " (concat etc-dir "org-gcal-file-alist-file")
-                       " not found. Create it and fill it with an alist in "
-                       "the following format: "
-                       "'(( \"calendar-id\" . \"calendar-org-file\"))"))))
+       :config
+       (setq org-gcal-file-alist
+	     (eval (read-from-file (no-littering-expand-var-file-name "org/gcal/file-alist.el")))))
    #+end_src

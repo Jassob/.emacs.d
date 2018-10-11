@@ -26,8 +26,7 @@
       ("<f9> <f9>" . org-agenda-list)
       ("<f9> <f8>" . (lambda () (interactive) (org-capture nil "r")))
       :config
-      (setq org-clock-persist-file (concat cache-dir "org-clock-save.el")
-            org-expiry-inactive-timestamps t
+      (setq org-expiry-inactive-timestamps t
             org-clock-idle-time nil
             org-clock-continuously nil
             org-clock-persist t

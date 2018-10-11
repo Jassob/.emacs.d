@@ -43,51 +43,6 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package magithub :after magit :ensure t
-      :init (defvar magithub--auth-file (concat etc-dir "magithub-auth-file"))
       :config
-      (magithub-feature-autoinject t)
-      (local--init-file-if-missing magithub--auth-file
-                                   #'magithub--prompt-for-auth)
-      (magithub--import-auth-file)
-      (setq magithub-dir (concat cache-dir "magithub")))
-
-    (defun magithub--import-auth-file ()
-      "Import magithub credentials from =magit-auth-file= in =etc-dir=.
-    The file must only contain a alist with the following keys:
-    \(
-     (ghub-base-url . VAL)
-     (ghub-username . VAL)
-     (ghub-token    . VAL)
-    \)"
-      (if (file-exists-p magithub--auth-file)
-          (let-alist (read-from-file magithub--auth-file)
-            (progn
-              (setq ghub-base-url .ghub-base-url)
-              (setq ghub-username .ghub-username)
-              (setq ghub-token    .ghub-token)))
-        (warn (concat "magithub: Could not find file: " magithub--auth-file))))
-  #+end_src
-
-  I store the authentication files in the =etc-dir= and to ease the
-  setup of this customization I have a function that fills this files
-  with the needed data.
-
-  #+begin_src emacs-lisp :tangle module.el
-    (defun magithub--prompt-for-auth ()
-      "Prompts the user for magithub credentials."
-      (let ((res (make-local-variable 'auth-alist)))
-        (setq-local auth-alist ())
-        (dolist (key '((ghub-base-url . "Github base URL: ")
-                       (ghub-username . "Github username: ")
-                       (ghub-token . "Github token: ")))
-          (add-to-list 'auth-alist (cons (car key)
-                                         (read-from-minibuffer (cdr key)))))
-        ;; Return the result
-        auth-alist))
-
-    (defun magithub--set-auth-info ()
-      "Prompts the user for credentials for magithub and store them
-    in etc-dir/magithub-auth-file."
-      (local--update-alist-file magithub--auth-file
-                                (magithub--prompt-for-auth)))
+      (magithub-feature-autoinject t))
   #+end_src

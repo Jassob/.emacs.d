@@ -14,52 +14,21 @@
    I'm not interested in.
 
    #+begin_src emacs-lisp :tangle core.el
-     (defvar local-dir (concat user-emacs-directory ".local/")
-       "Root directory for local Emacs files. Use this as
-       permanent storage for files that are safe to share across
-       systems (if this config is symlinked across several computers).")
-
-     (defvar etc-dir (concat local-dir "@" (system-name) "/etc/")
-       "Host-namespaced directory for non-volatile storage. These are not deleted or
-       tampored with by DOOM functions. Use this for dependencies like servers or
-       config files that are stable (i.e. it should be unlikely that you need to delete
-       them if something goes wrong).")
-
-     (defvar cache-dir (concat local-dir "@" (system-name) "/cache/")
-       "Host-namespaced directory for volatile storage. Deleted
-       when `local/clean-cache' is called. Use this for transient files
-       that are generated on the fly like caches and temporary
-       files. Anything that may need to be cleared if there are
-       problems.")
-
-     (defvar packages-dir (concat local-dir "packages/")
+     (defvar packages-dir (concat user-emacs-directory "packages/")
        "Where package.el packages and cache are stored.")
 
      (defvar include-dir (concat user-emacs-directory "include/")
        "Where we store stuff that's not part of emacs packages or
          other dependencies.")
-
    #+end_src
 
    We need to make sure that the directories are created before we try
    to make Emacs store stuff there.
 
    #+begin_src emacs-lisp :tangle core.el
-     (dolist (dir (list local-dir etc-dir cache-dir packages-dir include-dir))
+     (dolist (dir (list packages-dir include-dir))
        (unless (file-exists-p dir)
          (make-directory dir t)))
-   #+end_src
-
-   We might want to clear the local cache, here is a command for doing
-   that.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (defun local/clean-cache()
-       "Clears local cache (`local-dir') directory. You may need to
-     restart Emacs for some components to feel its effects."
-       (interactive)
-       (delete-directory cache-dir t)
-       (make-directory cache-dir t))
    #+end_src
 
    We might want to read and store values to/from a file, these
@@ -101,98 +70,7 @@
          (print-to-file file (list (funcall init-fn)))))
    #+end_src
 
-** System files and backups
-
-   Emacs stores backups of the file you are working on in the current
-   directory by default and while backups are great I prefer keeping
-   them in the directories defined above.
-
-   So, lets store all backups in the local directory!
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq backup-directory-alist `((".*" . ,(concat local-dir "backups"))))
-   #+end_src
-
-   Also, we'd like to store versioned backups and also make sure to
-   backup files that is under version control (in case we forget to
-   commit every interesting change).
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq delete-old-versions -1
-           version-control t
-           vc-make-backup-files t)
-   #+end_src
-
-   Emacs auto-saving feature can be a life saver, let's put those
-   files where we want them instead of having them in the emacs root
-   directory.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (let ((auto-save-dir (concat cache-dir "auto-save-list/")))
-       ;; Create directory
-       (unless (file-exists-p auto-save-dir)
-         (make-directory auto-save-dir t))
-
-       ;; Store auto-saves in the newly created directory
-       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))
-             auto-save-list-file-prefix auto-save-dir))
-
-   #+end_src
-
-   Similar to backups I dont like my bookmarks to litter in the config
-   directory, so we put them in =cache-dir= with everything else.
-   Also EWW stores it's own bookmarks in a file that by default exists
-   in Emacs dir.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq bookmark-default-file (concat etc-dir "bookmarks")
-           eww-bookmark-directory etc-dir)
-   #+end_src
-
-   The Emacs Shell (eshell) is very nice to use since it integrates
-   the shell experience well with Emacs, but it too litters my Emacs
-   directory by default, please don't!
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq eshell-directory-name (concat etc-dir "eshell"))
-   #+end_src
-
-   I don't use Gnus yet, but the ambition is there. It stores a cache
-   that by default not lives in the Emacs directory, but in my home
-   directory(!) which is even worse.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq gnus-cache-directory (concat cache-dir "news")
-           gnus-directory       (concat local-dir "news")
-           gnus-kill-files-directory (concat local-dir "news"))
-   #+end_src
-
-   Url package files are also stored in the Emacs directory, move them
-   to the local-dir and its' sub directories.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq url-cache-directory (concat cache-dir "url")
-           url-configuration-directory (concat etc-dir "url"))
-   #+end_src
-
-   I also don't like to keep my diary file nor the journal folder in
-   the Emacs directory.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq diary-file (concat local-dir "diary")
-           org-journal-dir (concat local-dir "journal/"))
-   #+end_src
-
-   TRAMP is a wonderful way to edit files that does not exist on this
-   machine or that is not writable by your user. It can write to files
-   over SSH, rlogin or Telnet and can also be used to edit write local
-   protected files using sudo.
-
-   #+begin_src emacs-lisp :tangle core.el
-     (setq tramp-backup-directory-alist backup-directory-alist
-           tramp-persistency-file-name (concat cache-dir "tramp")
-           tramp-default-method        "ssh")
-   #+end_src
+** Editing system files
 
    When I edit system configuration files I might accidentally find
    files as my regular user, even though I need sudo rights to edit
@@ -227,16 +105,28 @@
    Make sure to reload the list of packages by calling =M-x
    package-refresh-contents= when adding melpa for the first time.
 
-** use-package
-
-   I use =use-package= for keeping track of my packages, customising them
-   and load them lazily.
+   I use =use-package= for keeping track of my packages, customising
+   them and load them lazily.
 
    #+begin_src emacs-lisp :tangle core.el
      (unless (package-installed-p 'use-package)
        (package-refresh-contents)
        (package-install 'use-package))
      (setq use-package-verbose t)
+   #+end_src
+
+   I found the =no-littering= package while browsing around, and
+   decided I'll give it a go rather than doing that work myself.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (use-package no-littering :ensure t
+       :config
+       ;; Save automatic backups in var dir
+       (setq auto-save-file-name-transforms
+           `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+       ;; Save custom settings in etc dir
+       (setq custom-file (no-littering-expand-etc-file-name "custom.el")))
    #+end_src
 
 ** Secrets and custom settings
@@ -248,9 +138,6 @@
 
    #+begin_src emacs-lisp :tangle core.el
      (load "~/.emacs.d/.local/.secrets" t)
-
-     (setq custom-file (concat etc-dir "custom-settings.el"))
-     (load custom-file t)
    #+end_src
 * Editor
 ** Encoding system
