@@ -131,13 +131,12 @@
 
 ** Secrets and custom settings
 
-   I store more sensitive data in =~/.emacs.d/.local/.secrets= and
-   customized settings in
-   =~/.emacs.d/.local/@host-name/etc/custom-settings.el= so I easily
-   can store my main configuration in a public version control system.
+   I store more sensitive data in =~/.emacs.d/etc/.secrets.el= so I
+   easily can store my main configuration in a public version control
+   system.
 
    #+begin_src emacs-lisp :tangle core.el
-     (load "~/.emacs.d/.local/.secrets" t)
+     (load (concat (no-littering-expand-etc-file-name ".secrets.el")) t)
    #+end_src
 * Editor
 ** Encoding system
