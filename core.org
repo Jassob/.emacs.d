@@ -20,6 +20,9 @@
      (defvar include-dir (concat user-emacs-directory "include/")
        "Where we store stuff that's not part of emacs packages or
          other dependencies.")
+
+     (defvar org-directory (concat (expand-file-name "~") "/personal")
+       "Where we store Org mode documents.")
    #+end_src
 
    We need to make sure that the directories are created before we try
