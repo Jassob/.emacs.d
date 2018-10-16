@@ -1,3 +1,6 @@
 [submodule "include/org-dtek"]
 	path = include/org-dtek
 	url = git@github.com:Jassob/org-dtek
+[submodule "include/jdee-server"]
+	path = include/jdee-server
+	url = https://github.com/jdee-emacs/jdee-server.git
