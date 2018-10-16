@@ -1,0 +1,34 @@
+# -*- indent-tabs-mode: nil; -*-
+#+TITLE: EXWM module
+#+AUTHOR: Jassob
+#+DATE: <2018-10-16>
+
+* About this file
+  This file contains the literate source of the EXWM module.
+
+* Module
+
+  This module configures Emacs to act as a X window manager. With the
+  =EXWM= package Emacs gets some X handling libraries that enables it
+  to host X window frames inside its windows. Needless to say =EXWM=
+  is not a tiling window manager, you choose the layout of the windows
+  yourself by splitting Emacs windows.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun dmenu_run ()
+      "Calls dmenu_run"
+      (interactive)
+      (call-process-shell-command "dmenu_run" nil 0))
+
+    (use-package exwm
+      :config
+      (require 'exwm-config)
+      (require 'exwm-systemtray)
+      (setq exwm-systemtray-height 16
+            exwm-layout-show-all-buffers t)
+      (exwm-config-default)
+      (exwm-config-ido)
+      (exwm-systemtray-enable)
+      :bind (("M-p" . dmenu_run)
+             ("s-d" . dmenu_run)))
+  #+end_src
