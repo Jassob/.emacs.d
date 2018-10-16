@@ -2,7 +2,7 @@
 CC:=emacs
 CCFLAGS:=--batch --eval "(require 'org)"
 NOOUTPUT:=>/dev/null 2>&1
-SKIPLOCAL:=-name .local -prune -o
+SKIPLOCAL:=-name var -prune -o -name etc -prune -o
 FINDELFILES:=find . $(SKIPLOCAL) -type f -name \*.el
 FINDELCFILES:=find . $(SKIPLOCAL) -type f -name \*.elc
 
