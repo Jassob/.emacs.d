@@ -41,3 +41,11 @@
       (setq-local company-tooltip-align-annotations t)
       (add-hook 'before-save-hook 'tide-format-before-save))
   #+end_src
+
+  When I code in JavaScript I want to use the =js3-mode= which I want
+  to load =common-code-mode=.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package js3-mode :ensure t
+      :init (add-hook 'js3-mode-hook 'common-code-mode))
+  #+end_src
