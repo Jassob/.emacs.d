@@ -78,6 +78,12 @@
     (global-set-key (kbd "C-h") 'previous-line)
   #+end_src
 
+  I prefer to have my org files in my =~/personal=
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq org-directory (concat (expand-file-name "~") "/personal"))
+  #+end_src
+
 ** Commands for local keymap
 
    This is a command for finding the init file, for the times I need
