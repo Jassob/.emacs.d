@@ -21,7 +21,7 @@
        "Where we store stuff that's not part of emacs packages or
          other dependencies.")
 
-     (defvar org-directory (concat (expand-file-name "~") "/personal")
+     (defvar org-directory (concat (expand-file-name "~") "/org")
        "Where we store Org mode documents.")
    #+end_src
 
