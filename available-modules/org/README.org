@@ -111,12 +111,7 @@
         ("C-c v"    . org-show-todo-tree)
         ("C-c C-r"  . org-refile)
         ("C-c R"    . org-reveal)
-        ("C-c o"    . local/org-follow-entry-link)
-        ("C-c d"    . local/org-move-line-to-destination)
-        ("C-c f"    . local/org-file-blog-index-entries)
-        ("C-c t s"  . local/split-sentence-and-capitalize)
-        ("C-c t -"  . local/split-sentence-delete-word-and-capitalize)
-        ("C-c t d"  . local/delete-word-and-capitalize)))
+        ("C-c o"    . local/org-follow-entry-link)))
    #+end_src
 
    Sometimes it could be good to be able to create links between
@@ -159,31 +154,28 @@
        (setq org-yank-adjusted-subtrees t))
    #+end_src
 
-*** Speed commands
+   Speed commands are simple one-letter commands that are run on
+   agenda entries. Used for instance to easily clock in or out on a
+   the task at point.
 
-    Speed commands are simple one-letter commands that are run on
-    agenda entries. Used for instance to easily clock in or out on a
-    the task at point.
+   #+begin_src emacs-lisp :tangle module.el
+     (defun local/org-use-speed-commands-for-headings-and-lists ()
+     "Activate speed commands on list items too."
+     (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+         (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
 
-    #+begin_src emacs-lisp :tangle module.el
-      (defun local/org-use-speed-commands-for-headings-and-lists ()
-      "Activate speed commands on list items too."
-      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+     (with-eval-after-load 'org
+       (setq org-use-speed-commands 'local/org-use-speed-commands-for-headings-and-lists)
 
-      (with-eval-after-load 'org
-        (setq org-use-speed-commands 'local/org-use-speed-commands-for-headings-and-lists)
-
-        (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
-        (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
-        (add-to-list 'org-speed-commands-user '("!" local/org-clock-in-and-track))
-        (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
-        (add-to-list 'org-speed-commands-user '("d" local/org-move-line-to-destination))
-        (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
-        (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-        (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
-        (bind-key "!" 'local/org-clock-in-and-track org-agenda-mode-map))
-    #+end_src
+       (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+       (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+       (add-to-list 'org-speed-commands-user '("!" local/org-clock-in-and-track))
+       (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+       (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+       (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+       (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+       (bind-key "!" 'local/org-clock-in-and-track org-agenda-mode-map))
+   #+end_src
 
 ** Tasks and notes
 
