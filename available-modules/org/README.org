@@ -48,6 +48,12 @@
 
   #+end_src
 
+  I like to show ordinary txt files as =Org mode= files.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
+  #+end_src
+
 ** My files
    :PROPERTIES:
    :CUSTOM_ID: org-files
@@ -451,44 +457,14 @@
    #+end_src
 
 ** Org agenda
-*** Basic configuration
 
-    I like to show ordinary txt files as =Org mode= files.
+   I want every org file in =org-directory= (and my synchronized
+   calendars) to show up in my agenda if they have a timestamp.
 
-    #+begin_src emacs-lisp :tangle module.el
-      (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
-    #+end_src
-
-    This is the org files in which I keep agenda items and todos.
-
-    #+begin_src emacs-lisp :tangle module.el
-      (defun local/existing-files-in-dir (dir files)
-        "Return all files from the list FILES that exists in directory DIR."
-        (delq nil (mapcar
-                   (lambda (file) (let ((path (concat dir file)))
-                                    (and (file-exists-p path) path)))
-                   files)))
-
-      (with-eval-after-load 'org
-        (setq org-agenda-files
-              (local/existing-files-in-dir
-               org-directory
-               '("organizer.org"
-                 "people.org"
-                 "bookmarks.org"
-                 "studies.org"
-                 "reading.org"
-                 "work.org"
-
-                 ;; Calendar files (synced with org-gcal)
-                 "calendar/family.org"
-                 "calendar/personal.org"
-                 "calendar/spex.org"
-                 "calendar/ensemble.org"
-                 "calendar/chalmers.org"
-                 "calendar/theatre.org"
-               ))))
-    #+end_src
+  #+begin_src emacs-lisp :tangle module.el
+    (with-eval-after-load 'org
+      (setq org-agenda-files (list org-directory (concat org-directory "/calendar"))))
+  #+end_src
 
     We want the agenda to show us a time grid and the log entries. We
     also want the agenda to hide finished items, even if they are
