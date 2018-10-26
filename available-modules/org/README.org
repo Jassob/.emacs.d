@@ -179,15 +179,12 @@
 
 ** Tasks and notes
 
-   I store my org files in "~/personal/" which is a symlink
-   to a directory in my Dropbox folder, so I can update it on
-   multiple devices (possibly also org-mobile?).
+   When capturing stuff with org-mode I need a default place to save
+   the captured entries and also a max-depth to refile stuff to.
 
    #+begin_src emacs-lisp :tangle module.el
      (with-eval-after-load 'org
-       (setq org-directory (concat (file-name-as-directory (getenv "HOME"))
-                                   (file-name-as-directory "personal"))
-             org-default-notes-file (concat org-directory "organizer.org")
+       (setq org-default-notes-file (concat org-directory "organizer.org")
              org-refile-targets '((org-agenda-files :maxlevel . 6))))
    #+end_src
 
