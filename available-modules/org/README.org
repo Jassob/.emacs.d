@@ -7,6 +7,7 @@
   This file contains the literate source of the Org module.
 
 * Module
+
   [[http://orgmode.org][Org mode]] is the mode I use to organize my studies, my projects and
   my life in general. Much of this configuration is taken from Sacha
   Chua's Org configuration.
@@ -71,7 +72,7 @@
    | reading.org           | Org file for book notes                                       |
    | watching.org          | Org file for stuff I'd like to watch                          |
    | calendar/personal.org | Events and todos from my calendar                             |
-   | calendar/family.org   | Events and todos from my familys calendar                     |
+   | calendar/family.org   | Events and todos from my family  calendar                     |
    | calendar/spex.org     | Events and todos from the Chalmersspex Bob 2018 calendar      |
    | calendar/ensemble.org | Events and todos from the Ensemble 2018 calendar              |
    | calendar/theatre.org  | Events and todos from the practice schedule for Ensemble 2018 |
@@ -190,7 +191,7 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (with-eval-after-load 'org
-       (setq org-default-notes-file (concat org-directory "organizer.org")
+       (setq org-default-notes-file (concat org-directory "/organizer.org")
              org-refile-targets '((org-agenda-files :maxlevel . 6))))
    #+end_src
 
