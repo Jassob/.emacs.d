@@ -133,7 +133,7 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (require 'mu4e)
-    (setq mu4e-maildir "/home/jassob/.mail-mu"
+    (setq mu4e-maildir "/home/jassob/.mail"
           mu4e-change-filenames-when-moving t
           mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" 117)
                            ("flag:flagged AND NOT flag:trashed" "Starred messages" 115)
