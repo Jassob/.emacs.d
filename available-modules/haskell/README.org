@@ -111,3 +111,13 @@
             (add-hook 'haskell-mode-hook 'my-set-hasklig-ligatures))
         (setq haskell-font-lock-symbols 'unicode)))
   #+end_src
+
+  Until I've made some better solution to run linters and formatters
+  as components in my =common-code-mode= I have this =brittany= command.
+
+  It just marks the whole buffer, and calls "brittany" on it.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (fset 'brittany
+          [?\M-< ?\C- ?\C- ?\M-> ?\C-u ?\M-| ?b ?r ?i ?t ?t ?a ?n ?y return])
+  #+end_src
