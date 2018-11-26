@@ -45,12 +45,17 @@
   and forget about it and not having to input it every time I connect.
 
   #+begin_src emacs-lisp :tangle module.el
+    (defvar erc-auth-cmd-alist '()
+      "Alist containing the authentication commands for each IRC.")
+
     ;; Authenticate to irc.dtek.se
     (add-hook 'erc-after-connect
-              `(lambda (SERVER NICK)
-                 "If connecting to irc.dtek.se identify myself to NickServ"
-                 (when (string-equal SERVER "irc.dtek.se")
-                   (erc-message "PRIVMSG" (concat "NickServ identify " ,dtek-nick-pass)))))
+              (lambda (SERVER NICK)
+                "If connecting to irc.dtek.se identify myself to NickServ"
+                (let ((auth (assoc SERVER erc-password-alist)))
+                  (if auth
+                      (auth)
+                    (warn "Authentication method not found in `erc-password-alist'")))))
   #+end_src
 
   To continue my strive for not being prompted about everything, I
