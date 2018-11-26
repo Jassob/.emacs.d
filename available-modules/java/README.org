@@ -24,7 +24,7 @@
       (add-hook 'java-mode-hook 'common-code-mode)
       (add-hook 'java-mode-hook (lambda ()
                                   (setq-local indent-tabs-mode nil)))
-      (setq semanticdb-default-save-directory (concat cache-dir "semanticdb")))
+      (setq semanticdb-default-save-directory (no-littering-expand-var-file-name "semanticdb")))
   #+end_src
 
   One thing that JDEE does not do is to format the source
@@ -36,7 +36,7 @@
   #+begin_src emacs-lisp :tangle module.el
     ;; Load our local format code
     (load (concat user-emacs-directory "include/emacs-google-java-format.el"))
-    (setq emacs-google-java-format-jar-path (concat cache-dir "google-java-format/"))
+    (setq emacs-google-java-format-jar-path (no-littering-expand-var-file-name "google-java-format/"))
     (ignore-errors
       (emacs-google-java-format-setup-formatter))
 
