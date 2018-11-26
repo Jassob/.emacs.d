@@ -235,7 +235,6 @@
   #+begin_src emacs-lisp :tangle core.el
     (add-hook 'common-code-mode-hook
               (lambda ()
-                (diminish 'git-gutter+-mode)
                 (diminish 'hs-minor-mode)
                 (diminish 'auto-revert-mode)
                 (diminish 'subword-mode)
