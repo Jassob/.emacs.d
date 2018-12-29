@@ -81,7 +81,7 @@
   I prefer to have my org files in my =~/personal=
 
   #+begin_src emacs-lisp :tangle init.el
-    (setq org-directory (concat (expand-file-name "~") "/personal"))
+    (setq org-directory (concat (expand-file-name "~") "/personal/"))
   #+end_src
 
 ** Commands for local keymap

@@ -191,7 +191,7 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (with-eval-after-load 'org
-       (setq org-default-notes-file (concat org-directory "/organizer.org")
+       (setq org-default-notes-file (concat org-directory "organizer.org")
              org-refile-targets '((org-agenda-files :maxlevel . 6))))
    #+end_src
 
