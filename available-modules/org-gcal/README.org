@@ -41,7 +41,7 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (use-package org-gcal :after org
-       :config
+       :init
        (setq org-gcal-file-alist
 	     (eval (read-from-file (no-littering-expand-var-file-name "org/gcal/file-alist.el")))))
    #+end_src
