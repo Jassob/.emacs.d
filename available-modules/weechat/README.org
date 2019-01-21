@@ -7,56 +7,33 @@
   This file contains the literate source of the Weechat module.
 
 * Module
-  I use weechat for communicating over IRC because of it's relay
-  or http://glowing-bear.org to access my chat session.
-  features. Weechat relays enable me to use a good enough Android app,
-
-  In the future I might get around to fix my znc (a IRC bouncer) setup
-  and will thus not need to use a separate chat protocol besides IRC,
-  but until then I stick with weechat.
+  Weechat is a IRC and general chat application and protocol. Thanks
+  to the [[https://github.com/wee-slack/wee-slack/][wee-slack]] plugin it can also act as a Slack client, which
+  means that I can read all Slack messages in a less resource-heavy
+  client.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package weechat :commands (weechat-connect)
-      :init (defvar weechat--auth-file (concat etc-dir "weechat-auth-file"))
-      :config
-      (local--init-file-if-missing weechat--auth-file
-                                   #'weechat--prompt-for-auth)
-      (setq weechat-color-list '(unspecified "black" "dark gray" "dark red"
-                                             "red" "dark green" "light green"
-                                             "brown" "yellow" "deepskyblue3"
-                                             "light blue" "dark magenta"
-                                             "magenta" "dark cyan" "light cyan"
-                                             "gray" "white")
-            weechat-modules '(weechat-button weechat-complete weechat-notifications)
-            weechat-password-callback #'weechat--get-password)
-      (add-hook 'weechat-connect-hook 'weechat-monitor-all-buffers))
+    (use-package weechat :commands (weechat-connect) :ensure t
+      :init
+      (setq weechat-color-list
+            '(unspecified "black" "dark gray" "dark red"
+                          "red" "dark green" "light green"
+                          "brown" "yellow" "deepskyblue3"
+                          "light blue" "dark magenta"
+                          "magenta" "dark cyan" "light cyan"
+                          "gray" "white")
 
-    (defun weechat--get-password (host port)
-      "Get the stored password from a credentials file.
-    The credentials file should store an alist in the form ((HOST
-    . PORT) . PASSWORD)."
-      (if (file-exists-p weechat--auth-file)
-          (let ((passwd-alist (read-from-file weechat--auth-file)))
-            (cdr (assoc (cons host port) passwd-alist)))
-        (warn "Weechat auth file does not exist, can not auto-connect.")))
-  #+end_src
+            weechat-modules '(weechat-button
+                              weechat-complete
+                              weechat-notifications
+                              weechat-image
+                              weechat-smiley)
 
-  To simplify the customization of =weechat= credentials I've created
-  this function to create the =weechat-auth-file= in the correct
-  format.
+            weechat-button-buttonize-rfc t
+            weechat-complete-nick-prefix-and-postfix-alist '(("*.slack.com" "@" . ""))
+            weechat-notification-mode t
+            weechat-buffer-kill-buffers-on-disconnect t
+            weechat-time-format "[%Y-%m-%d %H:%M:%S]"))
 
-  #+begin_src emacs-lisp :tangle module.el
-    (defun weechat--prompt-for-auth ()
-      "Store the weechat credentials in =etc-dir/weechat-auth-file.el=."
-      (let ((host (read-from-minibuffer "Host: ")))
-        (let ((port (string-to-int (read-from-minibuffer "Port: "))))
-          (let ((password (read-passwd "Password: ")))
-            (cons (cons host port) password)))))
-
-    (defun weechat--update-auth-info ()
-      "Updates the weechat authentication file with information from
-    the user."
-      (interactive)
-      (local--update-alist-file weechat--auth-file
-                                (weechat--prompt-for-auth)))
+    (add-hook 'weechat-connect-hook 'weechat-monitor-all-buffers)
   #+end_src
