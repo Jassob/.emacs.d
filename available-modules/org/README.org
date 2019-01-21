@@ -85,18 +85,16 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (with-eval-after-load 'org
-       (setq org-modules '(org-bbdb
+       (setq org-modules '(org-w3m
+                           org-bbdb
                            org-bibtex
                            org-ctags
                            org-docview
-                           org-eww
-                           org-gnus
-                           org-habit
                            org-info
                            org-irc
                            org-protocol
                            org-rmail
-                           org-w3m))
+                           org-eww))
 
        (org-load-modules-maybe t)
 
@@ -149,7 +147,7 @@
    To be able to clock in easily is more interesting than the diary.
 
    #+begin_src emacs-lisp :tangle module.el
-     (with-eval-after-load 'org
+     (with-eval-after-load 'org-agenda
          (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
    #+end_src
 
@@ -166,22 +164,13 @@
    the task at point.
 
    #+begin_src emacs-lisp :tangle module.el
-     (defun local/org-use-speed-commands-for-headings-and-lists ()
-     "Activate speed commands on list items too."
-     (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-         (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-
      (with-eval-after-load 'org
-       (setq org-use-speed-commands 'local/org-use-speed-commands-for-headings-and-lists)
-
        (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
        (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
-       (add-to-list 'org-speed-commands-user '("!" local/org-clock-in-and-track))
        (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
        (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
        (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-       (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
-       (bind-key "!" 'local/org-clock-in-and-track org-agenda-mode-map))
+       (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree)))
    #+end_src
 
 ** Tasks and notes
