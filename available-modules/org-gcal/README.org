@@ -13,35 +13,9 @@
    with other people, this section is about how I make these two work
    together.
 
-   First some nifty helping functions to handle retrieving and storing
-   credentials.
-
    #+begin_src emacs-lisp :tangle module.el
-     (defun org-gcal--get-credentials ()
-       "Get the stored client id and client secret from FILEPATH and return it a conscell in form of (CLIENT_ID . CLIENT_SECRET)."
-       (if (file-exists-p org-gcal--auth-file)
-           (read-from-file org-gcal--auth-file)
-         (warn "org-gcal credential file does not exist, run org-gcal--init-credentials.")))
-
-     (defun org-gcal--prompt-for-credentials ()
-       "Prompt the user for a Google API client id and client secret and store them in org-gcal--auth-file."
-       (let ((client_id (read-from-minibuffer "Client ID: ")))
-         (let ((client_secret (read-from-minibuffer "Client Secret: ")))
-           (cons client_id client_secret))))
-
-     (defun org-gcal--update-credentials ()
-       "Update the org-gcal credential file with information from the user."
-       (interactive)
-       (local--update-alist-file org-gcal--auth-file
-                                 (org-gcal--prompt-for-credentials)))
-   #+end_src
-
-   Now that we have our functions in place, let's use them when
-   customizing our org-gcal package.
-
-   #+begin_src emacs-lisp :tangle module.el
-     (use-package org-gcal :after org
-       :init
+     (use-package org-gcal :after org :ensure t :commands (org-gcal-sync)
+       :config
        (setq org-gcal-file-alist
 	     (eval (read-from-file (no-littering-expand-var-file-name "org/gcal/file-alist.el")))))
    #+end_src

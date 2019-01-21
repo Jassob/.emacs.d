@@ -19,7 +19,7 @@
   be done with spaces.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package jdee :ensure t
+    (use-package jdee :ensure t :commands (jdee-mode)
       :config
       (add-hook 'java-mode-hook 'common-code-mode)
       (add-hook 'java-mode-hook (lambda ()
