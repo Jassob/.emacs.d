@@ -131,14 +131,26 @@
   I've also started using mu4e which competes very much with notmuch,
   we'll see which one ends up winning in the end.
 
+  First let's just set some nifty bookmarks for quickly accessing my mailbox:
   #+begin_src emacs-lisp :tangle module.el
     (require 'mu4e)
-    (setq mu4e-maildir "/home/jassob/.mail"
-          mu4e-change-filenames-when-moving t
+    (setq mu4e-change-filenames-when-moving t
           mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" 117)
                            ("flag:flagged AND NOT flag:trashed" "Starred messages" 115)
-                           ("date:today..now" "Today's messages" 116)
-                           ("date:7d..now" "Last 7 days" 119)
+                           ("date:today..now AND NOT flag:trashed" "Today's messages" 116)
+                           ("date:7d..now AND NOT flag:trashed" "Last 7 days" 119)
                            ("mime:image/*" "Messages with images" 112)))
 
+  #+end_src
+
+  Now let's continue to set up my maildir setup (this might look a bit
+  strange, but I blame it on the fact that I once setup GMail to be in
+  Swedish):
+
+  #+begin_src emacs-lisp :tangle module.el
+    (eval-after-load 'mu4e
+      (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/gmail")
+            mu4e-sent-folder "/[Gmail]/Skickat"
+            mu4e-trash-folder "/[Gmail]/Papperskorgen"
+            mu4e-drafts-folder "/[Gmail]/Utkast"))
   #+end_src
