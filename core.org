@@ -137,7 +137,9 @@
 
    #+begin_src emacs-lisp :tangle core.el
      (load (concat (no-littering-expand-etc-file-name ".secrets.el")) t)
+     (load (concat (no-littering-expand-etc-file-name "custom.el")) t)
    #+end_src
+
 * Editor
 ** Encoding system
    We would like Emacs to prefer UTF8 when reading ambiguous bit
