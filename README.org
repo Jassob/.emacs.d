@@ -170,10 +170,20 @@
    with good contrast and stuff.
 
    #+begin_src emacs-lisp :tangle init.el
-     (unless (package-installed-p 'color-theme-sanityinc-tomorrow)
-       (package-install 'color-theme-sanityinc-tomorrow))
+     (when (display-graphic-p)
+       ;; Map over the list of packages and make sure they are installed
+       (mapcar (lambda (pkg) (unless (package-installed-p pkg) (package-install pkg)))
+               '(color-theme-sanityinc-tomorrow
+                 smart-mode-line
+                 smart-mode-line-atom-one-dark-theme))
 
-     (load-theme 'sanityinc-tomorrow-day t)
+       ;; Load theme
+       (load-theme 'sanityinc-tomorrow-night t)
+       ;; Setup modeline
+       (require 'smart-mode-line)
+       (require 'smart-mode-line-atom-one-dark-theme)
+       (setq sml/theme 'atom-one-dark)
+       (smart-mode-line-enable))
    #+end_src
 
    The fonts in =font-preferences= are the preferred fonts that I use
