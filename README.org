@@ -334,3 +334,10 @@
   shell command.
 * TODO Add work configuration
   Add work config where browse-url opens links in Chrome etc.
+* TODO Check out byte-compiled errors
+  When the code is byte-compiled there are some stuff that is not
+  found, might be worth investigating whether (eval-and-compile) works
+  better.
+* TODO Integrate better with Nix
+  [[https://matthewbauer.us/bauer/#emacs][This]] is very interesting, maybe something I might take advantage of
+  myself?
