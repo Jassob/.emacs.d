@@ -210,13 +210,15 @@
       :lighter " Code"
       :keymap (let (keymap (make-sparse-keymap))
                 (bind-key "C-c g" #'god-mode keymap)
+                (bind-key "C-c RET" #'company-complete)
                 keymap)
 
       (if (>= emacs-major-version 26)
           (setq display-line-numbers 'on)
         (progn
           (add-hook 'common-code-mode-hook 'linum-mode)))
-      (transient-mark-mode -1))
+      (transient-mark-mode -1)
+      (setq company-idle-delay nil))
 
     (add-hook 'common-code-mode-hook 'flycheck-mode)
     (add-hook 'common-code-mode-hook 'company-mode)
