@@ -11,10 +11,11 @@
   popup showing all the keybindings belonging to a prefix key.
 
   #+begin_src emacs-lisp :tangle module.el
-     (use-package guide-key :diminish t
-       :ensure t :config
-       (setq guide-key/guide-key-sequence t
-             guide-key/popup-window-position 'bottom
-             guide-key/highlight-command-regexp ".*")
-       (guide-key-mode t))
+    (use-package guide-key :diminish t
+      :ensure t :config
+      (setq guide-key/guide-key-sequence t
+            guide-key/popup-window-position 'bottom
+            guide-key/highlight-command-regexp ".*"
+            guide-key/idle-delay 2.0)
+      (guide-key-mode t))
   #+end_src
