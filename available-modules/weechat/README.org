@@ -29,6 +29,8 @@
                               weechat-image
                               weechat-smiley)
 
+            weechat-auto-close-buffers t
+            weechat-buffer-kill-buffers-on-disconnect t
             weechat-button-buttonize-rfc t
             weechat-complete-nick-prefix-and-postfix-alist '(("*.slack.com" "@" . ""))
             weechat-notification-mode t
