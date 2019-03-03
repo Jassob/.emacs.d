@@ -39,10 +39,8 @@
                   ("C-x U"   . git-gutter+-unstage-whole-buffer)))
   #+end_src
 
-  To help me interact with my Github repositories I use =magithub=.
+  To help me interact with my Github repositories I use =forge=.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package magithub :after magit :ensure t
-      :config
-      (magithub-feature-autoinject t))
+    (use-package forge :after magit :ensure t)
   #+end_src
