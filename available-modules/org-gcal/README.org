@@ -9,13 +9,31 @@
 ** Access Google Calendar
 
    Even though I use =org-mode= for scheduling a lot of tasks and
-   other stuff I also use Google Calendar to organize stuff together
+   other stuff I also use Google Calendar (GCal) to organize stuff together
    with other people, this section is about how I make these two work
    together.
+
+   Let's start by defining where I keep my configuration file which
+   maps GCal calendars to org-files and a command for reloading the
+   configuration.
+
+   #+begin_src emacs-lisp :tangle module.el
+     (defvar local/org-gcal-file-alist-file (no-littering-expand-var-file-name "org/gcal/file-alist.el")
+       "The file containing the content for ORG-GCAL-FILE-ALIST.
+     Read upon config of org-gcal and when called by local/org-gcal-reload.")
+
+     (defun local/org-gcal-reload ()
+       "Reloads the ORG-GCAL-FILE-ALIST file with new content."
+       (interactive)
+       (setq org-gcal-file-alist (eval (read-from-file local/org-gcal-file-alist-file))))
+   #+end_src
+
+   Now that we can continue with requiring the ~org-gcal~ package and
+   making sure that our configuration is loaded together with the
+   package.
 
    #+begin_src emacs-lisp :tangle module.el
      (use-package org-gcal :after org :ensure t :commands (org-gcal-sync)
        :config
-       (setq org-gcal-file-alist
-	     (eval (read-from-file (no-littering-expand-var-file-name "org/gcal/file-alist.el")))))
+       (local/org-gcal-reload))
    #+end_src
