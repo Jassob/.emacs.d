@@ -13,6 +13,7 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package projectile :ensure t :demand t
+      :bind (("M-s p" . projectile-ag))
       :config
       (projectile-mode))
   #+end_src
