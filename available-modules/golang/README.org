@@ -15,12 +15,11 @@
     ;; Use package defaults for these packages
     (use-package go-guru :ensure t)
     (use-package company-go :ensure t)
+    (use-package gotest :ensure t)
     (use-package go-eldoc :ensure t
       :init (add-hook 'go-mode-hook 'go-eldoc-setup))
     (use-package flycheck-golangci-lint :ensure t
-      :init
-      (setq flycheck-golangci-lint-config (concat (getenv "HOME") "/.config/golangci.yml")
-            flycheck-golangci-lint-fast t))
+      :init (setq flycheck-golangci-lint-fast t))
 
     (use-package go-mode
       :init
