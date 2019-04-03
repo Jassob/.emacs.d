@@ -15,7 +15,9 @@
     ;; Use package defaults for these packages
     (use-package go-guru :ensure t)
     (use-package company-go :ensure t)
-    (use-package gotest :ensure t)
+    (use-package gotest :ensure t
+      :config
+      (setq go-test-verbose t))
     (use-package go-eldoc :ensure t
       :init (add-hook 'go-mode-hook 'go-eldoc-setup))
     (use-package flycheck-golangci-lint :ensure t
