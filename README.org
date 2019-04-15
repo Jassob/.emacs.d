@@ -84,6 +84,16 @@
     (setq org-directory (concat (expand-file-name "~") "/personal/"))
   #+end_src
 
+  When modifying a file Emacs creates a hidden lock symlink pointing
+  to the modified file. This is probably nice when you don't want to
+  accidentally open an unsaved and modified file in another Emacs
+  instance, but it also breaks tools that watches file modifications
+  in a directory. Therefore I choose to disable it.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq create-lockfiles nil)
+  #+end_src
+
 ** Commands for local keymap
 
    This is a command for finding the init file, for the times I need
