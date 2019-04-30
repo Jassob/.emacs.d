@@ -299,6 +299,34 @@
                      'local/smarter-move-beginning-of-line)
    #+end_src
 
+** EVIL mode
+
+   I'm experimenting with EVIL mode in an attempt to learn Vi(m)
+   keybindings. Since I am used to quitting and escaping stuff by
+   =C-g= I want EVIL to transition to normal mode when I press =C-g=.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun evil-keyboard-quit ()
+       "Keyboard quit and force normal state."
+       (interactive)
+       (and evil-mode (evil-force-normal-state))
+       (keyboard-quit))
+   #+end_src
+
+   When EVIL is loaded I therefore want bind =C-g= to my newly defined
+   ~evil-keyboard-quit~.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package evil
+       :bind
+       (:map evil-normal-state-map   ("C-g" . #'evil-keyboard-quit))
+       (:map evil-motion-state-map   ("C-g" . #'evil-keyboard-quit))
+       (:map evil-motion-state-map   ("C-g" . #'evil-keyboard-quit))
+       (:map evil-insert-state-map   ("C-g" . #'evil-keyboard-quit))
+       (:map evil-window-map         ("C-g" . #'evil-keyboard-quit))
+       (:map evil-operator-state-map ("C-g" . #'evil-keyboard-quit)))
+   #+end_src
+
 * Modules
   These are the modules that are enabled. We store them in a separate
   file so that we can load it without loading everything.
