@@ -325,6 +325,24 @@
        (:map evil-insert-state-map   ("C-g" . #'evil-keyboard-quit))
        (:map evil-window-map         ("C-g" . #'evil-keyboard-quit))
        (:map evil-operator-state-map ("C-g" . #'evil-keyboard-quit)))
+** Distraction free writing
+
+   Sometimes I just want to have my code (or whatever I'm currently
+   reading or writing) presented to me without any other distractions
+   and this is where =writeroom-mode= (found [[https://github.com/joostkremers/writeroom-mode][here]]) comes in to play.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package writeroom-mode :ensure t
+       :init (setq writeroom-width 120)
+       (add-hook 'writeroom-mode-hook (lambda () (display-line-numbers-mode -1)))
+       :bind (:map writeroom-mode-map
+                   ("C-c C-w <" . #'writeroom-decrease-width)
+                   ("C-c C-w >" . #'writeroom-increase-width)
+                   ("C-c C-w =" . #'writeroom-adjust-width)
+                   ("s-?" . nil)
+                   ("C-c C-w SPC" . #'writeroom-toggle-mode-line))
+             (:map global-map
+                   ("C-c C-M-w" . #'writeroom-mode)))
    #+end_src
 
 * Modules
