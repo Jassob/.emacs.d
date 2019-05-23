@@ -396,3 +396,4 @@
 * TODO Integrate better with Nix
   [[https://matthewbauer.us/bauer/#emacs][This]] is very interesting, maybe something I might take advantage of
   myself?
+* TODO Move common-code-mode into prog-mode
