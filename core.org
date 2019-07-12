@@ -160,9 +160,13 @@
 
    #+begin_src emacs-lisp :tangle core.el
      (bind-keys ("<S-s-left>"  . windmove-left)
+                ("C-x <left>"  . windmove-left)
                 ("<S-s-up>"    . windmove-up)
+                ("C-x <up>"    . windmove-up)
                 ("<S-s-down>"  . windmove-down)
-                ("<S-s-right>" . windmove-right))
+                ("C-x <down>"  . windmove-down)
+                ("<S-s-right>" . windmove-right)
+                ("C-x <right>" . windmove-right))
    #+end_src
 
    Sometimes it is nice to be able to shrink and enlarge windows
