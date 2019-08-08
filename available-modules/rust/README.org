@@ -13,6 +13,7 @@
   #+begin_src emacs-lisp :tangle module.el
     (use-package rust-mode :ensure t
       :init
+      (setq rust-format-on-save t)
       (add-hook 'rust-mode-hook 'common-code-mode)
       (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
