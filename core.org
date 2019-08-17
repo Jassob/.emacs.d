@@ -223,30 +223,6 @@
           (add-hook 'common-code-mode-hook 'linum-mode)))
       (transient-mark-mode -1)
       (setq company-idle-delay nil))
-
-    (add-hook 'common-code-mode-hook 'flycheck-mode)
-    (add-hook 'common-code-mode-hook 'company-mode)
-    (add-hook 'common-code-mode-hook 'hs-minor-mode)
-    (add-hook 'common-code-mode-hook 'rainbow-delimiters-mode)
-    (add-hook 'common-code-mode-hook 'auto-revert-mode)
-    (add-hook 'common-code-mode-hook 'smartparens-mode)
-    (add-hook 'common-code-mode-hook 'subword-mode)
-    (add-hook 'common-code-mode-hook 'hl-line-mode)
-    (add-hook 'common-code-mode-hook 'column-number-mode)
-  #+end_src
-
-  I want to hide irrelevant minor modes from cluttering my modeline.
-
-  #+begin_src emacs-lisp :tangle core.el
-    (add-hook 'common-code-mode-hook
-              (lambda ()
-                (diminish 'hs-minor-mode)
-                (diminish 'auto-revert-mode)
-                (diminish 'subword-mode)
-                (diminish 'hl-line-mode)
-                (diminish 'undo-tree-mode)
-                (diminish 'guide-key-mode)))
-
   #+end_src
 
   I want trailing white space to be removed automatically before saving.
@@ -266,22 +242,39 @@
   Install the needed packages in case they don't exists.
 
   #+begin_src emacs-lisp :tangle core.el
-    ;; Syntax and error checker
-    (use-package flycheck :ensure t)
-
-    ;; Hide minor modes in modeline
-    (use-package diminish :ensure t)
-
+    ;; Folding of outlinee
+    (use-package hs-minor-mode :hook common-code-mode :delight
+      :bind (("C-<tab>" . #'hs-toggle-hiding)))
+    ;; Automatically revert file when changed outside of Emacs
+    (use-package autorevert :delight auto-revert-mode
+      :hook (common-code-mode . auto-revert-mode))
+    ;; Navigate through subwords
+    (use-package subword-mode :hook common-code-mode :delight)
+    ;; Hightlight current line
+    (use-package hl-line-mode :hook common-code-mode :delight)
+    ;; Highlight TODO comments
+    (use-package hl-todo :ensure t :delight
+      :hook (common-code-mode . hl-todo-mode))
+    ;; Display column numbers in modeline
+    (use-package column-number-mode :hook common-code-mode :delight)
+    ;; Handle projects
+    (use-package projectile :ensure t :delight
+      :hook (common-code-mode . projectile-mode))
+    ;; Syntax highlighting and linting
+    (use-package flycheck :ensure t
+      :hook (common-code-mode . flycheck-mode))
+    ;; Hide modes in modeline
+    (use-package delight :ensure t)
     ;; Auto completion
-    (use-package company :ensure t :diminish company-mode)
-
+    (use-package company :ensure t :delight
+      :hook (common-code-mode . company-mode))
     ;; Rainbow delimiters
-    (use-package rainbow-delimiters :ensure t :diminish rainbow-delimiters-mode)
-
+    (use-package rainbow-delimiters :ensure t :delight
+      :hook (common-code-mode . rainbow-delimiters-mode))
     ;; Parens handling
-    (use-package smartparens :ensure t :diminish smartparens-mode
-      :init
-      (require 'smartparens-config))
+    (use-package smartparens :ensure t :delight
+      :hook (common-code-mode . smartparens-mode)
+      :init (require 'smartparens-config))
   #+end_src
 
 * Modules
