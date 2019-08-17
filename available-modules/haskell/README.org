@@ -104,12 +104,13 @@
       (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
       (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
 
-      (if (string-match-p (regexp-quote "Hasklig")
-                          (aref (query-font (face-attribute 'default :font)) 0))
-          (progn
-            (setq haskell-font-lock-symbols nil)
-            (add-hook 'haskell-mode-hook 'my-set-hasklig-ligatures))
-        (setq haskell-font-lock-symbols 'unicode)))
+      (let (font ((aref (query-font (face-attribute 'default :font)) 0)))
+        (if (or (string-match-p (regexp-quote "Hasklig") font)
+                (string-match-p (regexp-quote "Iosevka") font))
+            (progn
+              (setq haskell-font-lock-symbols nil)
+              (add-hook 'haskell-mode-hook '-set-hasklig-ligatures))
+          (setq haskell-font-lock-symbols 'unicode))))
   #+end_src
 
   Until I've made some better solution to run linters and formatters

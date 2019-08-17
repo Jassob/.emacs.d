@@ -200,34 +200,35 @@
    will be set as the main font for Emacs.
 
    #+begin_src emacs-lisp :tangle init.el
-          (use-package cl-lib :ensure t)
-          (defun font-existsp (font)
-            "Check to see if the named FONT is available."
-            (if (null (x-list-fonts font)) nil t))
+     (use-package cl-lib :ensure t)
+     (defun font-existsp (font)
+       "Check to see if the named FONT is available."
+       (if (null (x-list-fonts font)) nil t))
 
-          (defun font-avail (fonts)
-            "Finds the available fonts."
-            (cl-remove-if-not 'font-existsp fonts))
+     (defun font-avail (fonts)
+       "Finds the available fonts."
+       (cl-remove-if-not 'font-existsp fonts))
 
-          (defvar font-preferences
-            '( "Hasklig"
-               "Inconsolata"
-               "Fira Code"
-               "Source Code Pro"
-               "PragmataPro"))
+     (defvar font-preferences
+       '( "Iosevka"
+          "Hasklig"
+          "Inconsolata"
+          "Fira Code"
+          "Source Code Pro"
+          "PragmataPro"))
 
-          (unless (eq window-system nil)
-            (let ((fonts (font-avail font-preferences)))
-              (unless (null fonts) (progn
-                  (set-face-attribute 'default nil :font (car fonts))
-                  (set-face-attribute 'default nil :weight 'medium)))))
+     (unless (eq window-system nil)
+       (let ((fonts (font-avail font-preferences)))
+         (unless (null fonts) (progn
+             (set-face-attribute 'default nil :font (car fonts))
+             (set-face-attribute 'default nil :weight 'medium)))))
    #+end_src
 
    When using Hasklig we can have some degree of ligature support and
    this is configured below.
 
    #+begin_src emacs-lisp :tangle init.el
-     (defun my-correct-symbol-bounds (pretty-alist)
+     (defun local--correct-symbol-bounds (pretty-alist)
        "Prepend a TAB character to each symbol in this alist,
      this way compose-region called by prettify-symbols-mode
      will use the correct width of the symbols
@@ -237,25 +238,26 @@
                  el)
                pretty-alist))
 
-     (defun my-ligature-list (ligatures codepoint-start)
+     (defun local--ligature-list (ligatures codepoint-start)
        "Create an alist of strings to replace with
      codepoints starting from codepoint-start."
        (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
          (-zip-pair ligatures codepoints)))
 
      ;; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
-     (setq my-hasklig-ligatures
+     (setq local--hasklig-ligatures
            (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
                           "==" "===" "==>" "=>" "=<<" "!!" ">>"
                           ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
                           "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
                           "<<" "<<<" "<+>" ".." "..." "++" "+++"
                           "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
-             (my-correct-symbol-bounds (my-ligature-list ligs #Xe100))))
+             (local--correct-symbol-bounds (local--ligature-list ligs #Xe100))))
 
      ;; nice glyphs for haskell with hasklig
-     (defun my-set-hasklig-ligatures ()
+     (defun local/set-hasklig-ligatures ()
        "Add hasklig ligatures for use with prettify-symbols-mode."
+       (interactive)
        (setq prettify-symbols-alist
              (append my-hasklig-ligatures prettify-symbols-alist))
        (prettify-symbols-mode))
