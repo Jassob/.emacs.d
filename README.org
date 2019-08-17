@@ -176,22 +176,20 @@
      (scroll-bar-mode -1)
    #+end_src
 
-   I really like the =sanity-tomorrow-night= theme. It's a dark theme
-   with good contrast and stuff.
+   I really like the =gruvbox-dark= theme. It's a dark theme with good
+   contrast and stuff.
 
    #+begin_src emacs-lisp :tangle init.el
      ;; Map over the list of packages and make sure they are installed
      (mapcar (lambda (pkg) (unless (package-installed-p pkg) (package-install pkg)))
-             '(color-theme-sanityinc-tomorrow
-               smart-mode-line
-               smart-mode-line-atom-one-dark-theme))
+             '(gruvbox-theme
+               smart-mode-line))
 
      ;; Load theme
-     (load-theme 'sanityinc-tomorrow-night t)
+     (load-theme 'gruvbox-dark-hard t)
      ;; Setup modeline
      (require 'smart-mode-line)
-     (require 'smart-mode-line-atom-one-dark-theme)
-     (setq sml/theme 'atom-one-dark)
+     (setq sml/theme 'respectful)
      (smart-mode-line-enable)
    #+end_src
 
