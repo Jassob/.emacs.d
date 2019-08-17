@@ -7,11 +7,13 @@
   This file contains the literate source of the Java module.
 
 * Module
+  Eclipse provides a LSP server for Java, which we can use together
+  with the =lsp-mode= in Emacs. The package =lsp-java= downloads and
+  installs the lsp server automatically for us.
 
-  I use Java Development Environment for Emacs (JDEE) which is a major
-  mode for developing in Java. It gives a lot of support that
-  full-blown IDEs gives, such as: syntax and error checking;
-  dependency and project management support.
+  #+begin_src emacs-lisp :tangle module.el
+    (use-package lsp-java :ensure t :after java-mode)
+  #+end_src
 
   I also want the =java-mode= to automatically load
   =common-code-mode=, so I get line numbering and all the other
@@ -19,34 +21,10 @@
   be done with spaces.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package jdee :ensure t :commands (jdee-mode)
-      :config
-      (add-hook 'java-mode-hook 'common-code-mode)
-      (add-hook 'java-mode-hook (lambda ()
-                                  (setq-local indent-tabs-mode nil)))
-      (setq jdee-server-dir (concat user-emacs-directory "include/"))
-      (setq semanticdb-default-save-directory (no-littering-expand-var-file-name "semanticdb")))
-  #+end_src
-
-  One thing that JDEE does not do is to format the source
-  code. =google-java-format= to the rescue!  Credits for
-  =emacs-google-java-format.el= goes to
-  http://github.com/sideshowcoder (source:
-  https://github.com/sideshowcoder/emacs-google-java-format)
-
-  #+begin_src emacs-lisp :tangle module.el
-    (add-hook 'java-mode-hook
-              (lambda ()
-                (unless (boundp 'emacs-google-java-format-jar-name)
-                  ;; Load our local format code
-                  (load (concat user-emacs-directory "include/emacs-google-java-format.el"))
-                  (setq emacs-google-java-format-jar-path (no-littering-expand-var-file-name "google-java-format/"))
-                  (ignore-errors
-                    (emacs-google-java-format-setup-formatter))
-
-                  ;; Bring keymap into scope
-                  (require 'cc-mode)
-                  ;; Always format the buffer on save
-                  (bind-key (kbd "C-c C-f") 'emacs-google-java-format-reformat-buffer java-mode-map))))
-
+    (eval-after-load 'java-mode
+      (progn
+        (require 'lsp-java)
+        (add-hook 'java-mode-hook 'common-code-mode)
+        (add-hook 'java-mode-hook (lambda ()
+                                    (setq-local indent-tabs-mode nil)))))
   #+end_src
