@@ -325,6 +325,37 @@
        (:map evil-insert-state-map   ("C-g" . #'evil-keyboard-quit))
        (:map evil-window-map         ("C-g" . #'evil-keyboard-quit))
        (:map evil-operator-state-map ("C-g" . #'evil-keyboard-quit)))
+   #+end_src
+
+** Key stroke reminders
+
+  To help me remember my commands I use =guide-key=, which displays a
+  popup showing all the keybindings belonging to a prefix key.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package guide-key :delight t :ensure t
+      :config
+      (setq guide-key/guide-key-sequence t
+            guide-key/popup-window-position 'bottom
+            guide-key/highlight-command-regexp ".*"
+            guide-key/idle-delay 2.0))
+  #+end_src
+
+** Tree-like file history
+
+   I find Emacs default undo behaviour rather intuitive (of course a
+   redo is just an undo of your last undo!), but I like being able to
+   visualise the timeline of my file. Enters =undo-tree-mode=!
+
+   #+begin_src emacs-lisp :tangle init.el
+     ;; Display local file history as tree of edits
+     (use-package undo-tree :ensure t :delight
+       :config
+       (setq undo-tree-visualizer-timestamps t
+             undo-tree-visualizer-diff t)
+       (global-undo-tree-mode))
+   #+end_src
+
 ** Distraction free writing
 
    Sometimes I just want to have my code (or whatever I'm currently
@@ -364,12 +395,10 @@
        ;; Tools
        "erc"
        "git"
-       "guide-key"
        "multiple-cursors"
        "pdf-tools"
        "recentf"
        "smex"
-       "undo-tree"
     ))
   #+end_src
 
