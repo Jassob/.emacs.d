@@ -359,7 +359,6 @@
        "haskell"
        "org"
        "python"
-       "web"
        ;;"mail"
 
        ;; Tools
