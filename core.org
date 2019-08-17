@@ -225,6 +225,22 @@
       (setq company-idle-delay nil))
   #+end_src
 
+  Quite a few of the programming languages I work with supports LSP,
+  Microsoft's Language Server Protocol, and wiring it to my
+  =common-code-mode= makes sense to me.
+
+  #+begin_src emacs-lisp :tangle core.el
+    ;; LSP mode is loaded whenever #'lsp or #'lsp-deferred is called
+    (use-package lsp-mode :ensure t :commands (lsp lsp-deferred)
+      :hook (common-code-mode . #'lsp-deferred)
+      :config (use-package yasnippet :ensure t)) ;; Required by LSP mode
+    (use-package company-lsp :after lsp-mode :ensure t)
+    (use-package lsp-ui :after lsp-mode :commands (lsp-ui-mode)
+      :config (setq lsp-ui-flycheck-enable t     ;; Flycheck is nice
+                    lsp-ui-doc-enable nil        ;; LSP Ui Doc is not nice
+                    lsp-ui-sideline-enable nil)) ;; LSP Ui Sideline is not nice
+  #+end_src
+
   I want trailing white space to be removed automatically before saving.
 
   #+begin_src emacs-lisp :tangle core.el
