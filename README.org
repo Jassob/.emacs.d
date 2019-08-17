@@ -317,7 +317,7 @@
    ~evil-keyboard-quit~.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package evil
+     (use-package evil :commands 'evil-mode
        :bind
        (:map evil-normal-state-map   ("C-g" . #'evil-keyboard-quit))
        (:map evil-motion-state-map   ("C-g" . #'evil-keyboard-quit))
