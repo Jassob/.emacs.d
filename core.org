@@ -218,7 +218,7 @@
                 keymap)
 
       (if (>= emacs-major-version 26)
-          (setq display-line-numbers 'on)
+          (add-hook 'common-code-mode-hook 'display-line-numbers)
         (progn
           (add-hook 'common-code-mode-hook 'linum-mode)))
       (transient-mark-mode -1)
