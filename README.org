@@ -31,9 +31,9 @@
 
   #+begin_src emacs-lisp :tangle init.el
     (setq gc-cons-threshold 64000000)
-    (add-hook 'after-init-hook #'(lambda ()
-                                   ;; restore after startup
-                                   (setq gc-cons-threshold 800000)))
+    (add-hook 'after-init-hook
+              ;; restore after startup
+              #'(lambda () (setq gc-cons-threshold 800000)))
   #+end_src
 
   Load the core configuration to setup stuff.
