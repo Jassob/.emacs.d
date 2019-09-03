@@ -28,7 +28,10 @@
                   ("C-c C-f" . gofmt)
                   ("C-c C-k" . godoc))
       :config
-      (if (not (string-match "go" compile-command))
+      (require 'projectile)
+      (if (file-exists-p (concat projectile-project-root "/Makefile"))
           (set (make-local-variable 'compile-command)
-               "go build -v && go test -v && go vet")))
+               "make") ;; Use make if Makefile exists
+          (set (make-local-variable 'compile-command)
+               "go build -v && go test -v && go vet"))) ;; otherwise use go binary
   #+end_src
