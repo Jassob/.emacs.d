@@ -30,7 +30,7 @@
   archiving them.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package notmuch :ensure t
+    (use-package notmuch :ensure t :commands notmuch
       :config
   #+end_src
 
