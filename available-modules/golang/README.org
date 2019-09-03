@@ -13,10 +13,11 @@
 
   #+begin_src emacs-lisp :tangle module.el
     ;; Use package defaults for these packages
-    (use-package gotest :ensure t
+    (use-package gotest :ensure t :after go-mode
       :config
       (setq go-test-verbose t))
     (use-package go-mode
+      :mode "\\.go\\'"
       :init
       (setq gofmt-command "goimports")
       (add-hook 'go-mode-hook 'common-code-mode)
