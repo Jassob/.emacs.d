@@ -214,6 +214,7 @@
       :lighter " Code"
       :keymap (let (keymap (make-sparse-keymap))
                 (bind-key "C-c g" #'god-mode keymap)
+                (bind-key "C-c TAB" #'company-complete)
                 (bind-key "C-c RET" #'company-complete)
                 keymap)
 
