@@ -92,14 +92,15 @@
    repository, if it is not already added.
 
    #+begin_src emacs-lisp :tangle core.el
-      (require 'package)
-      (setq package-user-dir (expand-file-name "elpa" packages-dir)
-            package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
-                               ("melpa" . "https://melpa.org/packages/")))
-      (package-initialize)
+     (unless (executable-find "nix")
+       (require 'package)
+       (setq package-user-dir (expand-file-name "elpa" packages-dir)
+             package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
+                                ("melpa" . "https://melpa.org/packages/")))
+       (package-initialize))
 
-      ;; We've already enabled the package system.
-      (setq package-enable-at-startup nil)
+     ;; We've already enabled the package system.
+     (setq package-enable-at-startup nil)
    #+end_src
 
    Make sure to reload the list of packages by calling =M-x
@@ -109,9 +110,30 @@
    them and load them lazily.
 
    #+begin_src emacs-lisp :tangle core.el
-     (unless (package-installed-p 'use-package)
+     (unless (or (executable-find "nix")
+                (package-installed-p 'use-package))
        (package-refresh-contents)
        (package-install 'use-package))
+   #+end_src
+
+   Make sure that =use-package= is available for the byte-compiler.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (eval-when-compile
+       (require 'use-package)
+       (use-package delight :ensure t))
+     (require 'delight)
+     (require 'bind-key)
+   #+end_src
+
+   If we're running on NixOS (or another system where Nix is
+   available), don't let =use-package= download and install packages
+   by itself.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (when (executable-find "nix")
+       ;; Simple dummy ensure function, it does nothing
+       (setq use-package-ensure-function (lambda (pkg ensure state) ())))
      (setq use-package-verbose t)
    #+end_src
 
