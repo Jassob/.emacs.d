@@ -278,9 +278,6 @@
     ;; Rainbow delimiters
     (use-package rainbow-delimiters :ensure t :diminish rainbow-delimiters-mode)
 
-    ;; Relative line numbering
-    (use-package linum-relative :ensure t)
-
     ;; Parens handling
     (use-package smartparens :ensure t :diminish smartparens-mode
       :init
