@@ -49,7 +49,7 @@
   Flycheck interface for said type checker.
 
   #+begin_src emacs-lisp :tangle module.el
-     (use-package flycheck-mypy :defer t :ensure t
+     (use-package flycheck-mypy :ensure t :after flycheck :after python
        :init
        (add-to-list 'flycheck-disabled-checkers 'python-flake8)
        (add-to-list 'flycheck-disabled-checkers 'python-pylint)
