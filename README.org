@@ -180,17 +180,15 @@
    contrast and stuff.
 
    #+begin_src emacs-lisp :tangle init.el
-     ;; Map over the list of packages and make sure they are installed
-     (mapcar (lambda (pkg) (unless (package-installed-p pkg) (package-install pkg)))
-             '(gruvbox-theme
-               smart-mode-line))
-
      ;; Load theme
-     (load-theme 'gruvbox-dark-hard t)
+     (use-package gruvbox-theme :ensure t
+       :config (load-theme 'gruvbox-dark-hard t))
+
      ;; Setup modeline
-     (require 'smart-mode-line)
-     (setq sml/theme 'respectful)
-     (smart-mode-line-enable)
+     (use-package smart-mode-line :ensure t
+       :config
+       (setq sml/theme 'respectful)
+       (smart-mode-line-enable))
    #+end_src
 
    The fonts in =font-preferences= are the preferred fonts that I use
