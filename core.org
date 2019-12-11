@@ -132,8 +132,10 @@
 
    #+begin_src emacs-lisp :tangle core.el
      (when (executable-find "nix")
-       ;; Simple dummy ensure function, it does nothing
-       (setq use-package-ensure-function (lambda (pkg ensure state) ())))
+       ;; Simple dummy ensure function, it does nothing other than
+       ;; requiring the package.
+       (setq use-package-ensure-function
+             (lambda (pkg ensure state) (require pkg))))
      (setq use-package-verbose t)
    #+end_src
 
