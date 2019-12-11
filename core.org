@@ -181,13 +181,13 @@
    I have them bound to, in my opinion at least, sensible keybindings.
 
    #+begin_src emacs-lisp :tangle core.el
-     (bind-keys ("<S-s-left>"  . windmove-left)
+     (bind-keys ("<S-left>"  . windmove-left)
                 ("C-x <left>"  . windmove-left)
-                ("<S-s-up>"    . windmove-up)
+                ("<S-up>"    . windmove-up)
                 ("C-x <up>"    . windmove-up)
-                ("<S-s-down>"  . windmove-down)
+                ("<S-down>"  . windmove-down)
                 ("C-x <down>"  . windmove-down)
-                ("<S-s-right>" . windmove-right)
+                ("<S-right>" . windmove-right)
                 ("C-x <right>" . windmove-right))
    #+end_src
 
@@ -199,6 +199,14 @@
                 ("S-C-<right>" . enlarge-window-horizontally)
                 ("S-C-<down>"  . shrink-window)
                 ("S-C-<up>"    . enlarge-window))
+   #+end_src
+
+   However, sometimes =C-x o= is exactly what we need, but then we can
+   extend it with =ace-window= to make it prompt us for a window when
+   there is a choice.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (use-package ace-window :bind (("C-x o" . ace-window)))
    #+end_src
 
 ** Dired
