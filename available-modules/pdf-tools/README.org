@@ -14,9 +14,16 @@
   use =SPC= to scroll and advance the pages instead.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package pdf-tools :defer t :ensure t
+    (use-package pdf-tools :load-path "site-lisp/pdf-tools/lisp"
+      :commands (pdf-tools-install pdf-loader-install pdf-view-mode)
+      :magic ("%PDF" . pdf-view-mode)
       :config
-      (pdf-tools-install)
+      (require 'pdf-annot)
+      (require 'pdf-history)
+      (require 'pdf-occur)
+      (require 'pdf-outline)
+      (require 'pdf-sync)
+      (pdf-tools-install :no-query)
       (setq pdf-view-continuous nil)
       (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry))
   #+end_src

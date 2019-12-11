@@ -4,3 +4,6 @@
 [submodule "include/jdee-server"]
 	path = include/jdee-server
 	url = https://github.com/jdee-emacs/jdee-server.git
+[submodule "site-lisp/pdf-tools"]
+	path = site-lisp/pdf-tools
+	url = git@github.com:politza/pdf-tools.git
