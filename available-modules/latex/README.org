@@ -7,12 +7,25 @@
   This file contains the literate source of the LaTeX module.
 
 * Module
-  I want to be able to specify what TeX engine I use when typesetting
-  a document. Therefore we require add ~TeX-engine~ to the list of safe local
-  variables when =auctex= has loaded.
+
+  We want to be able to specify what TeX engine to use when
+  typesetting a document. Therefore we require add ~TeX-engine~ to the
+  list of safe local variables when =auctex= has loaded.
+  We also want to be able to have some completion support and linting.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package auctex
+    (use-package tex :ensure auctex :after latex
+      :hook ((latex-mode . flycheck-mode)
+             (latex-mode . company-mode)
+             (latex-mode . (lambda ()
+                             (TeX-source-correlate-mode t)
+                             (TeX-PDF-mode t))))
+      :bind (:map LaTeX-mode-map (("C-c <tab>" . nil)))
       :config
-      (add-to-list 'safe-local-variable-values '(TeX-engine . xetex)))
+      (setq reftex-plug-into-AUCTeX t)
+      (add-to-list 'safe-local-variable-values '(TeX-engine . xetex))
+      (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer))
+
+    (use-package company-auctex :ensure t :after tex
+      :config (company-auctex-init))
   #+end_src
