@@ -16,7 +16,7 @@
   frontends I really like.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package magit :ensure t :defer t)
+    (use-package magit :bind ("C-x g" . magit-status) :ensure t :defer t)
   #+end_src
 
   =Git-gutter+= is a package that shows a line's status (added,
