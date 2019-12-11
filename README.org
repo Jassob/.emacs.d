@@ -255,7 +255,7 @@
        "Add hasklig ligatures for use with prettify-symbols-mode."
        (interactive)
        (setq prettify-symbols-alist
-             (append my-hasklig-ligatures prettify-symbols-alist))
+             (append local--hasklig-ligatures prettify-symbols-alist))
        (prettify-symbols-mode))
    #+end_src
 
