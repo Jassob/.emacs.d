@@ -94,6 +94,20 @@
     (setq create-lockfiles nil)
   #+end_src
 
+** Smex / IDO mode
+
+  Even though the standard Emacs interactive execute-extended-command
+  works in most cases I personally prefer =smex= and use more Ido
+  features.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package smex :bind ("M-x" . smex) :ensure t
+      :config (setq ido-enable-flex-matching t
+                    ido-create-new-buffer t)
+      (ido-everywhere)
+      (ido-mode))
+  #+end_src
+
 ** Commands for local keymap
 
    This is a command for finding the init file, for the times I need
@@ -483,7 +497,6 @@
        "multiple-cursors"
        "pdf-tools"
        "recentf"
-       "smex"
     ))
   #+end_src
 
