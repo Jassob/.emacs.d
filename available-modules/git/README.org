@@ -23,8 +23,8 @@
   modifid or deleted) in a file that is version controlled by Git.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package git-gutter+ :ensure t :defer t :diminish t
-      :init (add-hook 'common-code-mode-hook 'git-gutter+-mode)
+    (use-package git-gutter+ :ensure t :diminish t
+      :hook common-code-mode-hook
       :bind (:map git-gutter+-mode-map
                   ;; Navigate on hunks
                   ("C-x n"   . git-gutter+-next-hunk)
