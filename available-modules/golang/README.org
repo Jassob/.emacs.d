@@ -12,26 +12,23 @@
   linter and formatters etc.
 
   #+begin_src emacs-lisp :tangle module.el
+    (require 'projectile)
+    (defun go-compile-command ()
+      "Use make to build the poject if the project root contain a Makefile, otherwise use the go binary."
+      (interactive)
+      (if (file-exists-p (concat projectile-project-root "/Makefile"))
+          "make"
+        "go build -v && go test -v && go vet"))
+
     ;; Use package defaults for these packages
-    (use-package gotest :ensure t :after go-mode
-      :config
-      (setq go-test-verbose t))
-    (use-package go-mode
-      :mode "\\.go\\'"
-      :init
-      (setq gofmt-command "goimports")
-      (add-hook 'go-mode-hook 'common-code-mode)
-      (add-hook 'go-mode-hook (lambda ()
-                                (add-hook 'before-save-hook 'gofmt-before-save)))
+    (use-package gotest :ensure t :after go-mode :config (setq go-test-verbose t))
+    (use-package go-mode :mode "\\.go\\'" :defer t
+      :hook ((go-mode . common-code-mode)
+             (go-mode . (lambda () (add-hook 'before-save-hook #'gofmt-before-save))))
+      :init (setq gofmt-command "goimports")
       :bind (:map go-mode-map
                   ("C-c C-r" . go-remove-unused-imports)
                   ("C-c C-f" . gofmt)
                   ("C-c C-k" . godoc))
-      :config
-      (require 'projectile)
-      (if (file-exists-p (concat projectile-project-root "/Makefile"))
-          (set (make-local-variable 'compile-command)
-               "make") ;; Use make if Makefile exists
-          (set (make-local-variable 'compile-command)
-               "go build -v && go test -v && go vet"))) ;; otherwise use go binary
+      :config (set (make-local-variable 'compile-command) #'go-compile-command))
   #+end_src
