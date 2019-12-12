@@ -12,35 +12,21 @@
   helpful information about the code.
 
   #+begin_src emacs-lisp :tangle module.el
-     (use-package python-mode :commands python-mode :ensure t
-       :init
-       (add-hook 'python-mode-hook 'common-code-mode)
-       (add-hook 'python-mode-hook
-                 (lambda ()
-                   (setq tab-width 4)
-                   (setq python-indent-offset 4)
-                   (setq indent-tabs-mode nil)))
-       :bind
-       (:map python-mode-map
-             ("C-<backspace>" . backward-kill-word))
-
-       :config
-       (setq python-environment-directory cache-dir
-             python-indent-guess-indent-offset-verbose nil
-             python-shell-interpreter "python")
-       (when (executable-find "ipython")
-         (setq python-shell-interpreter "ipython"
-               python-shell-interpreter-args "-i --simple-prompt --no-color-info"
-               python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-               python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
-               python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-               python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
-               python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
-
-       (sp-with-modes 'python-mode
-         (sp-local-pair "'" nil :unless
-                        '(sp-point-before-word-p sp-point-after-word-p
-                                                 sp-point-before-same-p))))
+    (use-package python :commands python-mode
+      :mode ("\\.py\\'" . python-mode)
+      :hook ((python-mode . common-code-mode)
+             (python-mode . (lambda ()
+                              (setq tab-with 4)
+                              (setq python-indent-offset 4)
+                              (setq indent-tabs-mode nil))))
+      :config
+      (setq python-environment-directory cache-dir
+            python-indent-guess-indent-offset-verbose nil
+            python-shell-interpreter "python")
+      (sp-with-modes 'python-mode
+        (sp-local-pair "'" nil :unless
+                       '(sp-point-before-word-p sp-point-after-word-p
+                                                sp-point-before-same-p))))
   #+end_src
 
   As a Haskell-programmer I enjoy having the tools checking my types
