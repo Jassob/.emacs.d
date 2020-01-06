@@ -10,6 +10,20 @@
   Since Haskell is probably my most used language, this module is well
   used and has been iterated on a couple of times.
 
+  I have recently come to the conclusion that I like to not have to
+  think about code layout and formatting. =Brittany= is an opiniated
+  Haskell formatter that solves the formatting for me and does a
+  fairly good job.
+
+  #+begin_src emacs-lisp :tangle module.el
+    (defun haskell-format-code ()
+      "Format Haskell buffer with brittany."
+      (interactive)
+      (when (eq major-mode 'haskell-mode)
+        (save-buffer)
+        (shell-command-to-string (format "brittany --write-mode inplace %s" buffer-file-name))))
+  #+end_src
+
   Structuring haskell files as documented modules is good practice,
   although I don't remember doing it by myself so let us add functions
   that do this automatically in new files.
@@ -18,21 +32,10 @@
     (defun haskell-auto-insert-module-template ()
       "Insert a module template for the newly created buffer."
       (interactive)
-      (when (and (= (point-min)
-                    (point-max))
+      (when (and (= (point-min) (point-max))
                  (buffer-file-name))
-        (insert "-- | "
-                "\n"
-                "module ")
         (let ((name (haskell-guess-module-name)))
-          (if (string= name "")
-              (progn (insert "Main")
-                     (shm-evaporate (- (point) 5)
-                                    (point)))
-            (insert name)))
-        (insert " where"
-                "\n"
-                "\n")
+          (insert "-- | " "\n" "module " name " where " "\n" "\n"))
         (goto-char (point-min))
         (forward-char 4)))
   #+end_src
@@ -51,73 +54,41 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package dante :after haskell-mode :diminish t :ensure t
-      :init
-      (if (executable-find "cabal")
-          (progn
-            (add-hook 'haskell-mode-hook 'dante-mode))
-        (warn "haskell-mode: couldn't find cabal"))
-      :config
-      (setq dante-load-flags '("+c" "-Wall"
-                               "-Wwarn=missing-home-modules"
-                               "-fno-diagnostics-show-caret"))
-      (add-hook 'dante-mode-hook
-                (lambda ()
-                  (flycheck-add-next-checker 'haskell-dante
-                                             '(warning . haskell-hlint))
-                  (add-to-list 'flycheck-disabled-checkers 'haskell-stack-ghc)))
+      :hook ((haskell-mode . dante-mode)
+             (dante-mode . (lambda ()
+                             (flycheck-add-next-checker 'haskell-dante
+                                                        '(warning . haskell-hlint))
+                             (add-to-list 'flycheck-disabled-checkers 'haskell-stack-ghc))))
+      :config (setq dante-load-flags '("+c" "-Wall" "-fdefer-typed-holes"
+                                       "-fdefer-type-errors"
+                                       "-fno-diagnostics-show-caret")))
 
-      ;; Find out the right repl to use from what files exists in project root.
-      (setq-default dante-repl-command-line-methods-alist
-                    `((styx . ,(lambda (root)
-                                 (dante-repl-by-file root '("styx.yaml")
-                                                     '("styx" "repl"))))
-                      (nix-new . ,(lambda (root)
-                                    (dante-repl-by-file
-                                     (projectile-project-root)
-                                     '("shell.nix" "default.nix")
-                                     `("nix-shell" "--run" "cabal new-repl"
-                                       ,(concat (projectile-project-root) "/shell.nix")))))
-                      (stack . ,(lambda (root)
-                                  (dante-repl-by-file root '("stack.yaml")
-                                                      '("stack" "repl"))))
-                      (bare  . ,(lambda (_) '("cabal" "repl"))))))
-
-    (use-package haskell-mode :ensure t
-      :mode "\\.hs$"
-      :mode ("\\.ghci$ . ghci-script-mode")
-      :mode ("\\.cabal$ . haskell-cabal-mode")
+    (use-package haskell-mode
+      :mode (("\\.hs\\'" . haskell-mode)
+             ("\\.ghci\\'" . ghci-script-mode)
+             ("\\.cabal\\'" . haskell-cabal-mode))
+      :hook ((haskell-mode . common-code-mode)
+             (haskell-mode . haskell-auto-insert-module-template)
+             (haskell-mode . auto-revert-mode))
       :interpreter (("runghc" . haskell-mode)
                     ("runhaskell" . haskell-mode))
-      :bind
-      (:map haskell-mode-map
-            ("C-`"     . haskell-interactive-bring)
-            ("C-c C-r" . xref-find-references)
-            ("C-c C-," . xref-find-definitions)
-            ("C-c C-." . pop-tag-mark)
-            ("C-c C-t" . haskell-process-do-type)
-            ("C-c c"   . haskell-process-cabal)
-            ("C-c C-c" . haskell-process-cabal-build)
-            ("C-c C-u" . haskell-insert-undefined)
-            ("C-c C-a" . haskell-insert-doc))
-      :config
-      (add-hook 'haskell-mode-hook 'common-code-mode)
-      (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-
-      (let ((font (aref (query-font (face-attribute 'default :font)) 0)))
-        (if (or (string-match-p (regexp-quote "Hasklig") font)
-                (string-match-p (regexp-quote "Iosevka") font))
-            (progn
-              (setq haskell-font-lock-symbols nil)
-              (add-hook 'haskell-mode-hook 'local/set-hasklig-ligatures))
-          (setq haskell-font-lock-symbols 'unicode))))
-  #+end_src
-
-  Until I've made some better solution to run linters and formatters
-  as components in my =common-code-mode= I have this =brittany= command.
-
-  It just marks the whole buffer, and calls "brittany" on it.
-
-  #+begin_src emacs-lisp :tangle module.el
-    (fset 'brittany
-          [?\M-< ?\C- ?\C- ?\M-> ?\C-u ?\M-| ?b ?r ?i ?t ?t ?a ?n ?y return])
+      :bind (:map haskell-mode-map
+                  ("C-`"     . haskell-interactive-bring)
+                  ("C-c C-r" . xref-find-references)
+                  ("C-c C-," . xref-find-definitions)
+                  ("C-c C-." . pop-tag-mark)
+                  ("C-c C-t" . haskell-process-do-type)
+                  ("C-c c"   . haskell-process-cabal)
+                  ("C-c C-c" . haskell-process-cabal-build)
+                  ("C-c C-u" . haskell-insert-undefined)
+                  ("C-c C-a" . haskell-insert-doc)
+                  ("C-c C-f" . haskell-format-code))
+      :config (let ((font (aref (query-font (face-attribute 'default :font)) 0)))
+                (if (or (string-match-p (regexp-quote "Hasklig") font)
+                        (string-match-p (regexp-quote "Iosevka") font))
+                    (progn
+                      (setq haskell-font-lock-symbols nil)
+                      (add-hook 'haskell-mode-hook 'local/set-hasklig-ligatures))
+                  (setq haskell-font-lock-symbols 'unicode)))
+      (require 'haskell-doc))
   #+end_src
