@@ -803,16 +803,44 @@
 
 ** Mail configuration
 
-   Now let's continue to set up my maildir setup (this might look a bit
-   strange, but I blame it on the fact that I once setup GMail to be in
-   Swedish):
+   Now let's continue to set up my maildir directories (which are
+   populated by the isync configuration in
+   https://github.com/Jassob/dotfiles/blob/master/nix/.config/nixpkgs/home.nix#L342)
 
    #+begin_src emacs-lisp :tangle init.el
      (with-eval-after-load 'mu4e
        (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/personal")
-             mu4e-sent-folder "/[Gmail]/Skickat"
-             mu4e-trash-folder "/[Gmail]/Papperskorgen"
-             mu4e-drafts-folder "/[Gmail]/Utkast"))
+             mu4e-refile-folder "/all"
+             mu4e-drafts-folder "/drafts"
+             mu4e-sent-folder "/sent"
+             mu4e-trash-folder "/trash"))
+   #+end_src
+
+   Then we continue with setting up shortcuts for moving and jumping
+   between maildirs.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (with-eval-after-load 'mu4e
+       (setq mu4e-maildir-shortcuts '(("/Inbox" . ?i)
+                                      ("/reading" . ?r)
+                                      ("/receipts" . ?R)
+                                      ("/all" . ?a)
+                                      ("/starred" . ?s)
+                                      ("/Chalmers" . ?c))))
+   #+end_src
+
+   Let's also add some bookmarks (stored searches bound to a key).
+   Most of the original bookmarks does not filter the trashed messages
+   and thus a lot of deleted messages are shown.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (with-eval-after-load 'mu4e
+       (setq mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
+                              ("flag:flagged AND NOT flag:trashed" "Starred messages" ?s)
+                              ("date:today..now AND NOT flag:trashed" "Today's messages" ?t)
+                              ("date:7d..now AND NOT flag:trashed" "Last 7 days" ?w)
+                              ("flag:trashed" "Deleted messages" ?d)
+                              ("mime:image/*" "Messages with images" ?p))))
    #+end_src
 
 ** Secrets and custom settings

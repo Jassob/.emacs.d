@@ -142,15 +142,3 @@
                            ("mime:image/*" "Messages with images" 112)))
 
   #+end_src
-
-  Now let's continue to set up my maildir setup (this might look a bit
-  strange, but I blame it on the fact that I once setup GMail to be in
-  Swedish):
-
-  #+begin_src emacs-lisp :tangle module.el
-    (eval-after-load 'mu4e
-      (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/gmail")
-            mu4e-sent-folder "/[Gmail]/Skickat"
-            mu4e-trash-folder "/[Gmail]/Papperskorgen"
-            mu4e-drafts-folder "/[Gmail]/Utkast"))
-  #+end_src
