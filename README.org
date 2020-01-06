@@ -748,7 +748,9 @@
                 (back-quote . "`")))
 
     (use-package smartparens :ensure t :delight
-      :hook (common-code-mode . turn-on-smartparens-strict-mode)
+      :hook ((common-code-mode . turn-on-smartparens-strict-mode)
+             (latex-mode . turn-on-smartparens-strict-mode)
+             (org-mode . turn-on-smartparens-strict-mode))
       :init (require 'smartparens-config)
       :config (show-smartparens-global-mode t)
       :bind (:map smartparens-mode-map
