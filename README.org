@@ -43,6 +43,40 @@
     (load (concat user-emacs-directory "core.el"))
   #+end_src
 
+* Modules
+  These are the modules that are enabled. We store them in a separate
+  file so that we can load it without loading everything.
+
+  #+begin_src emacs-lisp :tangle modules.el
+    ;; Enabled modules
+    (setq
+     enabled-modules '(
+       ;; Coding
+       ;;"csharp"
+       "golang"
+       "haskell"
+       "org"
+       "python"
+       "mail"
+
+       ;; Tools
+       "erc"
+       "git"
+       "multiple-cursors"
+       "pdf-tools"
+       "recentf"
+       "latex"
+    ))
+  #+end_src
+
+  Therefore we have to load the module list and then load our modules
+  before we let Emacs take over and start up everything else.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (load (concat user-emacs-directory "modules.el"))
+    (load-modules)
+  #+end_src
+
 * Personal customization
   Give my setup a personal touch.
 
@@ -765,39 +799,30 @@
                    ("C-c C-w `"  . wrap-with-back-quotes))))
   #+end_src
 
-* Modules
-  These are the modules that are enabled. We store them in a separate
-  file so that we can load it without loading everything.
+** Mail configuration
 
-  #+begin_src emacs-lisp :tangle modules.el
-    ;; Enabled modules
-    (setq
-     enabled-modules '(
-       ;; Coding
-       ;;"csharp"
-       "golang"
-       "haskell"
-       "org"
-       "python"
-       ;;"mail"
+   Now let's continue to set up my maildir setup (this might look a bit
+   strange, but I blame it on the fact that I once setup GMail to be in
+   Swedish):
 
-       ;; Tools
-       "erc"
-       "git"
-       "multiple-cursors"
-       "pdf-tools"
-       "recentf"
-    ))
-  #+end_src
+   #+begin_src emacs-lisp :tangle init.el
+     (with-eval-after-load 'mu4e
+       (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/personal")
+             mu4e-sent-folder "/[Gmail]/Skickat"
+             mu4e-trash-folder "/[Gmail]/Papperskorgen"
+             mu4e-drafts-folder "/[Gmail]/Utkast"))
+   #+end_src
 
-  Therefore we have to load the module list and then load our modules
-  before we let Emacs take over and start up everything else.
+** Secrets and custom settings
 
-  #+begin_src emacs-lisp :tangle init.el
-    (load (concat user-emacs-directory "modules.el"))
-    (load-modules)
-  #+end_src
+   I store more sensitive data in =~/.emacs.d/etc/.secrets.el= so I
+   easily can store my main configuration in a public version control
+   system.
 
+   #+begin_src emacs-lisp :tangle init.el
+     (load (concat (no-littering-expand-etc-file-name ".secrets.el")) t)
+     (load (concat (no-littering-expand-etc-file-name "custom.el")) t)
+   #+end_src
 
 * TODO Add linters and formatters to common-code-mode
   Variable =buffer-file-name= could be used together with a asynch
