@@ -136,6 +136,12 @@
       (ido-mode))
   #+end_src
 
+  I sometimes use Imenu to quickly navigate inside the current file.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (define-key global-map (kbd "M-g M-m") #'imenu)
+  #+end_src
+
 ** Org configuration
 
    Begin the conditional loading:
