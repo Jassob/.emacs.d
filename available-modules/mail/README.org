@@ -114,18 +114,17 @@
   give the user an overview of their mail. This is my set of saved searches.
 
   #+begin_src emacs-lisp :tangle module.el
-    (setq notmuch-saved-searches '(
-                                   (:name "unread" :query "tag:unread" :key "u")
-                                   (:name "urgent" :query "is:reply")
-                                   (:name "flagged" :query "tag:flagged" :key "f")
-                                   (:name "inbox" :query "tag:inbox" :key "i")
-                                   (:name "todo" :query "is:to-do")
-                                   (:name "bookmarks" :query "is:to-watch is:to-read")
-                                   (:name "drafts" :query "tag:draft" :key "d")
-                                   (:name "all mail" :query "not is:receipts" :key "a")
-                                   (:name "sent" :query "tag:sent" :key "t")
-                                   ))
-    )
+    (setq notmuch-saved-searches
+          '((:name "unread" :query "tag:unread" :key "u")
+            (:name "urgent" :query "is:reply")
+            (:name "flagged" :query "tag:flagged" :key "f")
+            (:name "inbox" :query "tag:inbox" :key "i")
+            (:name "todo" :query "is:to-do")
+            (:name "bookmarks" :query "is:to-watch is:to-read")
+            (:name "drafts" :query "tag:draft" :key "d")
+            (:name "all mail" :query "not is:receipts" :key "a")
+            (:name "sent" :query "tag:sent" :key "t")))
+      )
   #+end_src
 
   I've also started using mu4e which competes very much with notmuch,
