@@ -854,6 +854,20 @@
      (load (concat (no-littering-expand-etc-file-name "custom.el")) t)
    #+end_src
 
+** Eshell
+
+   I found =Eshell smart display= on the [[https://masteringemacs.org/article/complete-guide-mastering-][Eshell article on Mastering
+   Emacs]] and I think it is pretty neat! It lets me review a failing
+   command and edit the command line to fix the error.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'eshell)
+     (require 'em-smart)
+     (setq eshell-where-to-jump 'begin)
+     (setq eshell-review-quick-commands nil)
+     (setq eshell-smart-space-goes-to-end t)
+   #+end_src
+
 * TODO Add linters and formatters to common-code-mode
   Variable =buffer-file-name= could be used together with a asynch
   shell command.
