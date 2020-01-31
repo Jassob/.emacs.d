@@ -12,6 +12,6 @@
 
   #+begin_src emacs-lisp :tangle module.el
     (use-package nix-mode
-      :init
-      (add-hook 'nix-mode-hook 'common-code-mode))
+      :mode (("\\.nix\\'" . nix-mode))
+      :hook ((nix-mode . common-code-mode)))
   #+end_src
