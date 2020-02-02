@@ -295,8 +295,9 @@
     ;; Display column numbers in modeline
     (use-package column-number-mode :hook common-code-mode :delight)
     ;; Handle projects
-    (use-package projectile :ensure t :delight
-      :hook (common-code-mode . projectile-mode))
+    (use-package projectile :ensure t :delight :init (projectile-mode)
+      :bind (("C-c p" . #'projectile-command-map)
+             ("M-p" . #'projectile-command-map)))
     ;; Syntax highlighting and linting
     (use-package flycheck :ensure t
       :hook (common-code-mode . flycheck-mode))
