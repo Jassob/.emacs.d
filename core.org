@@ -331,18 +331,22 @@
     (defgroup core nil "Core configurable options."
       :group 'emacs)
 
-    (defcustom enabled-modules-directory (concat user-emacs-directory "modules/")
+    (defcustom core/enabled-modules-directory (concat user-emacs-directory "modules/")
       "Where enabled modules reside, Emacs look here for modules to load."
       :type 'string
       :group 'core)
 
-    (defcustom available-modules-directory (concat user-emacs-directory "available-modules/")
+    (defcustom core/available-modules-directory (concat user-emacs-directory "available-modules/")
       "Where available modules reside, Emacs look here for modules to enable."
       :type 'string
       :group 'core)
 
-    ;; Enabled modules
-    (defcustom enabled-modules nil
+    (defcustom core/essential-modules nil
+      "Modules that always should be loaded"
+      :type '(repeat string)
+      :group 'core)
+
+    (defcustom core/enabled-modules nil
       "The list of enabled modules.
     A module represents a subdirectory inside modules/ directory that will contain a module.el file which will be loaded by Emacs as part of the init process."
       :type '(repeat string)
@@ -355,7 +359,7 @@
   #+begin_src emacs-lisp :tangle core.el
     (defun enable-modules ()
       "Enable modules by symlinking them from available-modules/ to modules/."
-      (dolist (module enabled-modules)
+      (dolist (module core/enabled-modules)
         (let ((mod-dir (concat enabled-modules-directory module))
               (src-dir (concat available-modules-directory module)))
           (unless (file-directory-p mod-dir)
@@ -371,13 +375,37 @@
   enabled-modules variable, but I have changed that yet.
 
   #+begin_src emacs-lisp :tangle core.el
-    (defun load-modules ()
+    (defun core/load-modules ()
       "Load modules specified in ENABLED-MODULES, by loading each module.el in modules/."
-      (unless (listp enabled-modules)
-        (error "Customizable variable enabled-modules is not a list"))
-      (dolist (module enabled-modules)
-        (let ((code (concat enabled-modules-directory module "/module.el")))
-          (if (file-exists-p code)
-              (load code)
-            (warn (concat "Could not find module file " code))))))
+      (interactive)
+      (unless (listp core/essential-modules)
+        (error "Customizable Core variable core/essential-modules is not a list"))
+      (unless (listp core/enabled-modules)
+        (error "Customizable Core variable core/enabled-modules is not a list"))
+      (dolist (module (append core/essential-modules core/enabled-modules))
+        (let* ((module-dir (file-name-as-directory (concat core/available-modules-directory module)))
+              (module-src (concat module-dir "README.org"))
+              (module-code (concat module-dir "module.el")))
+          (unless (file-directory-p module-dir)
+            (error (concat "Could not find module directory " module-dir " for module " module)))
+          (unless (file-exists-p module-code)
+            (unless (file-exists-p module-src)
+              (error (concat "Could not find module source (README.org) for module " module)))
+            (require 'org)
+            (message "Tangling source code for module %s..." module)
+            (org-babel-tangle module-src))
+          (load module-code))))
+  #+end_src
+
+  Let's make an interactive function for loading modules
+
+  #+begin_src emacs-lisp :tangle core.el
+    (defun core/enable-modules (&rest modules)
+      "Requests MODULES to be loaded."
+      (interactive)
+      (unless modules
+        (dolist (m (split-string (read-from-minibuffer "Modules: ")))
+          (add-to-list 'modules m)))
+      (dolist (m modules) (add-to-list 'core/enabled-modules m))
+      (core/load-modules))
   #+end_src
