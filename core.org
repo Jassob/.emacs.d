@@ -120,9 +120,7 @@
 
    #+begin_src emacs-lisp :tangle core.el
      (eval-when-compile
-       (require 'use-package)
-       (use-package delight :ensure t))
-     (require 'delight)
+       (require 'use-package))
      (require 'bind-key)
    #+end_src
 
@@ -137,6 +135,12 @@
        (setq use-package-ensure-function
              (lambda (pkg ensure state) (require pkg))))
      (setq use-package-verbose t)
+   #+end_src
+
+   Delight is a nice package for hiding stuff in my modeline.
+
+   #+begin_src emacs-lisp :tangle core.el
+     (use-package delight :ensure t)
    #+end_src
 
    I found the =no-littering= package while browsing around, and
