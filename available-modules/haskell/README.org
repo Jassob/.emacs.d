@@ -70,25 +70,30 @@
       :hook ((haskell-mode . common-code-mode)
              (haskell-mode . haskell-auto-insert-module-template)
              (haskell-mode . auto-revert-mode))
+      :commands (haskell-interactive-bring
+                 haskell-insert-doc
+                 haskell-navigate-imports
+                 haskell-doc-mode)
       :interpreter (("runghc" . haskell-mode)
                     ("runhaskell" . haskell-mode))
       :bind (:map haskell-mode-map
-                  ("C-`"     . haskell-interactive-bring)
-                  ("C-c C-r" . xref-find-references)
-                  ("C-c C-," . xref-find-definitions)
                   ("C-c C-." . pop-tag-mark)
                   ("C-c C-t" . haskell-process-do-type)
                   ("C-c c"   . haskell-process-cabal)
                   ("C-c C-c" . haskell-process-cabal-build)
                   ("C-c C-u" . haskell-insert-undefined)
                   ("C-c C-a" . haskell-insert-doc)
-                  ("C-c C-f" . haskell-format-code))
-      :config (let ((font (aref (query-font (face-attribute 'default :font)) 0)))
-                (if (or (string-match-p (regexp-quote "Hasklig") font)
-                        (string-match-p (regexp-quote "Iosevka") font))
-                    (progn
-                      (setq haskell-font-lock-symbols nil)
-                      (add-hook 'haskell-mode-hook 'local/set-hasklig-ligatures))
-                  (setq haskell-font-lock-symbols 'unicode)))
-      (require 'haskell-doc))
+                  ("C-c C-f" . haskell-format-code)
+                  ("C-c C-g" . haskell-navigate-imports)
+                  ("C-c C-r" . haskell-navigate-imports-return))
+      :config
+      (require 'haskell-doc)
+      (when (display-graphic-p)
+                (let ((font (aref (query-font (face-attribute 'default :font)) 0)))
+                  (if (or (string-match-p (regexp-quote "Hasklig") font)
+                          (string-match-p (regexp-quote "Iosevka") font))
+                      (progn
+                        (setq haskell-font-lock-symbols nil)
+                        (add-hook 'haskell-mode-hook 'local/set-hasklig-ligatures))
+                    (setq haskell-font-lock-symbols 'unicode)))))
   #+end_src
