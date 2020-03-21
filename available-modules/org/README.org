@@ -13,7 +13,7 @@
   Chua's Org configuration.
 
   #+begin_src emacs-lisp :tangle module.el
-    (use-package org :ensure t :defer t
+    (use-package org :ensure t :commands org-agenda
       :mode (("\\.txt\\'" . org-mode)
              ("\\.org\\'" . org-mode))
       :bind
