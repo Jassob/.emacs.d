@@ -34,6 +34,14 @@
 
    #+begin_src emacs-lisp :tangle module.el
      (use-package org-gcal :after org :ensure t :commands (org-gcal-sync)
-       :config
-       (local/org-gcal-reload))
+       :init
+       (unless (fboundp 'org-gcal/sync-old)
+	 (progn (fset 'org-gcal/sync-old (symbol-function 'org-gcal-sync))
+		(fset 'org-gcal-sync
+		      (lambda (&optional A-TOKEN SKIP-EXPORT SILENT)
+			"Import events from calendars.
+     Using A-TOKEN and export the ones to the calendar if unless
+     SKIP-EXPORT.  Set SILENT to non-nil to inhibit notifications."
+			(local/org-gcal-reload)
+			(org-gcal/sync-old A-TOKEN SKIP-EXPORT SILENT))))))
    #+end_src
