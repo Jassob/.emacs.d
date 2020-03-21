@@ -8,10 +8,12 @@
 
 * Module
   When programming in Python I want the same tooling as I have when
-  programming Haskell. Thanks to company and flycheck, I get some
+  programming Haskell. Thanks to elpy, company and flycheck, I get some
   helpful information about the code.
 
   #+begin_src emacs-lisp :tangle module.el
+    (use-package elpy :after python :ensure t)
+
     (use-package python :commands python-mode
       :mode ("\\.py\\'" . python-mode)
       :hook ((python-mode . common-code-mode)
@@ -20,7 +22,7 @@
                               (setq python-indent-offset 4)
                               (setq indent-tabs-mode nil))))
       :config
-      (setq python-environment-directory cache-dir
+      (setq python-environment-directory (no-littering-expand-var-file-name "python")
             python-indent-guess-indent-offset-verbose nil
             python-shell-interpreter "python")
       (sp-with-modes 'python-mode
@@ -42,7 +44,6 @@
        (add-to-list 'flycheck-disabled-checkers 'python-pycompile))
        (setq flycheck-python-mypy-args '("--ignore-missing-imports"))
   #+end_src
-
 
   It is a convention to store a list of required dependencies in a
   file called =requirements.txt=, which can easily be installed by
