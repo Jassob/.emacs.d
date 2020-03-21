@@ -133,11 +133,5 @@
   First let's just set some nifty bookmarks for quickly accessing my mailbox:
   #+begin_src emacs-lisp :tangle module.el
     (require 'mu4e)
-    (setq mu4e-change-filenames-when-moving t
-          mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" 117)
-                           ("flag:flagged AND NOT flag:trashed" "Starred messages" 115)
-                           ("date:today..now AND NOT flag:trashed" "Today's messages" 116)
-                           ("date:7d..now AND NOT flag:trashed" "Last 7 days" 119)
-                           ("mime:image/*" "Messages with images" 112)))
-
+    (setq mu4e-change-filenames-when-moving t)
   #+end_src
