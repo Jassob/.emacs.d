@@ -4,8 +4,7 @@
 
 * About this file
   This file is intended to be the configurable point of my Emacs
-  configuration. By enabling some modules we can create specific
-  configurations for different use-cases.
+  configuration.
 
   The complete configuration is very much inspired by [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua's
   Emacs Configuration]], especially =org-mode=, with some stolen bits
@@ -19,9 +18,8 @@
   There is a Makefile that tangles everything that needs to be tangled.
 
   1. Clone this repository to =/.emacs.d/= (backup your own configuration first!)
-  2. Modify code and module list in =README.org= (this file).
-  3. Run ~make all~ in =~/.emacs.d/
-  4. Profit!
+  2. Run ~make all~ in =~/.emacs.d/
+  3. Profit!
 
 * Initialization
 
@@ -246,7 +244,7 @@
                     'local/smarter-move-beginning-of-line)
   #+end_src
 
-* Common programming settings
+* Coding settings
 
   There are some common things I want to use for all every
   programming language I code in. For instance I would like error
@@ -261,88 +259,160 @@
   =C-SPC C-SPC=.
 
   #+begin_src emacs-lisp :tangle init.el
-    (define-minor-mode common-code-mode
-      "A minor mode for enabling common minor modes and other
-      features for programming modes."
-      :lighter " Code"
-      :keymap (let (keymap (make-sparse-keymap))
-                (bind-key "C-c TAB" #'company-complete)
-                (bind-key "C-c RET" #'company-complete)
-                keymap)
+    (if (>= emacs-major-version 26)
+        (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+      (progn
+        (add-hook 'prog-mode-hook 'linum-mode)))
+    (add-hook 'prog-mode-hook (lambda () (transient-mark-mode -1)))
+    (setq company-idle-delay nil)
 
-      (if (>= emacs-major-version 26)
-          (add-hook 'common-code-mode-hook 'display-line-numbers-mode)
-        (progn
-          (add-hook 'common-code-mode-hook 'linum-mode)))
-      (transient-mark-mode -1)
-      (setq company-idle-delay nil))
   #+end_src
 
   Quite a few of the programming languages I work with supports LSP,
-  Microsoft's Language Server Protocol, and wiring it to my
-  =common-code-mode= makes sense to me.
+  Microsoft's Language Server Protocol, and wiring it ~prog-mode~
+  makes sense.
 
   #+begin_src emacs-lisp :tangle init.el
     ;; LSP mode is loaded whenever #'lsp or #'lsp-deferred is called
     (use-package lsp-mode :ensure t :commands (lsp lsp-deferred)
-      :hook (common-code-mode . #'lsp-deferred)
-      :config (use-package yasnippet :ensure t)) ;; Required by LSP mode
+      :hook (prog-mode . lsp-deferred)
+      :init (setq lsp-keymap-prefix "C-c l")
+      :config (define-key lsp-signature-mode-map (kbd "M-n") nil))
+    (use-package yasnippet :after lsp-mode :hook (lsp-mode . yas-minor-mode) :ensure t)
     (use-package company-lsp :after lsp-mode :ensure t)
-    (use-package lsp-ui :after lsp-mode :commands (lsp-ui-mode)
-      :config (setq lsp-ui-flycheck-enable t     ;; Flycheck is nice
-                    lsp-ui-doc-enable nil        ;; LSP Ui Doc is not nice
-                    lsp-ui-sideline-enable nil)) ;; LSP Ui Sideline is not nice
+    (use-package lsp-ui :after lsp-mode :ensure t
+      :hook (lsp-mode . lsp-ui-mode)
+      :bind (:map lsp-mode-map ("C-x C-h ." . lsp-ui-doc-show))
+      :config (setq lsp-ui-flycheck-enable t
+                    lsp-ui-doc-enable nil
+                    lsp-ui-doc-use-child-frame nil
+                    lsp-ui-sideline-enable nil))
   #+end_src
 
   I want trailing white space to be removed automatically before saving.
 
   #+begin_src emacs-lisp :tangle init.el
-    (add-hook 'common-code-mode-hook
-              (lambda () (add-hook 'before-save-hook
-                                   #'delete-trailing-whitespace)))
+    (add-hook 'prog-mode-hook
+              (lambda () (add-hook 'before-save-hook #'delete-trailing-whitespace)))
   #+end_src
 
-  I want Emacs Lisp and C to use my fancy new minor mode.
+  Other minor modes I want to have active in programming modes:
 
   #+begin_src emacs-lisp :tangle init.el
-    (add-hook 'emacs-lisp-mode-hook 'common-code-mode)
-    (add-hook 'c-mode-hook 'common-code-mode)
-  #+end_src
+    ;; Folding of outline
+    (use-package hs-minor-mode :hook prog-mode :delight :bind (("C-<tab>" . #'hs-toggle-hiding)))
 
-  Install the needed packages in case they don't exists.
-
-  #+begin_src emacs-lisp :tangle init.el
-    ;; Folding of outlinee
-    (use-package hs-minor-mode :hook common-code-mode :delight
-      :bind (("C-<tab>" . #'hs-toggle-hiding)))
     ;; Automatically revert file when changed outside of Emacs
-    (use-package autorevert :delight auto-revert-mode
-      :hook (common-code-mode . auto-revert-mode))
-    ;; Navigate through subwords
-    (use-package subword-mode :hook common-code-mode :delight)
-    ;; Hightlight current line
-    (use-package hl-line-mode :hook common-code-mode :delight)
-    ;; Highlight TODO comments
-    (use-package hl-todo :ensure t :delight
-      :hook (common-code-mode . hl-todo-mode))
-    ;; Display column numbers in modeline
-    (use-package column-number-mode :hook common-code-mode :delight)
-    ;; Handle projects
+    (use-package autorevert :delight auto-revert-mode :hook (prog-mode . auto-revert-mode))
+
+    (use-package subword-mode :hook prog-mode :delight)
+
+    (use-package hl-line-mode :hook prog-mode :delight)
+    (use-package hl-todo :ensure t :delight :hook hl-todo-mode)
+
+    (use-package column-number-mode :hook prog-mode :delight)
+
     (use-package projectile :ensure t :delight :init (projectile-mode)
       :bind (("C-c p" . #'projectile-command-map)
              ("M-p" . #'projectile-command-map)))
-    ;; Syntax highlighting and linting
-    (use-package flycheck :ensure t
-      :hook (common-code-mode . flycheck-mode))
+
+    (use-package flycheck :ensure t :hook (prog-mode . flycheck-mode))
+
     ;; Hide modes in modeline
     (use-package delight :ensure t)
-    ;; Auto completion
-    (use-package company :ensure t :delight
-      :hook (common-code-mode . company-mode))
-    ;; Rainbow delimiters
-    (use-package rainbow-delimiters :ensure t :delight
-      :hook (common-code-mode . rainbow-delimiters-mode))
+
+    (use-package company :ensure t :delight :hook (prog-mode . company-mode)
+      :bind (:map prog-mode-map ("C-c RET" . company-complete)))
+
+    (use-package rainbow-delimiters :ensure t :delight :hook (prog-mode . rainbow-delimiters-mode))
+
+    (use-package multiple-cursors :ensure t
+      :bind (:map prog-mode-map
+                  ("C-S-c C-S-c" . mc/edit-lines)
+                  ("M-n" . mc/mark-next-symbol-like-this)
+                  ("M-p" . mc/mark-previous-symbol-like-this)
+                  ("C-c M->" . mc/mark-next-like-this)
+                  ("C-c M-<" . mc/mark-previous-like-this)
+                  ("C-," . mc/mark-pop)
+                  ("M-<mouse-1>" . mc/add-cursor-on-click)))
   #+end_src
+
+** Version control
+
+   I mostly use [[https://git-scm.com/][Git]] to handle my version control and while it
+   certainly got somewhat of a steep learning curve and a few rough
+   edges here and there I mostly find it intuitive.
+
+   To help me manage my Git repositories I use the fantastic package
+   =magit=, which is a Git frontend to Emacs and one of the few Git
+   frontends I really like.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package magit :bind ("C-x g" . magit-status) :ensure t :defer t)
+   #+end_src
+
+   =Git-gutter+= is a package that shows a line's status (added,
+   modifid or deleted) in a file that is version controlled by Git.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package git-gutter :ensure t :diminish t
+       :hook (prog-mode . git-gutter-mode)
+       :bind (:map prog-mode-map
+                   ;; Navigate on hunks
+                   ("C-x n"   . git-gutter-next-hunk)
+                   ("C-x p"   . git-gutter-previous-hunk)
+                   ;; Act on hunks
+                   ("C-x v =" . git-gutter-show-hunk)
+                   ("C-x r"   . git-gutter-revert-hunks)
+                   ("C-x t"   . git-gutter-stage-hunks)
+                   ("C-x c"   . git-gutter-commit)
+                   ("C-x C"   . git-gutter-stage-and-commit)
+                   ("C-x C-y" . git-gutter-stage-and-commit-whole-buffer)
+                   ("C-x U"   . git-gutter-unstage-whole-buffer)))
+   #+end_src
+
+   To help me interact with my Github repositories I use =forge=.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package forge :after magit :ensure t)
+   #+end_src
+
+** Rust
+
+   I want to format Rust buffers on save:
+
+   #+begin_src emacs-lisp :tangle init.el
+    (use-package rust-mode :ensure t :init (setq rust-format-on-save t)
+      :hook (rust-mode . lsp-deferred))
+  #+end_src
+
+** Golang
+
+  This configuration sets up a Go mode where common-code minor mode is
+  enabled together with a plethora of other useful stuff, such as
+  linter and formatters etc.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package go-mode :mode "\\.go\\'" :defer t
+      :hook ((go-mode . lsp-deferred)
+             (go-mode . (lambda ()
+                         (add-hook 'before-save-hook #'lsp-format-buffer t t)
+                         (add-hook 'before-save-hook #'lsp-organize-imports t t))))
+      :bind (:map go-mode-map
+                  ("C-c C-f" . gofmt)
+                  ("C-c C-k" . godoc)))
+  #+end_src
+
+  I want to be able to run tests directly from within Emacs.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package gotest :ensure t :after go-mode :config (setq go-test-verbose t)
+      :bind (:map go-mode-map
+                  ("C-c C-t t" . go-test-current-test)
+                  ("C-c C-t f" . go-test-current-file)
+                  ("C-c C-t p" . go-test-current-project)))
+  #+end_src
+
 
 * Personal customization
   Give my setup a personal touch.
