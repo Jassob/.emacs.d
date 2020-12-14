@@ -244,6 +244,52 @@
                     'local/smarter-move-beginning-of-line)
   #+end_src
 
+** Parsing to terminal keys correctly
+
+   Sometimes my terminal sends garbled keys to Emacs, to make Emacs
+   understand the terminal I extend the ~input-decode-map~.
+
+   How to add more keys:
+   1. In the scratch buffer: C-q $COMBINATION
+   2. Add the binding to ~input-decode-map~.
+   3. Profit!
+
+   Credits: [[https://emacs.stackexchange.com/a/989][This fine answer on Emacs stack exchange]]
+
+   #+begin_src emacs-lisp :tangle init.el
+     ;; shift + arrow keys
+     (define-key input-decode-map "\[1;2D" [S-left])
+     (define-key input-decode-map "\[1;2A" [S-up])
+     (define-key input-decode-map "\[1;2C" [S-right])
+     (define-key input-decode-map "\[1;2B" [S-down])
+
+     ;; ctrl + arrow keys
+     (define-key input-decode-map "\[1;5D" [C-left])
+     (define-key input-decode-map "\[1;5A" [C-up])
+     (define-key input-decode-map "\[1;5C" [C-right])
+     (define-key input-decode-map "\[1;5B" [C-down])
+
+     ;; meta + arrow keys
+     (define-key input-decode-map "\[1;3D" [M-left])
+     (define-key input-decode-map "\[1;3A" [M-up])
+     (define-key input-decode-map "\[1;3C" [M-right])
+     (define-key input-decode-map "\[1;3B" [M-down])
+
+     ;; shift + ctrl + arrow keys
+     (define-key input-decode-map "\[1;6D" [S-M-left])
+     (define-key input-decode-map "\[1;6A" [S-M-up])
+     (define-key input-decode-map "\[1;6C" [S-M-right])
+     (define-key input-decode-map "\[1;6B" [S-M-down])
+
+     ;; shift + meta + arrow keys
+     (define-key input-decode-map "\[1;4D" [S-M-left])
+     (define-key input-decode-map "\[1;4A" [S-M-up])
+     (define-key input-decode-map "\[1;4C" [S-M-right])
+     (define-key input-decode-map "\[1;4B" [S-M-down])
+   #+end_src
+
+
+
 * Coding settings
 
   There are some common things I want to use for all every
