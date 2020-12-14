@@ -448,7 +448,7 @@
   #+begin_src emacs-lisp :tangle personal.el
     ;; Load theme
     (use-package gruvbox-theme :ensure t
-      :config (load-theme 'gruvbox-light-hard t))
+      :config (load-theme 'gruvbox-dark-hard t))
   #+end_src
 
   The fonts in =font-preferences= are the preferred fonts that I use
