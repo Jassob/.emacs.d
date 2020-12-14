@@ -61,45 +61,6 @@
          (make-directory dir t)))
    #+end_src
 
-   We might want to read and store values to/from a file, these
-   routines lets us store Emacs lisp values and then retrieve them.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (defun print-to-file (filename data)
-       "Create FILENAME and store DATA inside it."
-       (with-temp-file filename
-         (prin1 data (current-buffer))))
-
-     (defun read-from-file (filename)
-       "Read Emacs Lisp variables from FILENAME."
-       (with-temp-buffer
-         (insert-file-contents filename)
-         (cl-assert (eq (point) (point-min)))
-         (read (current-buffer))))
-   #+end_src
-
-   Sometimes updating config files and creating them if they don't
-   exist is a common operation, such as activating a mode for the
-   first time.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (defun local--update-alist-file (file val)
-       "Update FILE with value VAL.
-     If FILE exists VAL will be appended to it's variable,
-     otherwise VAL will be stored in a new file FILE."
-       (if (file-exists-p file)
-           (let ((alist (read-from-file file)))
-             (add-to-list 'alist val)
-             (print-to-file file alist))
-         (print-to-file file val)))
-
-     (defun local--init-file-if-missing (file init-fn)
-       "Check if FILE exists and if not it creates it and initializes
-      it with the unary function INIT-FN."
-       (unless (file-exists-p file)
-         (print-to-file file (list (funcall init-fn)))))
-   #+end_src
-
 ** Editing system files
 
    When I edit system configuration files I might accidentally find
@@ -187,7 +148,6 @@
        (setq custom-file (no-littering-expand-etc-file-name "custom.el")))
    #+end_src
 
-* Editor
 ** Encoding system
    We would like Emacs to prefer UTF8 when reading ambiguous bit
    strings.
@@ -248,6 +208,44 @@
    #+end_src
 
    Now, pressing =C-c h= will hide all hidden files in Dired.
+** Move to beginning of line
+
+  [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line][Source]]
+
+  The default behaviour of calling =C-a= is to jump directly to the
+  beginning of the line, although we probably would like to go to
+  the beginning of the text on the line (and skip all the
+  indentation whitespace).
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun local/smarter-move-beginning-of-line (arg)
+      "Move point back to indentation of beginning of line.
+
+       Move point to the first non-whitespace character on this line.
+       If point is already there, move to the beginning of the line.
+       Effectively toggle between the first non-whitespace character and
+       the beginning of the line.
+
+       If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+       point reaches the beginning or end of the buffer, stop there."
+       (interactive "^p")
+       (setq arg (or arg 1))
+
+       ;; Move lines first
+       (when (/= arg 1)
+         (let ((line-move-visual nil))
+           (forward-line (1- arg))))
+
+       (let ((orig-point (point)))
+         (back-to-indentation)
+         (when (= orig-point (point))
+           (move-beginning-of-line 1))))
+
+    ;; remap C-a to smarter-move-beginning-of-line
+    (global-set-key [remap move-beginning-of-line]
+                    'local/smarter-move-beginning-of-line)
+  #+end_src
+
 * Common programming settings
 
   There are some common things I want to use for all every
@@ -389,6 +387,107 @@
 
   #+begin_src emacs-lisp :tangle init.el
     (setq create-lockfiles nil)
+  #+end_src
+
+  There are sometimes when I need to interact with external programs.
+  For instance I sometimes like to open URL's in a more capable
+  browser than EWW (even though it is very good!).
+
+  Firefox is currently my driver of choice.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq browse-url-browser-function 'browse-url-firefox
+          browse-url-new-window-flag  t)
+  #+end_src
+
+* Visual appearance
+
+  It is great that you can start out learning Emacs like a normal
+  person, using the mouse and navigating through the menu and tool
+  bar. However, on a smaller screen I find it a waste of screen
+  space.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+  #+end_src
+
+  I really like the =gruvbox-dark= theme. It's a dark theme with good
+  contrast and stuff.
+
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Load theme
+    (use-package gruvbox-theme :ensure t
+      :config (load-theme 'gruvbox-dark-hard t))
+  #+end_src
+
+  The fonts in =font-preferences= are the preferred fonts that I use
+  on my system, in descending order. The first font that is available
+  will be set as the main font for Emacs.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package cl-lib :ensure t)
+    (defun font-existsp (font)
+      "Check to see if the named FONT is available."
+      (if (null (x-list-fonts font)) nil t))
+
+    (defun font-avail (fonts)
+      "Finds the available fonts."
+      (cl-remove-if-not 'font-existsp fonts))
+
+    (defvar font-preferences
+      '( "Iosevka"
+         "Hasklig"
+         "Inconsolata"
+         "Fira Code"
+         "Source Code Pro"
+         "PragmataPro"))
+
+    (unless (eq window-system nil)
+      (let ((fonts (font-avail font-preferences)))
+        (unless (null fonts) (progn
+            (set-face-attribute 'default nil :font (car fonts))
+            (set-face-attribute 'default nil :weight 'medium)))))
+  #+end_src
+
+  When using Hasklig we can have some degree of ligature support and
+  this is configured below.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun local--correct-symbol-bounds (pretty-alist)
+      "Prepend a TAB character to each symbol in this alist,
+    this way compose-region called by prettify-symbols-mode
+    will use the correct width of the symbols
+    instead of the width measured by char-width."
+      (mapcar (lambda (el)
+                (setcdr el (string ?\t (cdr el)))
+                el)
+              pretty-alist))
+
+    (defun local--ligature-list (ligatures codepoint-start)
+      "Create an alist of strings to replace with
+    codepoints starting from codepoint-start."
+      (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
+        (-zip-pair ligatures codepoints)))
+
+    ;; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
+    (setq local--hasklig-ligatures
+          (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
+                         "==" "===" "==>" "=>" "=<<" "!!" ">>"
+                         ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
+                         "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
+                         "<<" "<<<" "<+>" ".." "..." "++" "+++"
+                         "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
+            (local--correct-symbol-bounds (local--ligature-list ligs #Xe100))))
+
+    ;; nice glyphs for haskell with hasklig
+    (defun local/set-hasklig-ligatures ()
+      "Add hasklig ligatures for use with prettify-symbols-mode."
+      (interactive)
+      (setq prettify-symbols-alist
+            (append local--hasklig-ligatures prettify-symbols-alist))
+      (prettify-symbols-mode))
   #+end_src
 
 * Smex / IDO mode
@@ -707,207 +806,11 @@
    )
    #+end_src
 
-* Commands for local keymap
-
-  This is a command for finding the init file, for the times I need
-  to quickly edit my config for some reason. A command for editing
-  and untangling the org file.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (defun local--find-init-file ()
-      "Find the init file."
-      (interactive)
-      (find-file (concat user-emacs-directory "init.el")))
-
-    (defun local--find-org-file ()
-      "Find the org file."
-      (interactive)
-      (find-file (concat user-emacs-directory "README.org")))
-
-    (defun local--untangle-file ()
-      "Run org-babel-tangle on the org file, updating the init file."
-      (interactive)
-      (org-babel-tangle-file (concat user-emacs-directory "README.org")))
-
-    (defun local--eval-init-file ()
-      "Evaluate the init file again to refresh Emacs."
-      (interactive)
-      (progn
-        (local--untangle-file)
-        (load-file (concat user-emacs-directory "init.el"))))
-  #+end_src
-
-  I have defined a keymap for commands that I'd like to execute as if
-  they were defined in global keymap.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (bind-keys :prefix-map my-local-map
-               :prefix "M--"
-               :prefix-docstring "Commands I like to access quicker than through M-x"
-               ("g" . magit-status))
-
-    (bind-keys :prefix-map my-local-project-map
-               :prefix "M-- p"
-               :prefix-docstring "Project related commands"
-               ("d" . projectile-dired)
-               ("b" . projectile-switch-to-buffer)
-               ("p" . projectile-switch-project))
-
-    (bind-keys :prefix-map my-local-config-map
-               :prefix "M-- c"
-               :prefix-docstring "Config related commands"
-               ("f" . local--find-init-file)
-               ("s" . local--find-org-file)
-               ("t" . local--untangle-file)
-               ("e" . local--eval-init-file))
-  #+end_src
-
-* External programs
-
-  There are sometimes when I need to interact with external programs.
-  For instance I sometimes like to open URL's in a more capable
-  browser than EWW (even though it is very good!).
-
-  Firefox is currently my driver of choice.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (setq browse-url-browser-function 'browse-url-firefox
-          browse-url-new-window-flag  t)
-  #+end_src
-
-* Visual appearance
-
-  It is great that you can start out learning Emacs like a normal
-  person, using the mouse and navigating through the menu and tool
-  bar. However, on a smaller screen I find it a waste of screen
-  space (especially since I don't use the mouse myself).
-
-  #+begin_src emacs-lisp :tangle init.el
-    (tool-bar-mode -1)
-    (menu-bar-mode -1)
-    (scroll-bar-mode -1)
-  #+end_src
-
-  I really like the =gruvbox-dark= theme. It's a dark theme with good
-  contrast and stuff.
-
-  #+begin_src emacs-lisp :tangle init.el
-    ;; Load theme
-    (use-package gruvbox-theme :ensure t
-      :config (load-theme 'gruvbox-dark-hard t))
-  #+end_src
-
-  The fonts in =font-preferences= are the preferred fonts that I use
-  on my system, in descending order. The first font that is available
-  will be set as the main font for Emacs.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (use-package cl-lib :ensure t)
-    (defun font-existsp (font)
-      "Check to see if the named FONT is available."
-      (if (null (x-list-fonts font)) nil t))
-
-    (defun font-avail (fonts)
-      "Finds the available fonts."
-      (cl-remove-if-not 'font-existsp fonts))
-
-    (defvar font-preferences
-      '( "Iosevka"
-         "Hasklig"
-         "Inconsolata"
-         "Fira Code"
-         "Source Code Pro"
-         "PragmataPro"))
-
-    (unless (eq window-system nil)
-      (let ((fonts (font-avail font-preferences)))
-        (unless (null fonts) (progn
-            (set-face-attribute 'default nil :font (car fonts))
-            (set-face-attribute 'default nil :weight 'medium)))))
-  #+end_src
-
-  When using Hasklig we can have some degree of ligature support and
-  this is configured below.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (defun local--correct-symbol-bounds (pretty-alist)
-      "Prepend a TAB character to each symbol in this alist,
-    this way compose-region called by prettify-symbols-mode
-    will use the correct width of the symbols
-    instead of the width measured by char-width."
-      (mapcar (lambda (el)
-                (setcdr el (string ?\t (cdr el)))
-                el)
-              pretty-alist))
-
-    (defun local--ligature-list (ligatures codepoint-start)
-      "Create an alist of strings to replace with
-    codepoints starting from codepoint-start."
-      (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
-        (-zip-pair ligatures codepoints)))
-
-    ;; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
-    (setq local--hasklig-ligatures
-          (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
-                         "==" "===" "==>" "=>" "=<<" "!!" ">>"
-                         ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
-                         "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
-                         "<<" "<<<" "<+>" ".." "..." "++" "+++"
-                         "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
-            (local--correct-symbol-bounds (local--ligature-list ligs #Xe100))))
-
-    ;; nice glyphs for haskell with hasklig
-    (defun local/set-hasklig-ligatures ()
-      "Add hasklig ligatures for use with prettify-symbols-mode."
-      (interactive)
-      (setq prettify-symbols-alist
-            (append local--hasklig-ligatures prettify-symbols-alist))
-      (prettify-symbols-mode))
-  #+end_src
-
-* Move to beginning of line
-
-  [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line][Source]]
-
-  The default behaviour of calling =C-a= is to jump directly to the
-  beginning of the line, although we probably would like to go to
-  the beginning of the text on the line (and skip all the
-  indentation whitespace).
-
-  #+begin_src emacs-lisp :tangle init.el
-    (defun local/smarter-move-beginning-of-line (arg)
-      "Move point back to indentation of beginning of line.
-
-       Move point to the first non-whitespace character on this line.
-       If point is already there, move to the beginning of the line.
-       Effectively toggle between the first non-whitespace character and
-       the beginning of the line.
-
-       If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-       point reaches the beginning or end of the buffer, stop there."
-       (interactive "^p")
-       (setq arg (or arg 1))
-
-       ;; Move lines first
-       (when (/= arg 1)
-         (let ((line-move-visual nil))
-           (forward-line (1- arg))))
-
-       (let ((orig-point (point)))
-         (back-to-indentation)
-         (when (= orig-point (point))
-           (move-beginning-of-line 1))))
-
-    ;; remap C-a to smarter-move-beginning-of-line
-    (global-set-key [remap move-beginning-of-line]
-                    'local/smarter-move-beginning-of-line)
-  #+end_src
-
 * EVIL mode
 
   I'm experimenting with EVIL mode in an attempt to learn Vi(m)
-  keybindings. Since I am used to quitting and escaping stuff by
-  =C-g= I want EVIL to transition to normal mode when I press =C-g=.
+  keybindings. Since I am used to quitting and escaping stuff by =C-g=
+  I want EVIL to transition to normal mode when I press =C-g=.
 
   #+begin_src emacs-lisp :tangle init.el
     (defun evil-keyboard-quit ()
@@ -917,7 +820,7 @@
       (keyboard-quit))
   #+end_src
 
-  When EVIL is loaded I therefore want bind =C-g= to my newly defined
+  When EVIL is loaded I therefore want bind =C-g= to
   ~evil-keyboard-quit~.
 
   #+begin_src emacs-lisp :tangle init.el
