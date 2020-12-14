@@ -36,40 +36,1103 @@
               #'(lambda () (setq gc-cons-threshold 800000)))
   #+end_src
 
-  Load the core configuration to setup stuff.
+* Emacs initialisation
+** System directories
+
+   I don't like keeping a lot of files visible in my =.emacs.d=
+   directory, so let's create a directory hierarchy for all files that
+   I'm not interested in.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defvar packages-dir (concat user-emacs-directory "packages/")
+       "Where package.el packages and cache are stored.")
+
+     (defvar include-dir (concat user-emacs-directory "include/")
+       "Where we store stuff that's not part of emacs packages or
+         other dependencies.")
+   #+end_src
+
+   We need to make sure that the directories are created before we try
+   to make Emacs store stuff there.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (dolist (dir (list packages-dir include-dir))
+       (unless (file-exists-p dir)
+         (make-directory dir t)))
+   #+end_src
+
+   We might want to read and store values to/from a file, these
+   routines lets us store Emacs lisp values and then retrieve them.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun print-to-file (filename data)
+       "Create FILENAME and store DATA inside it."
+       (with-temp-file filename
+         (prin1 data (current-buffer))))
+
+     (defun read-from-file (filename)
+       "Read Emacs Lisp variables from FILENAME."
+       (with-temp-buffer
+         (insert-file-contents filename)
+         (cl-assert (eq (point) (point-min)))
+         (read (current-buffer))))
+   #+end_src
+
+   Sometimes updating config files and creating them if they don't
+   exist is a common operation, such as activating a mode for the
+   first time.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun local--update-alist-file (file val)
+       "Update FILE with value VAL.
+     If FILE exists VAL will be appended to it's variable,
+     otherwise VAL will be stored in a new file FILE."
+       (if (file-exists-p file)
+           (let ((alist (read-from-file file)))
+             (add-to-list 'alist val)
+             (print-to-file file alist))
+         (print-to-file file val)))
+
+     (defun local--init-file-if-missing (file init-fn)
+       "Check if FILE exists and if not it creates it and initializes
+      it with the unary function INIT-FN."
+       (unless (file-exists-p file)
+         (print-to-file file (list (funcall init-fn)))))
+   #+end_src
+
+** Editing system files
+
+   When I edit system configuration files I might accidentally find
+   files as my regular user, even though I need sudo rights to edit
+   them. This advice makes =ido-find-file= automatically open it
+   through =TRAMP= as sudo if it is not writable by my user.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defadvice ido-find-file (after find-file-sudo activate)
+       "Find file as root if necessary."
+       (when (and buffer-file-name
+                  (not (file-writable-p buffer-file-name))
+                  (y-or-n-p "Do you want to edit as sudo?"))
+         (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+   #+end_src
+
+** Packages
+
+   First we need to activate the package system and add the melpa
+   repository, if it is not already added.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (unless (executable-find "nix")
+       (require 'package)
+       (setq package-user-dir (expand-file-name "elpa" packages-dir)
+             package-archives '(("gnu"   . "https://elpa.gnu.org/packages/")
+                                ("melpa" . "https://melpa.org/packages/")))
+       (package-initialize))
+
+     ;; We've already enabled the package system.
+     (setq package-enable-at-startup nil)
+   #+end_src
+
+   Make sure to reload the list of packages by calling =M-x
+   package-refresh-contents= when adding melpa for the first time.
+
+   I use =use-package= for keeping track of my packages, customising
+   them and load them lazily.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (unless (or (executable-find "nix")
+                (package-installed-p 'use-package))
+       (package-refresh-contents)
+       (package-install 'use-package))
+   #+end_src
+
+   Make sure that =use-package= is available for the byte-compiler.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (eval-when-compile
+       (require 'use-package))
+     (require 'bind-key)
+   #+end_src
+
+   If we're running on NixOS (or another system where Nix is
+   available), don't let =use-package= download and install packages
+   by itself.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (when (executable-find "nix")
+       ;; Simple dummy ensure function, it does nothing other than
+       ;; requiring the package.
+       (setq use-package-ensure-function
+             (lambda (pkg ensure state) (require pkg))))
+     (setq use-package-verbose t)
+   #+end_src
+
+   Delight is a nice package for hiding stuff in my modeline.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package delight :ensure t)
+   #+end_src
+
+   I found the =no-littering= package while browsing around, and
+   decided I'll give it a go rather than doing that work myself.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package no-littering :ensure t
+       :config
+       ;; Save automatic backups in var dir
+       (setq auto-save-file-name-transforms
+           `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+       ;; Save custom settings in etc dir
+       (setq custom-file (no-littering-expand-etc-file-name "custom.el")))
+   #+end_src
+
+* Editor
+** Encoding system
+   We would like Emacs to prefer UTF8 when reading ambiguous bit
+   strings.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (prefer-coding-system 'utf-8)
+     (when (display-graphic-p)
+       (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
+   #+end_src
+
+** Buffer and window navigation
+
+   Switching between windows can be a bit of a pain, just cycling
+   through them with =C-x o= is not really good enough. I therefore
+   use ~windmove~ and ~buffer-move~ to navigate amongst my buffers and
+   I have them bound to, in my opinion at least, sensible keybindings.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-keys ("<S-left>"  . windmove-left)
+                ("C-x <left>"  . windmove-left)
+                ("<S-up>"    . windmove-up)
+                ("C-x <up>"    . windmove-up)
+                ("<S-down>"  . windmove-down)
+                ("C-x <down>"  . windmove-down)
+                ("<S-right>" . windmove-right)
+                ("C-x <right>" . windmove-right))
+   #+end_src
+
+   Sometimes it is nice to be able to shrink and enlarge windows
+   easily and that is why I've bounded them to simple keys:
+
+   #+begin_src emacs-lisp :tangle init.el
+     (bind-keys ("S-C-<left>"  . shrink-window-horizontally)
+                ("S-C-<right>" . enlarge-window-horizontally)
+                ("S-C-<down>"  . shrink-window)
+                ("S-C-<up>"    . enlarge-window))
+   #+end_src
+
+   However, sometimes =C-x o= is exactly what we need, but then we can
+   extend it with =ace-window= to make it prompt us for a window when
+   there is a choice.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package ace-window :bind (("C-x o" . ace-window)))
+   #+end_src
+
+** Dired
+
+   Dired is file manager and browser built into Emacs and it is
+   efficient enough. By default it shows every file, even hidden ones,
+   which results in a lot of noise.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (require 'dired-x)
+     (setq dired-omit-files "^\\...+$")
+     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+     (define-key dired-mode-map (kbd "C-c h") 'dired-omit-mode)
+   #+end_src
+
+   Now, pressing =C-c h= will hide all hidden files in Dired.
+* Common programming settings
+
+  There are some common things I want to use for all every
+  programming language I code in. For instance I would like error
+  checking and auto-completion when it exists and line indicators
+  that shows if a line is modified, added or removed.
+
+  Worth noting is that I turn off Transient Mark mode in Common-Code
+  minor mode, because I like to use the tag stack for navigation (i.e
+  activating a mark = temporarily "bookmark" current position,
+  popping marker stack = jumping to last "bookmark). Besides the
+  original behaviour (i.e beginning a region) is still available on
+  =C-SPC C-SPC=.
 
   #+begin_src emacs-lisp :tangle init.el
-    ;; Load core setup file
-    (load (concat user-emacs-directory "core.el"))
+    (define-minor-mode common-code-mode
+      "A minor mode for enabling common minor modes and other
+      features for programming modes."
+      :lighter " Code"
+      :keymap (let (keymap (make-sparse-keymap))
+                (bind-key "C-c TAB" #'company-complete)
+                (bind-key "C-c RET" #'company-complete)
+                keymap)
+
+      (if (>= emacs-major-version 26)
+          (add-hook 'common-code-mode-hook 'display-line-numbers-mode)
+        (progn
+          (add-hook 'common-code-mode-hook 'linum-mode)))
+      (transient-mark-mode -1)
+      (setq company-idle-delay nil))
   #+end_src
 
-* Modules
-  [[core.][core.org]] defines a simple module system where the different features
-  reside in the =available-modules/MODULE/README.org= and these
-  README's then define a =module.el= file in the same directory.
-
-  First we add which modules that should be considered essential and
-  therefore always loaded.
+  Quite a few of the programming languages I work with supports LSP,
+  Microsoft's Language Server Protocol, and wiring it to my
+  =common-code-mode= makes sense to me.
 
   #+begin_src emacs-lisp :tangle init.el
-    (setq core/essential-modules '("git" "nix" "org"))
+    ;; LSP mode is loaded whenever #'lsp or #'lsp-deferred is called
+    (use-package lsp-mode :ensure t :commands (lsp lsp-deferred)
+      :hook (common-code-mode . #'lsp-deferred)
+      :config (use-package yasnippet :ensure t)) ;; Required by LSP mode
+    (use-package company-lsp :after lsp-mode :ensure t)
+    (use-package lsp-ui :after lsp-mode :commands (lsp-ui-mode)
+      :config (setq lsp-ui-flycheck-enable t     ;; Flycheck is nice
+                    lsp-ui-doc-enable nil        ;; LSP Ui Doc is not nice
+                    lsp-ui-sideline-enable nil)) ;; LSP Ui Sideline is not nice
   #+end_src
 
-  Customize =enabled-modules= to select which modules to load upon
-  startup.
-
-  We then load our modules before we let Emacs take over and start up
-  everything else.
+  I want trailing white space to be removed automatically before saving.
 
   #+begin_src emacs-lisp :tangle init.el
-    (add-hook 'after-init-hook #'core/load-modules t)
+    (add-hook 'common-code-mode-hook
+              (lambda () (add-hook 'before-save-hook
+                                   #'delete-trailing-whitespace)))
   #+end_src
 
-  Finally, we load our own settings now that the modules are loaded.
+  I want Emacs Lisp and C to use my fancy new minor mode.
 
   #+begin_src emacs-lisp :tangle init.el
-    (add-hook 'after-init-hook #'(lambda () (load (concat user-emacs-directory "personal.el"))) t)
+    (add-hook 'emacs-lisp-mode-hook 'common-code-mode)
+    (add-hook 'c-mode-hook 'common-code-mode)
   #+end_src
+
+  Install the needed packages in case they don't exists.
+
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Folding of outlinee
+    (use-package hs-minor-mode :hook common-code-mode :delight
+      :bind (("C-<tab>" . #'hs-toggle-hiding)))
+    ;; Automatically revert file when changed outside of Emacs
+    (use-package autorevert :delight auto-revert-mode
+      :hook (common-code-mode . auto-revert-mode))
+    ;; Navigate through subwords
+    (use-package subword-mode :hook common-code-mode :delight)
+    ;; Hightlight current line
+    (use-package hl-line-mode :hook common-code-mode :delight)
+    ;; Highlight TODO comments
+    (use-package hl-todo :ensure t :delight
+      :hook (common-code-mode . hl-todo-mode))
+    ;; Display column numbers in modeline
+    (use-package column-number-mode :hook common-code-mode :delight)
+    ;; Handle projects
+    (use-package projectile :ensure t :delight :init (projectile-mode)
+      :bind (("C-c p" . #'projectile-command-map)
+             ("M-p" . #'projectile-command-map)))
+    ;; Syntax highlighting and linting
+    (use-package flycheck :ensure t
+      :hook (common-code-mode . flycheck-mode))
+    ;; Hide modes in modeline
+    (use-package delight :ensure t)
+    ;; Auto completion
+    (use-package company :ensure t :delight
+      :hook (common-code-mode . company-mode))
+    ;; Rainbow delimiters
+    (use-package rainbow-delimiters :ensure t :delight
+      :hook (common-code-mode . rainbow-delimiters-mode))
+  #+end_src
+
+* Personal customization
+  Give my setup a personal touch.
+
+  #+begin_src emacs-lisp :tangle init.el
+     (setq user-full-name "Jacob Jonsson"
+       user-mail-address "jacob.t.jonsson@gmail.com")
+  #+end_src
+
+  I don't like to type more than necessary, so why do I need to type
+  1-2 extra letters when the first letter is enough?
+
+  #+begin_src emacs-lisp :tangle init.el
+     (fset 'yes-or-no-p 'y-or-n-p)
+  #+end_src
+
+  I've seen the splash screen enough times now, please don't show it
+  to me anymore.
+
+  #+begin_src emacs-lisp :tangle init.el
+     (setq inhibit-splash-screen t)
+  #+end_src
+
+  Now that I'm trying out Dvorak (Svorak A5) these changes makes the
+  transition between key layouts easier.
+
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Bind C-z to C-x
+    (global-set-key (kbd "C-z") ctl-x-map)
+
+    ;; Bind C-h to previous-line since C-p is no longer on the same half
+    ;; of the keyboard
+    (global-set-key (kbd "C-x C-h") help-map)
+    (global-set-key (kbd "C-h") 'previous-line)
+  #+end_src
+
+  When modifying a file Emacs creates a hidden lock symlink pointing
+  to the modified file. This is probably nice when you don't want to
+  accidentally open an unsaved and modified file in another Emacs
+  instance, but it also breaks tools that watches file modifications
+  in a directory. Therefore I choose to disable it.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq create-lockfiles nil)
+  #+end_src
+
+* Smex / IDO mode
+
+ Even though the standard Emacs interactive execute-extended-command
+ works in most cases I personally prefer =smex= and use more Ido
+ features.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (use-package smex :bind ("M-x" . smex) :ensure t
+     :config (setq ido-enable-flex-matching t
+                   ido-create-new-buffer t)
+     (ido-everywhere)
+     (ido-mode))
+ #+end_src
+
+ I sometimes use Imenu to quickly navigate inside the current file.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (define-key global-map (kbd "M-g M-m") #'imenu)
+ #+end_src
+
+* Org configuration
+
+  Begin the conditional loading:
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'org
+  #+end_src
+
+ I prefer to have my org files in my =~/personal=
+
+ #+begin_src emacs-lisp :tangle init.el
+   (setq org-directory (file-name-as-directory (concat (expand-file-name "~") "/personal"))
+         org-default-notes-file (concat org-directory "organizer.org"))
+ #+end_src
+
+ To keep track of my notes and tasks I add some states that my
+ notes and tasks could be in. For instance in my reading file,
+ items could be READ, READING or WANT-TO-READ. The letters inside
+ the parantheses defines keyboard shortcuts that can be used for
+ selecting the state of the item. The special characters ~@~ and
+ ~!~ defines how logging should be performed. Changing the state
+ of an item to a state with a ~@~ prompts you for a note and ~!~
+ tells org that it should automatically log timestamp of the state
+ change.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (setq org-todo-keywords
+         '((sequence "IDEAS(i)" "TODO(t)" "URGENT(u@/!)"
+                     "IN-PROGRESS(p!/@)" "WAITING(w@/@)"
+                     "|" "DONE(d@)" "CANCELLED(c@)")
+           (sequence "WANT-TO-READ(@)" "READING(!)" "|" "READ(@)")))
+ #+end_src
+
+ Many GTD-apps organize the tasks into projects and contexts, this
+ is of course doable inside =Org mode= as well.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (setq org-tag-alist '(("@work" . ?w) ("@study" . ?s) ("@coding" . ?c)
+                         ("@reading" . ?r) ("@home" . ?h)))
+ #+end_src
+
+ When I use org-gcal to synchronize my calendar with Emacs I want
+ those files to end up in my calendar.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (setq org-agenda-files (list org-directory (concat org-directory "/calendar")))
+ #+end_src
+
+** My files
+   :PROPERTIES:
+   :CUSTOM_ID: org-files
+   :END:
+
+   This is the structure of org files that I want to have and try to
+   maintain.
+
+   #<<org-files>>
+
+   | organizer.org         | Main org file, used for org-capture and tasks etc             |
+   | people.org            | People-related tasks                                          |
+   | journal.org.gpg       | Journal entries (encrypted)                                   |
+   | studies.org           | Chalmers-related tasks                                        |
+   | reading.org           | Org file for book notes                                       |
+   | watching.org          | Org file for stuff I'd like to watch                          |
+   | calendar/personal.org | Events and todos from my calendar                             |
+   | calendar/family.org   | Events and todos from my family calendar                      |
+   | calendar/chalmers.org | Events and todos from my current Chalmers course schedule     |
+
+** Structure templates
+
+  You can easily insert blocks in =Org mode= by typing ~<~ followed
+  by a letter in ~org-structure-template-alist~ and then pressing the TAB key.
+  So lets customize this alist a bit.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'org
+      (setq org-structure-template-alist
+            '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+              ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+              ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+              ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+              ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+              ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+              ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+              ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+              ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+              ("H" "#+html: " "<literal style=\"html\">?</literal>")
+              ("a" "#+begin_ascii\n?\n#+end_ascii")
+              ("A" "#+ascii: ")
+              ("i" "#+index: ?" "#+index: ?")
+              ("I" "#+include %file ?" "<include file=%file markup=\"?\">"))))
+  #+end_src
+
+** Org Capture templates
+
+  I want to start using =org-capture= to quickly add tasks and notes
+  and organize them in my life. First we define some handy templates
+  for more advanced capture types, like reading stuff and so
+  on.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defvar local/org-basic-task-template "* TODO %^{Task}
+      :PROPERTIES:
+      :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
+      :END:
+      Captured %<%Y-%m-%d %H:%M>
+      %?
+
+      %i\n"
+      "Basic task data.")
+
+    (defvar local/org-book-template "* WANT-TO-READ %^{Title}  %^g
+
+      %i%?
+
+      ,*Author(s)*: %^{Author}
+      ,*Review on:* %^t
+      %a %U\n"
+      "Book template.")
+
+    (defvar local/org-article-template "* WANT-TO-READ %^{Title}  %^g
+
+      ,*Author(s)*: %^{Author}
+
+      ,*Abstract*: %i%?
+
+      [[%l][Link to paper]]\n"
+      "Article template.")
+
+    (defvar local/org-blog-post-template "* WANT-TO-READ %^{Title}  %^g
+
+      %i
+
+      ,*Author(s)*: %^{Author}
+
+      [[%l][Link to blog post]]\n"
+      "Blog post template.")
+  #+end_src
+
+  Quick legend of the template escape codes:
+  - ~%^{PROMPT}~ - Org will prompt me with "PROMPT: " and the input
+    will replace the occurrance of ~%^{Task}~ in the template,
+  - ~%?~ - Org will put the cursor here so I can edit the capture
+    before refiling it,
+  - ~%i~ - Org will insert the marked region from before the capture
+    here,
+  - ~%a~ - Org will insert an annotation here (,
+  - ~%U~ - Org will insert an inactive timestamp here,
+  - ~%l~ - Org will insert a literal link here,
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'org
+      (setq org-capture-templates
+            `(("t" "Tasks" entry
+               (file+headline ,org-default-notes-file "Inbox")
+               ,local/org-basic-task-template)
+
+              ("tD" "Done - Task" entry
+               (file+headline ,org-default-notes-file "Inbox")
+               "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
+
+              ("T" "Quick task" entry
+               (file+headline ,org-default-notes-file "Inbox")
+               "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
+
+              ("i" "Interrupting task" entry
+               (file+headline ,org-default-notes-file "Inbox")
+               "* IN-PROGRESS %^{Task}\n" :clock-in :clock-resume)
+
+              ("P" "People task" entry
+               (file+headline ,(concat org-directory "people.org") "Tasks")
+               ,local/org-basic-task-template)
+
+              ("j" "Journal entry" plain
+               (file+datetree ,(concat org-directory "journal.org.gpg"))
+               "%K - %a\n%i\n%?\n" :unnarrowed t)
+
+              ("J" "Journal entry with date" plain
+               (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+               "%K - %a\n%i\n%?\n" :unnarrowed t)
+
+              ("s" "Journal entry with date, scheduled" entry
+               (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
+               "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
+
+              ("Pd" "Done - People" entry
+               (file+headline ,(concat org-directory "people.org") "Tasks")
+               "* DONE %^{Task}\nSCHEDULED: %^t\n%?\n")
+
+              ("q" "Quick note" item
+               (file+headline ,org-default-notes-file "Quick notes"))
+
+              ("B" "Book" entry
+               (file+headline ,(concat org-directory "reading.org") "Books")
+               ,local/org-book-template :clock-resume)
+
+              ("A" "Article" entry
+               (file+headline ,(concat org-directory "reading.org") "Articles")
+               ,local/org-article-template :clock-resume)
+
+              ("p" "Blog post" entry
+               (file+headline ,(concat org-directory "reading.org") "Blog entries")
+               ,local/org-blog-post-template :clock-resume)
+
+              ("l" "Bookmark" entry
+               (file+headline ,(concat org-directory "bookmarks.org")
+                              "Captured entries")
+               "* [[%^{Link}][%^{Title}]]\n\n%i%?\n")
+
+              ("n" "Daily note" table-line
+               (file+olp ,org-default-notes-file "Inbox")
+               "| %u | %^{Note} |\n" :immediate-finish t)
+
+              ("r" "Notes" entry
+               (file+datetree ,org-default-notes-file)
+               "* %?\n\n%i\n%U\n")
+
+              ;; Org protocol handlers
+              ("p" "Protocol" entry
+               (file+headline ,(concat org-directory "notes.org") "Inbox")
+               "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?\n")
+
+              ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
+               "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U\n")
+
+              ("L" "Protocol Link" entry
+               (file+headline ,(concat org-directory "notes.org") "Inbox")
+               "* %? [[%:link][%:description]] \nCaptured On: %U\n")))
+
+      (bind-key "C-M-r" 'org-capture))
+  #+end_src
+
+** Publishing
+
+  I want to be able to view my org documents so that I can see my
+  progress and what I've got left to do and so on. Org publish works
+  rather well for this scenario, even though I probably would like
+  do some automation on when it does the publishing.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'org
+      (require 'ox-html)
+      (setq org-publish-project-alist
+            `(("html"
+               :base-directory ,org-directory
+               :base-extension "org"
+               :publishing-directory "/ssh:jassob:/var/www/org"
+               :recursive t
+               :publishing-function org-html-publish-to-html)
+
+              ("org-static"
+               :base-directory ,org-directory
+               :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+               :publishing-directory "/ssh:jassob:/var/www/org"
+               :recursive t
+               :publishing-function org-publish-attachment)
+
+              ("archive"
+               :base-directory ,org-directory
+               :base-extension "org_archive"
+               :publishing-directory "/ssh:jassob:/var/www/org/archive"
+               :publishing-function org-html-publish-to-html)
+
+              ("web"
+               :base-directory ,(concat org-directory "web/")
+               :base-extension "org"
+               :publishing-directory "/ssh:jassob:/var/www/"
+               :publishing-function org-html-publish-to-html)
+
+              ("jassob" :components ("html" "archive" "org-static" "web"))
+              ("all" :components ("jassob"))))
+
+      (defun local/publish-jassob ()
+        "Publishes \"jassob\" project"
+        (interactive)
+        (org-publish "jassob" t))
+
+      (defun local/publish-chalmers ()
+        "Publishes \"chalmers\" project"
+        (interactive)
+        (org-publish "chalmers" t))
+
+      (defun local/publish-web ()
+        "Publishes \"web\" project"
+        (interactive)
+        (org-publish "web" t)))
+  #+end_src
+
+** Wrapping up
+
+   End conditional loading for org config
+
+   #+begin_src emacs-lisp :tangle init.el
+   )
+   #+end_src
+
+* Commands for local keymap
+
+  This is a command for finding the init file, for the times I need
+  to quickly edit my config for some reason. A command for editing
+  and untangling the org file.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun local--find-init-file ()
+      "Find the init file."
+      (interactive)
+      (find-file (concat user-emacs-directory "init.el")))
+
+    (defun local--find-org-file ()
+      "Find the org file."
+      (interactive)
+      (find-file (concat user-emacs-directory "README.org")))
+
+    (defun local--untangle-file ()
+      "Run org-babel-tangle on the org file, updating the init file."
+      (interactive)
+      (org-babel-tangle-file (concat user-emacs-directory "README.org")))
+
+    (defun local--eval-init-file ()
+      "Evaluate the init file again to refresh Emacs."
+      (interactive)
+      (progn
+        (local--untangle-file)
+        (load-file (concat user-emacs-directory "init.el"))))
+  #+end_src
+
+  I have defined a keymap for commands that I'd like to execute as if
+  they were defined in global keymap.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (bind-keys :prefix-map my-local-map
+               :prefix "M--"
+               :prefix-docstring "Commands I like to access quicker than through M-x"
+               ("g" . magit-status))
+
+    (bind-keys :prefix-map my-local-project-map
+               :prefix "M-- p"
+               :prefix-docstring "Project related commands"
+               ("d" . projectile-dired)
+               ("b" . projectile-switch-to-buffer)
+               ("p" . projectile-switch-project))
+
+    (bind-keys :prefix-map my-local-config-map
+               :prefix "M-- c"
+               :prefix-docstring "Config related commands"
+               ("f" . local--find-init-file)
+               ("s" . local--find-org-file)
+               ("t" . local--untangle-file)
+               ("e" . local--eval-init-file))
+  #+end_src
+
+* External programs
+
+  There are sometimes when I need to interact with external programs.
+  For instance I sometimes like to open URL's in a more capable
+  browser than EWW (even though it is very good!).
+
+  Firefox is currently my driver of choice.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (setq browse-url-browser-function 'browse-url-firefox
+          browse-url-new-window-flag  t)
+  #+end_src
+
+* Visual appearance
+
+  It is great that you can start out learning Emacs like a normal
+  person, using the mouse and navigating through the menu and tool
+  bar. However, on a smaller screen I find it a waste of screen
+  space (especially since I don't use the mouse myself).
+
+  #+begin_src emacs-lisp :tangle init.el
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+  #+end_src
+
+  I really like the =gruvbox-dark= theme. It's a dark theme with good
+  contrast and stuff.
+
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Load theme
+    (use-package gruvbox-theme :ensure t
+      :config (load-theme 'gruvbox-dark-hard t))
+  #+end_src
+
+  The fonts in =font-preferences= are the preferred fonts that I use
+  on my system, in descending order. The first font that is available
+  will be set as the main font for Emacs.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package cl-lib :ensure t)
+    (defun font-existsp (font)
+      "Check to see if the named FONT is available."
+      (if (null (x-list-fonts font)) nil t))
+
+    (defun font-avail (fonts)
+      "Finds the available fonts."
+      (cl-remove-if-not 'font-existsp fonts))
+
+    (defvar font-preferences
+      '( "Iosevka"
+         "Hasklig"
+         "Inconsolata"
+         "Fira Code"
+         "Source Code Pro"
+         "PragmataPro"))
+
+    (unless (eq window-system nil)
+      (let ((fonts (font-avail font-preferences)))
+        (unless (null fonts) (progn
+            (set-face-attribute 'default nil :font (car fonts))
+            (set-face-attribute 'default nil :weight 'medium)))))
+  #+end_src
+
+  When using Hasklig we can have some degree of ligature support and
+  this is configured below.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun local--correct-symbol-bounds (pretty-alist)
+      "Prepend a TAB character to each symbol in this alist,
+    this way compose-region called by prettify-symbols-mode
+    will use the correct width of the symbols
+    instead of the width measured by char-width."
+      (mapcar (lambda (el)
+                (setcdr el (string ?\t (cdr el)))
+                el)
+              pretty-alist))
+
+    (defun local--ligature-list (ligatures codepoint-start)
+      "Create an alist of strings to replace with
+    codepoints starting from codepoint-start."
+      (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
+        (-zip-pair ligatures codepoints)))
+
+    ;; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
+    (setq local--hasklig-ligatures
+          (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
+                         "==" "===" "==>" "=>" "=<<" "!!" ">>"
+                         ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
+                         "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
+                         "<<" "<<<" "<+>" ".." "..." "++" "+++"
+                         "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
+            (local--correct-symbol-bounds (local--ligature-list ligs #Xe100))))
+
+    ;; nice glyphs for haskell with hasklig
+    (defun local/set-hasklig-ligatures ()
+      "Add hasklig ligatures for use with prettify-symbols-mode."
+      (interactive)
+      (setq prettify-symbols-alist
+            (append local--hasklig-ligatures prettify-symbols-alist))
+      (prettify-symbols-mode))
+  #+end_src
+
+* Move to beginning of line
+
+  [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line][Source]]
+
+  The default behaviour of calling =C-a= is to jump directly to the
+  beginning of the line, although we probably would like to go to
+  the beginning of the text on the line (and skip all the
+  indentation whitespace).
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun local/smarter-move-beginning-of-line (arg)
+      "Move point back to indentation of beginning of line.
+
+       Move point to the first non-whitespace character on this line.
+       If point is already there, move to the beginning of the line.
+       Effectively toggle between the first non-whitespace character and
+       the beginning of the line.
+
+       If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+       point reaches the beginning or end of the buffer, stop there."
+       (interactive "^p")
+       (setq arg (or arg 1))
+
+       ;; Move lines first
+       (when (/= arg 1)
+         (let ((line-move-visual nil))
+           (forward-line (1- arg))))
+
+       (let ((orig-point (point)))
+         (back-to-indentation)
+         (when (= orig-point (point))
+           (move-beginning-of-line 1))))
+
+    ;; remap C-a to smarter-move-beginning-of-line
+    (global-set-key [remap move-beginning-of-line]
+                    'local/smarter-move-beginning-of-line)
+  #+end_src
+
+* EVIL mode
+
+  I'm experimenting with EVIL mode in an attempt to learn Vi(m)
+  keybindings. Since I am used to quitting and escaping stuff by
+  =C-g= I want EVIL to transition to normal mode when I press =C-g=.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun evil-keyboard-quit ()
+      "Keyboard quit and force normal state."
+      (interactive)
+      (and evil-mode (evil-force-normal-state))
+      (keyboard-quit))
+  #+end_src
+
+  When EVIL is loaded I therefore want bind =C-g= to my newly defined
+  ~evil-keyboard-quit~.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package evil :commands 'evil-mode
+      :bind
+      (:map evil-normal-state-map   ("C-g" . #'evil-keyboard-quit))
+      (:map evil-motion-state-map   ("C-g" . #'evil-keyboard-quit))
+      (:map evil-motion-state-map   ("C-g" . #'evil-keyboard-quit))
+      (:map evil-insert-state-map   ("C-g" . #'evil-keyboard-quit))
+      (:map evil-window-map         ("C-g" . #'evil-keyboard-quit))
+      (:map evil-operator-state-map ("C-g" . #'evil-keyboard-quit)))
+  #+end_src
+
+* Key stroke reminders
+
+ To help me remember my commands I use =guide-key=, which displays a
+ popup showing all the keybindings belonging to a prefix key.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (use-package guide-key :delight t :ensure t
+     :config
+     (setq guide-key/guide-key-sequence t
+           guide-key/popup-window-position 'bottom
+           guide-key/highlight-command-regexp ".*"
+           guide-key/idle-delay 2.0))
+ #+end_src
+
+* Tree-like file history
+
+  I find Emacs default undo behaviour rather intuitive (of course a
+  redo is just an undo of your last undo!), but I like being able to
+  visualise the timeline of my file. Enters =undo-tree-mode=!
+
+  #+begin_src emacs-lisp :tangle init.el
+    ;; Display local file history as tree of edits
+    (use-package undo-tree :ensure t :delight
+      :config
+      (setq undo-tree-visualizer-timestamps t
+            undo-tree-visualizer-diff t)
+      (global-undo-tree-mode))
+  #+end_src
+
+* Distraction free writing
+
+  Sometimes I just want to have my code (or whatever I'm currently
+  reading or writing) presented to me without any other distractions
+  and this is where =writeroom-mode= (found [[https://github.com/joostkremers/writeroom-mode][here]]) comes in to play.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package writeroom-mode :ensure t
+      :init (setq writeroom-width 120)
+      (add-hook 'writeroom-mode-hook (lambda () (display-line-numbers-mode -1)))
+      :bind (:map writeroom-mode-map
+                  ("C-c C-w <" . #'writeroom-decrease-width)
+                  ("C-c C-w >" . #'writeroom-increase-width)
+                  ("C-c C-w =" . #'writeroom-adjust-width)
+                  ("s-?" . nil)
+                  ("C-c C-w SPC" . #'writeroom-toggle-mode-line))
+            (:map global-map
+                  ("C-c C-M-w" . #'writeroom-mode)))
+  #+end_src
+
+* Handling character pairs
+
+ Emacs has a great package for dealing with characters that comes in
+ pairs, ~smartparens~. Smartparens lets us navigate with and
+ manipulate parens, quotes etc.
+
+ #+begin_src emacs-lisp :tangle init.el
+   (defmacro def-pairs (pairs)
+     "Define functions for pairing. PAIRS is an alist of (NAME . STRING)
+   conses, where NAME is the function name that will be created and
+   STRING is a single-character string that marks the opening character.
+
+     (def-pairs ((paren . \"(\")
+                 (bracket . \"[\"))
+
+   defines the functions WRAP-WITH-PAREN and WRAP-WITH-BRACKET,
+   respectively."
+     `(progn
+        ,@(cl-loop for (key . val) in pairs
+                collect
+                `(defun ,(read (concat
+                                "wrap-with-"
+                                (prin1-to-string key)
+                                "s"))
+                     (&optional arg)
+                   (interactive "p")
+                   (sp-wrap-with-pair ,val)))))
+
+   (def-pairs ((paren . "(")
+               (bracket . "[")
+               (brace . "{")
+               (single-quote . "'")
+               (double-quote . "\"")
+               (back-quote . "`")))
+
+   (use-package smartparens :ensure t :delight
+     :init (require 'smartparens-config)
+     :config (show-smartparens-global-mode t)
+     :bind (:map smartparens-mode-map
+                 (("C-M-a" . sp-beginning-of-sexp)
+                  ("C-M-e" . sp-end-of-sexp)
+
+                  ("C-<down>" . sp-down-sexp)
+                  ("C-<up>"   . sp-up-sexp)
+                  ("M-<down>" . sp-backward-down-sexp)
+                  ("M-<up>"   . sp-backward-up-sexp)
+
+                  ("C-M-f" . sp-forward-sexp)
+                  ("C-M-b" . sp-backward-sexp)
+
+                  ("C-M-n" . sp-next-sexp)
+                  ("C-M-p" . sp-previous-sexp)
+
+                  ("C-S-f" . sp-forward-symbol)
+                  ("C-S-b" . sp-backward-symbol)
+
+                  ("C-<right>" . sp-forward-slurp-sexp)
+                  ("M-<right>" . sp-forward-barf-sexp)
+                  ("C-<left>"  . sp-backward-slurp-sexp)
+                  ("M-<left>"  . sp-backward-barf-sexp)
+
+                  ("C-M-t" . sp-transpose-sexp)
+                  ("C-M-k" . sp-kill-sexp)
+                  ("C-k"   . sp-kill-hybrid-sexp)
+                  ("M-k"   . sp-backward-kill-sexp)
+                  ("C-M-w" . sp-copy-sexp)
+                  ("C-M-d" . delete-sexp)
+
+                  ("M-<backspace>" . backward-kill-word)
+                  ("C-<backspace>" . sp-backward-kill-word)
+                  ([remap sp-backward-kill-word] . backward-kill-word)
+
+                  ("M-[" . sp-backward-unwrap-sexp)
+                  ("M-]" . sp-unwrap-sexp)
+
+                  ("C-x C-t" . sp-transpose-hybrid-sexp)
+
+                  ("C-c C-w ("  . wrap-with-parens)
+                  ("C-c C-w ["  . wrap-with-brackets)
+                  ("C-c C-w {"  . wrap-with-braces)
+                  ("C-c C-w '"  . wrap-with-single-quotes)
+                  ("C-c C-w \"" . wrap-with-double-quotes)
+                  ("C-c C-w _"  . wrap-with-underscores)
+                  ("C-c C-w `"  . wrap-with-back-quotes))))
+ #+end_src
+
+* Mail configuration
+
+  Now let's continue to set up my maildir directories (which are
+  populated by the isync configuration in
+  https://github.com/Jassob/dotfiles/blob/master/nix/.config/nixpkgs/home.nix#L342)
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'mu4e
+      (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/personal")
+            mu4e-refile-folder "/all"
+            mu4e-drafts-folder "/drafts"
+            mu4e-sent-folder "/sent"
+            mu4e-trash-folder "/trash"))
+  #+end_src
+
+  Then we continue with setting up shortcuts for moving and jumping
+  between maildirs.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'mu4e
+      (setq mu4e-maildir-shortcuts '(("/Inbox" . ?i)
+                                     ("/reading" . ?r)
+                                     ("/receipts" . ?R)
+                                     ("/all" . ?a)
+                                     ("/starred" . ?s)
+                                     ("/Chalmers" . ?c))))
+  #+end_src
+
+  Let's also add some bookmarks (stored searches bound to a key).
+  Most of the original bookmarks does not filter the trashed messages
+  and thus a lot of deleted messages are shown.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'mu4e
+      (setq mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
+                             ("flag:flagged AND NOT flag:trashed" "Starred messages" ?s)
+                             ("date:today..now AND NOT flag:trashed" "Today's messages" ?t)
+                             ("date:7d..now AND NOT flag:trashed" "Last 7 days" ?w)
+                             ("flag:trashed" "Deleted messages" ?d)
+                             ("mime:image/*" "Messages with images" ?p))))
+  #+end_src
+
+* Secrets and custom settings
+
+  I store more sensitive data in =~/.emacs.d/etc/.secrets.el= so I
+  easily can store my main configuration in a public version control
+  system.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (load (concat (no-littering-expand-etc-file-name ".secrets.el")) t)
+    (load (concat (no-littering-expand-etc-file-name "custom.el")) t)
+  #+end_src
+
+* Eshell
+
+  I found =Eshell smart display= on the [[https://masteringemacs.org/article/complete-guide-mastering-][Eshell article on Mastering
+  Emacs]] and I think it is pretty neat! It lets me review a failing
+  command and edit the command line to fix the error.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (require 'eshell)
+    (require 'em-smart)
+    (setq eshell-where-to-jump 'begin)
+    (setq eshell-review-quick-commands nil)
+    (setq eshell-smart-space-goes-to-end t)
+  #+end_src
+
 
 * TODO Add linters and formatters to common-code-mode
   Variable =buffer-file-name= could be used together with a asynch

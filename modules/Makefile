@@ -1,5 +1,3 @@
-CC:=emacs --batch --eval "(require 'org)"
-
 # Get all module.el files
 readmes := $(wildcard */README.org)
 modules := $(patsubst %/README.org,%/module.el,$(readmes))
@@ -9,9 +7,10 @@ all: $(modules)
 
 # Implicit rule to create the module.el from the README.org
 %/module.el: %/README.org
-	-echo "Tangling $<"
-	-$(CC) --eval '(org-babel-tangle-file "$<")'
+	echo "Tangling $<"
+	emacs --batch --eval "(require 'org)" \
+                      --eval '(org-babel-tangle-file "$<")'
 
 # Remove
 clean:
-	-rm $(modules) > /dev/null 2>&1
+	rm $(modules) > /dev/null 2>&1
