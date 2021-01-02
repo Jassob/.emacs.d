@@ -383,6 +383,40 @@
                   ("M-<mouse-1>" . mc/add-cursor-on-click)))
   #+end_src
 
+** Formatting
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun my/format-code ()
+       "Format buffer using formatter in assoc-list prog-mode-formatters..
+
+     prog-mode-formatters is an assoc-list on the form 'major-mode
+     . formatting-call' and formatting-call is invoked with '(funcall).'
+     "
+       (interactive)
+       (if (not (boundp 'prog-mode-formatters))
+           (warn "No formatters configured")
+         (let ((formatter (assoc major-mode prog-mode-formatters)))
+           (if (eq nil formatter)
+               (warn "No formatter configured for mode %s" major-mode)
+             (funcall (cdr formatter))))))
+
+     ;; Bind it to our formatting key-binding
+     (define-key prog-mode-map (kbd "C-c C-f") 'my/format-code)
+   #+end_src
+
+   For C and Java we want to use Clang-format for formatting, Go and
+   Rust will continue to use their respective *fmt binaries.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package clang-format :commands 'clang-format-buffer :ensure t)
+
+     (defvar prog-mode-formatters '((c-mode . clang-format-buffer)
+                                    (java-mode . clang-format-buffer)
+                                    (go-mode . gofmt)
+                                    (rust-mode . rust-format-buffer))
+       "Alist containing major-mode and formatter pairs.")
+   #+end_src
+
 ** Version control
 
    I mostly use [[https://git-scm.com/][Git]] to handle my version control and while it
@@ -445,7 +479,6 @@
                          (add-hook 'before-save-hook #'lsp-format-buffer t t)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t))))
       :bind (:map go-mode-map
-                  ("C-c C-f" . gofmt)
                   ("C-c C-k" . godoc)))
   #+end_src
 
