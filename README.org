@@ -721,15 +721,12 @@
 
    #<<org-files>>
 
-   | organizer.org         | Main org file, used for org-capture and tasks etc             |
-   | people.org            | People-related tasks                                          |
-   | journal.org.gpg       | Journal entries (encrypted)                                   |
-   | studies.org           | Chalmers-related tasks                                        |
-   | reading.org           | Org file for book notes                                       |
-   | watching.org          | Org file for stuff I'd like to watch                          |
-   | calendar/personal.org | Events and todos from my calendar                             |
-   | calendar/family.org   | Events and todos from my family calendar                      |
-   | calendar/chalmers.org | Events and todos from my current Chalmers course schedule     |
+   | organizer.org   | Main org file, used for org-capture and tasks etc |
+   | people.org      | People-related tasks                              |
+   | journal.org.gpg | Journal entries (encrypted)                       |
+   | studies.org     | Chalmers-related tasks                            |
+   | reading.org     | Org file for book notes                           |
+   | watching.org    | Org file for stuff I'd like to watch              |
 
 ** Structure templates
 
