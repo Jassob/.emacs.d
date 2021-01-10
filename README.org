@@ -674,7 +674,7 @@
  I prefer to have my org files in my =~/personal=
 
  #+begin_src emacs-lisp :tangle init.el
-   (setq org-directory (file-name-as-directory (concat (expand-file-name "~") "/personal"))
+   (setq org-directory (file-name-as-directory (expand-file-name "~/personal"))
          org-default-notes-file (concat org-directory "organizer.org"))
  #+end_src
 
@@ -759,48 +759,7 @@
 ** Org Capture templates
 
   I want to start using =org-capture= to quickly add tasks and notes
-  and organize them in my life. First we define some handy templates
-  for more advanced capture types, like reading stuff and so
-  on.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (defvar local/org-basic-task-template "* TODO %^{Task}
-      :PROPERTIES:
-      :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
-      :END:
-      Captured %<%Y-%m-%d %H:%M>
-      %?
-
-      %i\n"
-      "Basic task data.")
-
-    (defvar local/org-book-template "* WANT-TO-READ %^{Title}  %^g
-
-      %i%?
-
-      ,*Author(s)*: %^{Author}
-      ,*Review on:* %^t
-      %a %U\n"
-      "Book template.")
-
-    (defvar local/org-article-template "* WANT-TO-READ %^{Title}  %^g
-
-      ,*Author(s)*: %^{Author}
-
-      ,*Abstract*: %i%?
-
-      [[%l][Link to paper]]\n"
-      "Article template.")
-
-    (defvar local/org-blog-post-template "* WANT-TO-READ %^{Title}  %^g
-
-      %i
-
-      ,*Author(s)*: %^{Author}
-
-      [[%l][Link to blog post]]\n"
-      "Blog post template.")
-  #+end_src
+  and organize them in my life.
 
   Quick legend of the template escape codes:
   - ~%^{PROMPT}~ - Org will prompt me with "PROMPT: " and the input
@@ -816,81 +775,46 @@
   #+begin_src emacs-lisp :tangle init.el
     (with-eval-after-load 'org
       (setq org-capture-templates
-            `(("t" "Tasks" entry
-               (file+headline ,org-default-notes-file "Inbox")
-               ,local/org-basic-task-template)
-
-              ("tD" "Done - Task" entry
-               (file+headline ,org-default-notes-file "Inbox")
-               "* DONE %^{Task}\nSCHEDULED: %^t\n%?")
-
-              ("T" "Quick task" entry
-               (file+headline ,org-default-notes-file "Inbox")
-               "* TODO %^{Task}\nSCHEDULED: %t\n" :immediate-finish t)
+            `(("t" "Tasks" entry (file+headline ,org-default-notes-file "Inbox")
+               "* TODO %^{Task}\nCaptured %<%Y-%m-%d %H:%M> %a\n%?\n\n%i\n")
 
               ("i" "Interrupting task" entry
                (file+headline ,org-default-notes-file "Inbox")
-               "* IN-PROGRESS %^{Task}\n" :clock-in :clock-resume)
-
-              ("P" "People task" entry
-               (file+headline ,(concat org-directory "people.org") "Tasks")
-               ,local/org-basic-task-template)
+               "* IN-PROGRESS %^{Task}\n" :clock-in)
 
               ("j" "Journal entry" plain
                (file+datetree ,(concat org-directory "journal.org.gpg"))
-               "%K - %a\n%i\n%?\n" :unnarrowed t)
+               "%K - %a\n%i\n%?\n")
 
               ("J" "Journal entry with date" plain
                (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-               "%K - %a\n%i\n%?\n" :unnarrowed t)
-
-              ("s" "Journal entry with date, scheduled" entry
-               (file+datetree+prompt ,(concat org-directory "journal.org.gpg"))
-               "* \n%K - %a\n%t\t%i\n%?\n" :unnarrowed t)
-
-              ("Pd" "Done - People" entry
-               (file+headline ,(concat org-directory "people.org") "Tasks")
-               "* DONE %^{Task}\nSCHEDULED: %^t\n%?\n")
-
-              ("q" "Quick note" item
-               (file+headline ,org-default-notes-file "Quick notes"))
+               "%K - %a\n%i\n%?\n")
 
               ("B" "Book" entry
                (file+headline ,(concat org-directory "reading.org") "Books")
-               ,local/org-book-template :clock-resume)
+               "* WANT-TO-READ %^{Title}  %^g\n\n%i%?\n\n*Author(s)*: %^{Author}\n*Review on:* %^t\n%a %U\n")
 
               ("A" "Article" entry
                (file+headline ,(concat org-directory "reading.org") "Articles")
-               ,local/org-article-template :clock-resume)
+               "* WANT-TO-READ %^{Title}  %^g\n\n*Author(s)*: %^{Author}\n\n*Abstract*: %i%?\n\n[[%l][Link to paper]]\n")
 
               ("p" "Blog post" entry
                (file+headline ,(concat org-directory "reading.org") "Blog entries")
-               ,local/org-blog-post-template :clock-resume)
+               "* WANT-TO-READ %^{Title}  %^g\n\n%i\n\n*Author(s)*: %^{Author}\n\n[[%l][Link to blog post]]\n")
 
               ("l" "Bookmark" entry
-               (file+headline ,(concat org-directory "bookmarks.org")
-                              "Captured entries")
+               (file+headline ,(concat org-directory "bookmarks.org") "Captured entries")
                "* [[%^{Link}][%^{Title}]]\n\n%i%?\n")
 
-              ("n" "Daily note" table-line
-               (file+olp ,org-default-notes-file "Inbox")
-               "| %u | %^{Note} |\n" :immediate-finish t)
-
-              ("r" "Notes" entry
-               (file+datetree ,org-default-notes-file)
-               "* %?\n\n%i\n%U\n")
+              ("n" "Notes" entry (file+datetree ,org-default-notes-file) "* %?\n\n%i\n%U\n")
 
               ;; Org protocol handlers
-              ("p" "Protocol" entry
-               (file+headline ,(concat org-directory "notes.org") "Inbox")
-               "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?\n")
+              ("pp" "Protocol Blog post" entry
+               (file+headline ,(concat org-directory "reading.org") "Blog entries")
+               "* WANT-TO-READ %:description  %^g\n\n%i\n\n*Author(s)*: %^{Author}\n\n[[%l][Link to blog post]]\n")
 
-              ("c" "Protocol Link" entry (file+headline ,org-default-notes-file "Inbox")
-               "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U\n")
-
-              ("L" "Protocol Link" entry
-               (file+headline ,(concat org-directory "notes.org") "Inbox")
-               "* %? [[%:link][%:description]] \nCaptured On: %U\n")))
+              ("c" "Protocol selection" entry (file+headline ,org-default-notes-file "Inbox")
+               "* [[%:link][%:description]] \n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?\n\nCaptured: %U\n")))
 
       (bind-key "C-M-r" 'org-capture))
   #+end_src
