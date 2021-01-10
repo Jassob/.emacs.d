@@ -1001,44 +1001,160 @@
 
 * Mail configuration
 
-  Now let's continue to set up my maildir directories (which are
+  Mu4e is a great mail user agent for Emacs, which lets us read,
+  manage and compose mail.
+
+  Mu4e requires that the mail indexer *mu* is installed (and is
+  usually installed in the same package). For Ubuntu/Debian distros
+  the package is installed with:
+
+  #+begin_src shell
+    sudo apt install mu4e
+  #+end_src
+
+  After that we need to make Emacs able to find mu4e package:
+
+  #+begin_src emacs-lisp :tangle init.el
+    (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e/")
+  #+end_src
+
+  Now let's continue to set up my maildir directory (which is
   populated by the isync configuration in
   https://github.com/Jassob/dotfiles/blob/master/nix/.config/nixpkgs/home.nix#L342)
+  and some other settings:
 
   #+begin_src emacs-lisp :tangle init.el
     (with-eval-after-load 'mu4e
-      (setq mu4e-maildir (concat "/home/" (user-login-name) "/.mail/personal")
-            mu4e-refile-folder "/all"
-            mu4e-drafts-folder "/drafts"
-            mu4e-sent-folder "/sent"
-            mu4e-trash-folder "/trash"))
+      (setq mu4e-maildir (expand-file-name "~/.mail/")
+            mu4e-get-mail-command "mbsync -a"
+
+            ;; prefer plain-text mail
+            mu4e-view-prefer-html nil
+            ;; enable inline images
+            mu4e-view-show-images t
+            ;; show full addresses in view message (instead of just names)
+            ;; toggle per name with M-RET
+            mu4e-view-show-addresses 't
+
+            mu4e-update-interval nil
+            mu4e-headers-auto-update t
+
+            ;; every new email composition gets its own frame
+            mu4e-compose-in-new-frame t
+            mu4e-compose-signature-auto-include nil
+            mu4e-compose-format-flowed t
+            mu4e-compose-dont-reply-to-self t
+            mu4e-compose-context-policy 'always-ask
+
+            mu4e-context-policy 'pick-first
+
+            message-kill-buffer-on-exit t
+
+            ;; important to get mu4e to play with mbsync
+            mu4e-change-filenames-when-moving t
+            ;; don't save message to Sent Messages, IMAP takes care of this
+            mu4e-sent-messages-behavior 'delete
+
+            mu4e-confirm-quit nil)
+
+      ;; to view selected message in the browser, no signin, just html mail
+      (add-to-list 'mu4e-view-actions '("ViewInBrowser" . mu4e-action-view-in-browser) t)
+
+      ;; use imagemagick, if available
+      (when (fboundp 'imagemagick-register-types)
+        (imagemagick-register-types))
+
+      (add-hook 'mu4e-view-mode-hook #'visual-line-mode)
+
+      ;; increase luminesence for dark themes
+      (setq shr-color-visible-luminance-min 80))
   #+end_src
 
-  Then we continue with setting up shortcuts for moving and jumping
-  between maildirs.
+  ~org-mu4e~ is a package that let's us format the messages in
+  org-mode and then convert them to HTML.
 
   #+begin_src emacs-lisp :tangle init.el
     (with-eval-after-load 'mu4e
-      (setq mu4e-maildir-shortcuts '(("/Inbox" . ?i)
-                                     ("/reading" . ?r)
-                                     ("/receipts" . ?R)
-                                     ("/all" . ?a)
-                                     ("/starred" . ?s)
-                                     ("/Chalmers" . ?c))))
+      (require 'org-mu4e)
+      ;; convert org mode to HTML automatically
+      (setq org-mu4e-convert-to-html t
+            ;;store link to message if in header view, not to header query
+            org-mu4e-link-query-in-headers-mode nil))
+
   #+end_src
 
-  Let's also add some bookmarks (stored searches bound to a key).
-  Most of the original bookmarks does not filter the trashed messages
-  and thus a lot of deleted messages are shown.
+  When we compose new messages we want to let the recepient's email
+  reader break the lines and not force our line width upon them. We
+  also want to enable the spell checker.
 
   #+begin_src emacs-lisp :tangle init.el
     (with-eval-after-load 'mu4e
-      (setq mu4e-bookmarks '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
-                             ("flag:flagged AND NOT flag:trashed" "Starred messages" ?s)
-                             ("date:today..now AND NOT flag:trashed" "Today's messages" ?t)
-                             ("date:7d..now AND NOT flag:trashed" "Last 7 days" ?w)
-                             ("flag:trashed" "Deleted messages" ?d)
-                             ("mime:image/*" "Messages with images" ?p))))
+      (require 'org-mime)
+      (add-hook 'mu4e-compose-mode-hook
+                (lambda ()
+                  (visual-line-mode)
+                  (org-mu4e-compose-org-mode)
+                  (use-hard-newlines -1)
+                  (flyspell-mode))))
+  #+end_src
+
+  Both my mail accounts are rather similar, so I'll define a function to reduce the repetition needed to define them:
+
+  #+begin_src emacs-lisp :tangle init.el
+    (defun my/make-mu4e-context (name email-address maildir &rest vars)
+        "Create a mu4e context called NAME based in MAILDIR and uses
+    EMAIL-ADDRESS.
+
+    - NAME is shown when switching between different contexts and the first letter is also the shortcut.
+    - EMAIL-ADDRESS is used for authenticating with both IMAP and SMTP servers.
+    - MAILDIR is the subdirectory inside mu4e-maildir that contains the mail for this account, it should start with a /.
+    "
+        (make-mu4e-context
+              :name name
+              :enter-func (lambda () (mu4e-message (concat "Entering context " name)))
+              :leave-func (lambda () (mu4e-message (concat "Leaving context " name)))
+              :match-func (lambda (msg)
+                            (when msg
+                              (mu4e-message-contact-field-matches msg '(:from :to :cc :bcc) user-mail-address)))
+              :vars `((user-mail-address  . ,email-address)
+                      (mu4e-sent-folder   . ,(concat maildir "/sent"))
+                      (mu4e-drafts-folder . ,(concat maildir "/sent"))
+                      (mu4e-trash-folder  . ,(concat maildir "/trash"))
+                      (mu4e-refile-folder . ,(concat maildir "/all"))
+                      (mu4e-maildir-shortcuts . ((,(concat maildir "/Inbox")   . ?i)
+                                                 (,(concat maildir "/all")     . ?a)
+                                                 (,(concat maildir "/starred") . ?s)))
+                      (mu4e-bookmarks . ((,(concat "flag:unread AND NOT flag:trashed maildir:" maildir "*") "Unread messages" ?u)
+                                         ("flag:unread AND NOT flag:trashed" "All unread messages" ?a)
+                                         ("flag:flagged AND NOT flag:trashed" "Starred messages" ?s)
+                                         ("date:today..now AND NOT flag:trashed" "Today's messages" ?t)
+                                         ("date:7d..now AND NOT flag:trashed" "Last 7 days" ?7)
+                                         ("flag:trashed" "Deleted messages" ?d)
+                                         ("mime:image/*" "Messages with images" ?i)))
+                      (message-send-mail-function . smtpmail-send-it)
+                      (smtpmail-queue-dir . ,(concat mu4e-maildir maildir "/queue/cur"))
+                      (smtpmail-smtp-user . ,email-address)
+                      (smtpmail-starttls-credentials . (("smtp.gmail.com" 587 nil nil)))
+                      (smtpmail-auth-credentials . (expand-file-name "~/.authinfo.gpg"))
+                      (smtpmail-default-smtp-server . "smtp.gmail.com")
+                      (smtpmail-smtp-server . "smtp.gmail.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-debug-info . t)
+                      (smtpmail-debug-verbose . t))))
+  #+end_src
+
+  Now let's add the accounts:
+
+  #+begin_src emacs-lisp :tangle init.el
+    (with-eval-after-load 'mu4e
+      (require 'smtpmail)
+      (setq smtpmail-queue-mail nil)
+
+      (setq mu4e-contexts
+            (list
+             (my/make-mu4e-context "personal" my/personal-email-address "/personal")
+             (my/make-mu4e-context "work" my/work-email-address "/work"))))
+
   #+end_src
 
 * Reading and editing documents
