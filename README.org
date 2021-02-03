@@ -438,6 +438,7 @@
                          (add-hook 'before-save-hook #'lsp-format-buffer t t)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t))))
       :bind (:map go-mode-map
+                  ("C-c C-f" . format-code) ;; otherwise binds to go-goto* functions
                   ("C-c C-k" . godoc)))
   #+end_src
 
