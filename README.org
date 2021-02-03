@@ -419,8 +419,10 @@
    I want to format Rust buffers on save:
 
    #+begin_src emacs-lisp :tangle init.el
-    (use-package rust-mode :ensure t :init (setq rust-format-on-save t)
-      :hook (rust-mode . lsp-deferred))
+     (use-package rust-mode :ensure t :hook (rust-mode . lsp-deferred)
+       :init (setq rust-format-on-save t
+                   rust-format-show-buffer nil    ;; don't popup error buffer
+                   rust-format-goto-problem nil)) ;; don't move point to error
   #+end_src
 
 ** Golang
