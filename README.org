@@ -258,7 +258,6 @@
                 (lookup-key lsp-mode-map (kbd "s-l"))))
 
     (use-package yasnippet :after lsp-mode :hook (lsp-mode . yas-minor-mode) :ensure t)
-    (use-package company-lsp :after lsp-mode :ensure t)
     (use-package lsp-ui :after lsp-mode :ensure t
       :hook (lsp-mode . lsp-ui-mode)
       :bind (:map lsp-mode-map ("C-x C-h ." . lsp-ui-doc-show))
