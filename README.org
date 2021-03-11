@@ -764,6 +764,14 @@
       (bind-key "C-M-r" 'org-capture))
   #+end_src
 
+  I then want to be able to capture stuff from the web using
+  =org-protocol=.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (require 'org-protocol)
+    (setq org-protocol-protocol-alist org-protocol-protocol-alist-default)
+  #+end_src
+
 ** Publishing
 
   I want to be able to view my org documents so that I can see my
