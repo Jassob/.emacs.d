@@ -288,7 +288,14 @@
      (define-key input-decode-map "\[1;4B" [S-M-down])
    #+end_src
 
+** Interacting with X clipboard in terminal
 
+   When I run Emacs in terminal mode I still want to be able to copy
+   stuff to the X clipboard. =xclip= is a package that does just that.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package xclip :ensure t :init (xclip-mode t))
+   #+end_src
 
 * Coding settings
 
