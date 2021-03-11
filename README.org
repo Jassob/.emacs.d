@@ -21,7 +21,7 @@
   2. Run ~make all~ in =~/.emacs.d/
   3. Profit!
 
-* Initialization
+* Emacs initialisation
 
   Before doing anything else, let us disable the garbage collector
   during setup, this saves us some time and we're not likely to run in
