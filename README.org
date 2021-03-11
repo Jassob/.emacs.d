@@ -327,10 +327,12 @@
 
   #+begin_src emacs-lisp :tangle init.el
     ;; LSP mode is loaded whenever #'lsp or #'lsp-deferred is called
-    (use-package lsp-mode :ensure t :commands (lsp lsp-deferred)
+    (use-package lsp-mode :ensure t :commands (lsp-deferred)
       :hook (prog-mode . lsp-deferred)
-      :init (setq lsp-keymap-prefix "C-c l")
-      :config (define-key lsp-signature-mode-map (kbd "M-n") nil))
+      :bind (:map lsp-signature-mode-map ("M-n" . nil))
+      :config (define-key lsp-mode-map (kbd "C-c l")
+                (lookup-key lsp-mode-map (kbd "s-l"))))
+
     (use-package yasnippet :after lsp-mode :hook (lsp-mode . yas-minor-mode) :ensure t)
     (use-package company-lsp :after lsp-mode :ensure t)
     (use-package lsp-ui :after lsp-mode :ensure t
