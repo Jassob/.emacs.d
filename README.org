@@ -394,23 +394,47 @@
 
 ** Formatting
 
+   I want to be able to easily run a formatter on my code since I
+   don't want to have to think about coding style.
+
    #+begin_src emacs-lisp :tangle init.el
-     (defun my/format-code ()
+     (defun format-with-command (command)
+       "Runs COMMAND on buffer and replaces its content with the output.
+
+     Used for integrating formatters that do not have elisp packages."
+       (shell-command-on-region
+        (point-min)      ;; starting point in buffer
+        (point-max)      ;; ending point in buffer
+        command          ;; command to run in buffer
+        (current-buffer) ;; output buffer
+        t                ;; replace contents
+        (concat "*Custom formatter " command " Error Buffer*")
+        t))              ;; show error buffer
+
+     (defun format-with-command-query ()
+       "Queries the user for a command to use as a formatter"
+       (interactive)
+       (format-with-command (read-from-minibuffer "Formatter command: ")))
+   #+end_src
+
+   #+begin_src emacs-lisp :tangle init.el
+     (defun format-code (ask?)
        "Format buffer using formatter in assoc-list prog-mode-formatters..
 
      prog-mode-formatters is an assoc-list on the form 'major-mode
      . formatting-call' and formatting-call is invoked with '(funcall).'
      "
-       (interactive)
-       (if (not (boundp 'prog-mode-formatters))
-           (warn "No formatters configured")
+       (interactive "P")
+       (if (or (not (boundp 'prog-mode-formatters))
+               ask?)
+           (format-with-command-query)
          (let ((formatter (assoc major-mode prog-mode-formatters)))
            (if (eq nil formatter)
-               (warn "No formatter configured for mode %s" major-mode)
+               (format-with-command-query)
              (funcall (cdr formatter))))))
 
      ;; Bind it to our formatting key-binding
-     (define-key prog-mode-map (kbd "C-c C-f") 'my/format-code)
+     (define-key prog-mode-map (kbd "C-c C-f") 'format-code)
    #+end_src
 
    For C and Java we want to use Clang-format for formatting, Go and
