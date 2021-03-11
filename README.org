@@ -150,7 +150,7 @@
    there is a choice.
 
    #+begin_src emacs-lisp :tangle init.el
-     (use-package ace-window :bind (("C-x o" . ace-window)))
+     (use-package ace-window :ensure t :bind (("C-x o" . ace-window)))
    #+end_src
 
 ** Dired
