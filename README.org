@@ -34,31 +34,6 @@
               #'(lambda () (setq gc-cons-threshold 800000)))
   #+end_src
 
-* Emacs initialisation
-** System directories
-
-   I don't like keeping a lot of files visible in my =.emacs.d=
-   directory, so let's create a directory hierarchy for all files that
-   I'm not interested in.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (defvar packages-dir (concat user-emacs-directory "packages/")
-       "Where package.el packages and cache are stored.")
-
-     (defvar include-dir (concat user-emacs-directory "include/")
-       "Where we store stuff that's not part of emacs packages or
-         other dependencies.")
-   #+end_src
-
-   We need to make sure that the directories are created before we try
-   to make Emacs store stuff there.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (dolist (dir (list packages-dir include-dir))
-       (unless (file-exists-p dir)
-         (make-directory dir t)))
-   #+end_src
-
 ** Editing system files
 
    When I edit system configuration files I might accidentally find
@@ -132,20 +107,6 @@
      (use-package delight :ensure t)
    #+end_src
 
-   I found the =no-littering= package while browsing around, and
-   decided I'll give it a go rather than doing that work myself.
-
-   #+begin_src emacs-lisp :tangle init.el
-     (use-package no-littering :ensure t
-       :config
-       ;; Save automatic backups in var dir
-       (setq auto-save-file-name-transforms
-           `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-
-       ;; Save custom settings in etc dir
-       (setq custom-file (no-littering-expand-etc-file-name "custom.el")))
-   #+end_src
-
 ** Encoding system
    We would like Emacs to prefer UTF8 when reading ambiguous bit
    strings.
@@ -206,43 +167,6 @@
    #+end_src
 
    Now, pressing =C-c h= will hide all hidden files in Dired.
-** Move to beginning of line
-
-  [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line][Source]]
-
-  The default behaviour of calling =C-a= is to jump directly to the
-  beginning of the line, although we probably would like to go to
-  the beginning of the text on the line (and skip all the
-  indentation whitespace).
-
-  #+begin_src emacs-lisp :tangle init.el
-    (defun local/smarter-move-beginning-of-line (arg)
-      "Move point back to indentation of beginning of line.
-
-       Move point to the first non-whitespace character on this line.
-       If point is already there, move to the beginning of the line.
-       Effectively toggle between the first non-whitespace character and
-       the beginning of the line.
-
-       If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-       point reaches the beginning or end of the buffer, stop there."
-       (interactive "^p")
-       (setq arg (or arg 1))
-
-       ;; Move lines first
-       (when (/= arg 1)
-         (let ((line-move-visual nil))
-           (forward-line (1- arg))))
-
-       (let ((orig-point (point)))
-         (back-to-indentation)
-         (when (= orig-point (point))
-           (move-beginning-of-line 1))))
-
-    ;; remap C-a to smarter-move-beginning-of-line
-    (global-set-key [remap move-beginning-of-line]
-                    'local/smarter-move-beginning-of-line)
-  #+end_src
 
 ** Parsing to terminal keys correctly
 
@@ -1116,17 +1040,6 @@
                              ("date:7d..now AND NOT flag:trashed" "Last 7 days" ?w)
                              ("flag:trashed" "Deleted messages" ?d)
                              ("mime:image/*" "Messages with images" ?p))))
-  #+end_src
-
-* Secrets and custom settings
-
-  I store more sensitive data in =~/.emacs.d/etc/.secrets.el= so I
-  easily can store my main configuration in a public version control
-  system.
-
-  #+begin_src emacs-lisp :tangle init.el
-    (load (concat (no-littering-expand-etc-file-name ".secrets.el")) t)
-    (load (concat (no-littering-expand-etc-file-name "custom.el")) t)
   #+end_src
 
 * Eshell
