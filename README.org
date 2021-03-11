@@ -581,39 +581,31 @@
   this is configured below.
 
   #+begin_src emacs-lisp :tangle init.el
-    (defun local--correct-symbol-bounds (pretty-alist)
-      "Prepend a TAB character to each symbol in this alist,
-    this way compose-region called by prettify-symbols-mode
-    will use the correct width of the symbols
-    instead of the width measured by char-width."
-      (mapcar (lambda (el)
-                (setcdr el (string ?\t (cdr el)))
-                el)
-              pretty-alist))
-
-    (defun local--ligature-list (ligatures codepoint-start)
-      "Create an alist of strings to replace with
-    codepoints starting from codepoint-start."
-      (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
-        (-zip-pair ligatures codepoints)))
-
-    ;; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
-    (setq local--hasklig-ligatures
-          (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
-                         "==" "===" "==>" "=>" "=<<" "!!" ">>"
-                         ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
-                         "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
-                         "<<" "<<<" "<+>" ".." "..." "++" "+++"
-                         "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
-            (local--correct-symbol-bounds (local--ligature-list ligs #Xe100))))
-
-    ;; nice glyphs for haskell with hasklig
-    (defun local/set-hasklig-ligatures ()
-      "Add hasklig ligatures for use with prettify-symbols-mode."
-      (interactive)
-      (setq prettify-symbols-alist
-            (append local--hasklig-ligatures prettify-symbols-alist))
-      (prettify-symbols-mode))
+    (use-package ligature
+      :load-path "/home/jassob/.emacs.d/site-lisp/ligature.el"
+      :config
+      ;; Enable the "www" ligature in every possible major mode
+      (ligature-set-ligatures 't '("www"))
+      ;; Enable traditional ligature support in eww-mode, if the
+      ;; `variable-pitch' face supports it
+      (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+      ;; Enable all Cascadia Code ligatures in programming modes
+      (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                           ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                           "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                           "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                           "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                           "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                           "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                           "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                           ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                           "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                           "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                           "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                           "\\\\" "://"))
+      ;; Enables ligature checks globally in all buffers. You can also do it
+      ;; per mode with `ligature-mode'.
+      (global-ligature-mode t))
   #+end_src
 
 * Counsel / Ivy

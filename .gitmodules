@@ -7,3 +7,6 @@
 [submodule "site-lisp/pdf-tools"]
 	path = site-lisp/pdf-tools
 	url = git@github.com:politza/pdf-tools.git
+[submodule "site-lisp/ligature.el"]
+	path = site-lisp/ligature.el
+	url = git@github.com:mickeynp/ligature.el.git
