@@ -449,6 +449,22 @@
                   ("C-c C-t p" . go-test-current-project)))
   #+end_src
 
+** Nix
+
+   When I edit nix files I want to have some syntax highlighting.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package nix-mode :ensure t :mode "\\.nix\\'")
+   #+end_src
+
+** Java
+
+   I want Emacs to automatically download lsp-java and install the
+   Eclipse project's language server.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package lsp-java :ensure t :hook (java-mode . lsp-deferred))
+   #+end_src
 
 * Personal customization
   Give my setup a personal touch.
