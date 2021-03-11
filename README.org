@@ -1041,6 +1041,23 @@
                              ("mime:image/*" "Messages with images" ?p))))
   #+end_src
 
+* Reading and editing documents
+
+  I want to be able to read PDF documents with =pdf-tools=.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package pdf-tools :ensure t :init (pdf-loader-install) :config (setq pdf-view-continuous nil))
+  #+end_src
+
+  I also want to edit LaTeX files with the =AucTeX= package.
+
+  #+begin_src emacs-lisp :tangle init.el
+    (use-package latex :ensure auctex :hook (LaTeX-mode-hook . 'company-mode)
+      :bind (:map LaTeX-mode-map ("C-c RET" . 'company-complete))
+      :config (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+      (setq company-dabbrev-downcase nil))
+  #+end_src
+
 * Eshell
 
   I found =Eshell smart display= on the [[https://masteringemacs.org/article/complete-guide-mastering-][Eshell article on Mastering
