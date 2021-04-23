@@ -284,6 +284,18 @@
     (use-package autorevert :delight auto-revert-mode :hook (prog-mode . auto-revert-mode))
 
     (use-package subword-mode :hook prog-mode :delight)
+    (use-package "whitespace" :hook (prog-mode . whitespace-mode) :delight
+      :config
+      ;; Make the whitespace style really dark and light on the eyes
+      ;; (for dark themes)
+      (set-face-attribute 'whitespace-space nil :background nil :foreground "gray30")
+      (set-face-attribute 'whitespace-hspace nil :background nil :foreground "gray30")
+      (set-face-attribute 'whitespace-indentation nil :background nil :foreground "gray30")
+      (set-face-attribute 'whitespace-newline nil :background nil :foreground "gray30")
+      (set-face-attribute 'whitespace-tab nil :background nil :foreground "gray30")
+      (setq whitespace-style
+            '(face tabs tab-mark spaces space-mark trailing missing-newline-at-eof indentation empty lines-tail))
+      )
 
     (use-package hl-line-mode :hook prog-mode :delight)
     (use-package hl-todo :ensure t :delight :hook hl-todo-mode)
