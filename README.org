@@ -473,6 +473,16 @@
                   ("C-c C-t p" . go-test-current-project)))
   #+end_src
 
+** Typescript / Javascript
+
+   #+begin_src emacs-lisp :tangle init.el
+     (use-package typescript-mode :ensure t :mode ("\\.tsx?\\'") :hook ((typescript-mode . prettier-js-mode)))
+     (use-package prettier-js :ensure t)
+
+     ;; Enable formatting of typescript files with prettier
+     (add-to-list 'prog-mode-formatters '(typescript-mode . prettier-js))
+   #+end_src
+
 ** Nix
 
    When I edit nix files I want to have some syntax highlighting.
