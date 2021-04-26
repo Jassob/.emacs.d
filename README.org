@@ -346,14 +346,15 @@
        "Runs COMMAND on buffer and replaces its content with the output.
 
      Used for integrating formatters that do not have elisp packages."
-       (shell-command-on-region
-        (point-min)      ;; starting point in buffer
-        (point-max)      ;; ending point in buffer
-        command          ;; command to run in buffer
-        (current-buffer) ;; output buffer
-        t                ;; replace contents
-        (concat "*Custom formatter " command " Error Buffer*")
-        t))              ;; show error buffer
+       (save-excursion
+         (shell-command-on-region
+          (point-min)      ;; starting point in buffer
+          (point-max)      ;; ending point in buffer
+          command          ;; command to run in buffer
+          (current-buffer) ;; output buffer
+          t                ;; replace contents
+          (concat "*Custom formatter " command " Error Buffer*")
+          t)))              ;; show error buffer
 
      (defun format-with-command-query ()
        "Queries the user for a command to use as a formatter"
