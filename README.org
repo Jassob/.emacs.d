@@ -221,6 +221,14 @@
      (use-package xclip :ensure t :init (xclip-mode t))
    #+end_src
 
+** Backup files
+
+   Emacs should not create backup files in the current directory.
+
+   #+begin_src emacs-lisp :tangle init.el
+     (setq backup-directory-alist `(("" . ,(concat user-emacs-directory "backups"))))
+   #+end_src
+
 * Coding settings
 
   There are some common things I want to use for all every
