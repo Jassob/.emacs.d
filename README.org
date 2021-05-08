@@ -471,13 +471,21 @@
                   ("C-c C-t t" . go-test-current-test)
                   ("C-c C-t f" . go-test-current-file)
                   ("C-c C-t p" . go-test-current-project)))
+
   #+end_src
 
 ** Typescript / Javascript
 
    #+begin_src emacs-lisp :tangle init.el
      (use-package typescript-mode :ensure t :mode ("\\.tsx?\\'") :hook ((typescript-mode . prettier-js-mode)))
-     (use-package prettier-js :ensure t)
+
+     (defun local/prettier-use-local-plugins()
+       "Search project root for prettier plugins."
+       (when projectile-mode
+         (let ((arg (concat "--plugin-search-dir=" (projectile-project-root))))
+           (setq-local prettier-js-args (append prettier-js-args `(,arg))))))
+
+     (use-package prettier-js :ensure t  :hook (prettier-js-mode . (lambda () (local/prettier-use-local-plugins))))
 
      ;; Enable formatting of typescript files with prettier
      (add-to-list 'prog-mode-formatters '(typescript-mode . prettier-js))
