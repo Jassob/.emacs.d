@@ -902,16 +902,13 @@
 
 * Key stroke reminders
 
- To help me remember my commands I use =guide-key=, which displays a
+ To help me remember my commands I use =which-key=, which displays a
  popup showing all the keybindings belonging to a prefix key.
 
  #+begin_src emacs-lisp :tangle init.el
-   (use-package guide-key :delight t :ensure t
-     :config
-     (setq guide-key/guide-key-sequence t
-           guide-key/popup-window-position 'bottom
-           guide-key/highlight-command-regexp ".*"
-           guide-key/idle-delay 2.0))
+   (use-package which-key :delight t :ensure t :config (setq which-key-idle-delay 2.0))
+
+   (which-key-mode t)
  #+end_src
 
 * Tree-like file history
