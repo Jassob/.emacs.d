@@ -417,16 +417,13 @@
        :hook (prog-mode . git-gutter-mode)
        :bind (:map prog-mode-map
                    ;; Navigate on hunks
-                   ("C-x n"   . git-gutter-next-hunk)
-                   ("C-x p"   . git-gutter-previous-hunk)
+                   ("C-x v n"   . git-gutter:next-hunk)
+                   ("C-x v p"   . git-gutter:previous-hunk)
                    ;; Act on hunks
-                   ("C-x v =" . git-gutter-show-hunk)
-                   ("C-x r"   . git-gutter-revert-hunks)
-                   ("C-x t"   . git-gutter-stage-hunks)
-                   ("C-x c"   . git-gutter-commit)
-                   ("C-x C"   . git-gutter-stage-and-commit)
-                   ("C-x C-y" . git-gutter-stage-and-commit-whole-buffer)
-                   ("C-x U"   . git-gutter-unstage-whole-buffer)))
+                   ("C-x v =" . git-gutter:popup-hunk)
+                   ("C-x v r"   . git-gutter:revert-hunk)
+                   ("C-x v t"   . git-gutter:stage-hunk)
+                   ("C-x v U"   . git-gutter:update-all-windows)))
    #+end_src
 
    To help me interact with my Github repositories I use =forge=.
